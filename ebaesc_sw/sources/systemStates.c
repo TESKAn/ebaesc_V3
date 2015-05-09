@@ -29,6 +29,14 @@ Int16 checkSystemStates(void)
 				//ui8PWMMeasureStates = PWM_MEAS_INIT;
 				//systemVariables.systemState = SYSTEM_INIT;
 			}
+			// Check state transition
+			if(SYSTEM_IDLE == SYSTEM.i16StateTransition)
+			{
+				// Transition to idle state through init state
+				SYSTEM.systemState = SYSTEM_INIT;				
+			}
+
+			
 			break;
 		}/*
 		case SYSTEM_MEAS_RPHA:
@@ -172,107 +180,133 @@ Int16 checkSystemStates(void)
 					}
 				}				
 			}
-			else
+			
+			// Check state transition
+			if(SYSTEM_IDLE == SYSTEM.i16StateTransition)
 			{
 				// Go to idle state
-				SYSTEM.systemState = SYSTEM_IDLE;	
+				SYSTEM.systemState = SYSTEM_IDLE;								
 			}
 			break;
-		}/*
+		}
 		case SYSTEM_IDLE:
 		{
 			// If not in debug
 			if(!SYS_DEBUG_MODE)
 			{
 				// Check throttle
-				if(i16PWMoffThrottle < systemVariables.PWMTIMING.i16PWMFiltered)
+				if(SYSTEM.PWMIN.i16PWMoffThrottle < SYSTEM.PWMIN.i16PWMFiltered)
 				{
 					// Throttle over off value, start motor
-					SYSTEM_GOTO_ACTIVE = 1;
+					//SYSTEM_GOTO_ACTIVE = 1;
 				}
 				else
 				{
-					SYSTEM_GOTO_ACTIVE = 0;
+					//SYSTEM_GOTO_ACTIVE = 0;
 				}
 			}
 			// System initialized, waiting 
-			if(SYSTEM_GOTO_ACTIVE)
+			if(SYSTEM_RUN == SYSTEM.i16StateTransition)
 			{
-				// Go to active state
-				SYSTEM_GOTO_ACTIVE = 0;
 				// Set PWM values
-				ioctl(PWM, PWM_WRITE_VALUE_REG_0, MODULO/2); //update PWM0
-				ioctl(PWM, PWM_WRITE_VALUE_REG_2, MODULO/2); //update PWM2
-				ioctl(PWM, PWM_WRITE_VALUE_REG_4, MODULO/2); //update PWM4
-				ioctl(PWM, PWM_LOAD_OK, NULL); //load new PWM value					
-				// Set PWMs to outputs
-				ioctl( GPIO_A, GPIO_SETAS_PERIPHERAL, BIT_0 | BIT_1 | BIT_2|BIT_3 | BIT_4 | BIT_5);
-				// Enable output pads
-				ioctl(PWM, PWM_OUTPUT_PAD, PWM_ENABLE);	
-				systemVariables.systemState = SYSTEM_ACTIVE;
-				SYSTEM_GOTO_RUN = 1;			
+				SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = FRAC16(0.5);
+				SYSTEM.PWMValues.pwmSub_1_Channel_23_Value = FRAC16(0.5);
+				SYSTEM.PWMValues.pwmSub_2_Channel_23_Value = FRAC16(0.5);
+				ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);
+	    		// Enable PWM outputs
+	    		ioctl(EFPWMA, EFPWM_SET_OUTPUTS_ENABLE, EFPWM_SUB0_PWM_A|EFPWM_SUB0_PWM_B|EFPWM_SUB1_PWM_A|EFPWM_SUB1_PWM_B|EFPWM_SUB2_PWM_A|EFPWM_SUB2_PWM_B);
+	    		
+	    		
+	    		
+				// Check - run from sensor or sensorless?
+				if(SYSTEM_CALIBRATED && SYSTEM_RUN_SENSORED)
+				{
+					//RUN_FROMSENSOR = 1;
+					//RUN_ADC_EOS_ALG = 0;	
+					// Set desired speed for sensor mode
+					//systemVariables.RAMPS.mf16SpeedRampDesiredValue = FRAC16(0.0);										
+				}
+				else
+				{
+					// Mark run
+					//RUN_FROMSENSOR = 0;
+					//RUN_ADC_EOS_ALG = 1;
+					// Mark align rotor
+					//ALIGN = 1;			
+					// Set desired speed for sensorless mode
+					//systemVariables.RAMPS.mf16SpeedRampDesiredValue = systemVariables.REFERENCES.f16StartupSpeed;		
+				}
+				// Do not check merge
+				//MERGE_CHECK=0;
+				// Observer is inactive
+				//OBSERVER_ACTIVE = 0;
+				// System not running from BEMF
+				RUNNING_FROM_BEMF = 0;
+				// Align time is set in InitMotorVars
+				//InitMotorVars();
+			
+
+				// Clear FOC lost flag
+				//RESTART_MOTOR_FOC_LOST = 0;
+				//systemVariables.systemState = SYSTEM_RUN;
+				//SYSTEM_GOTO_RUN = 0;	
+				
+				
+				
+
+	    		SYSTEM.systemState = SYSTEM_RUN;
 			}
 			// Go to calibration
-			if(SYSTEM_GOTO_CALIBRATE)
+			if(SYSTEM_CALIBRATE == SYSTEM.i16StateTransition)
 			{
-				SYSTEM_GOTO_CALIBRATE = 0;
-
-
 				// Set PWM values
-				ioctl(PWM, PWM_WRITE_VALUE_REG_0, MODULO/2); //update PWM0
-				ioctl(PWM, PWM_WRITE_VALUE_REG_2, MODULO/2); //update PWM2
-				ioctl(PWM, PWM_WRITE_VALUE_REG_4, MODULO/2); //update PWM4
-				ioctl(PWM, PWM_LOAD_OK, NULL); //load new PWM value	
-				// Set PWMs to outputs
-				ioctl( GPIO_A, GPIO_SETAS_PERIPHERAL, BIT_0 | BIT_1 | BIT_2|BIT_3 | BIT_4 | BIT_5);				
-				// Enable output pads
-				ioctl(PWM, PWM_OUTPUT_PAD, PWM_ENABLE);	
-				systemVariables.systemState = SYSTEM_CALIBRATE;		
-				systemVariables.ui16CalibrationState = CALIBRATE_INIT;
+				SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = FRAC16(0.5);
+				SYSTEM.PWMValues.pwmSub_1_Channel_23_Value = FRAC16(0.5);
+				SYSTEM.PWMValues.pwmSub_2_Channel_23_Value = FRAC16(0.5);
+				ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);
+	    		// Enable PWM outputs
+	    		ioctl(EFPWMA, EFPWM_SET_OUTPUTS_ENABLE, EFPWM_SUB0_PWM_A|EFPWM_SUB0_PWM_B|EFPWM_SUB1_PWM_A|EFPWM_SUB1_PWM_B|EFPWM_SUB2_PWM_A|EFPWM_SUB2_PWM_B);
+	    		
+	    		SYSTEM.systemState = SYSTEM_CALIBRATE;		
+				//systemVariables.ui16CalibrationState = CALIBRATE_INIT;
 			}
 			
-			if(SYSTEM_GOTO_PARK)
+			if(SYSTEM_PARKROTOR == SYSTEM.i16StateTransition)
 			{
-				SYSTEM_GOTO_PARK = 0;
 				// Set PWM values
-				ioctl(PWM, PWM_WRITE_VALUE_REG_0, MODULO/2); //update PWM0
-				ioctl(PWM, PWM_WRITE_VALUE_REG_2, MODULO/2); //update PWM2
-				ioctl(PWM, PWM_WRITE_VALUE_REG_4, MODULO/2); //update PWM4
-				ioctl(PWM, PWM_LOAD_OK, NULL); //load new PWM value	
-				// Set PWMs to outputs
-				ioctl( GPIO_A, GPIO_SETAS_PERIPHERAL, BIT_0 | BIT_1 | BIT_2|BIT_3 | BIT_4 | BIT_5);				
-				// Enable output pads
-				ioctl(PWM, PWM_OUTPUT_PAD, PWM_ENABLE);	
-				systemVariables.ui16CalibrationState = CALIBRATE_INIT;
-				ui16ParkState = PARK_INIT;
-				systemVariables.systemState = SYSTEM_PARKROTOR;
+				SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = FRAC16(0.5);
+				SYSTEM.PWMValues.pwmSub_1_Channel_23_Value = FRAC16(0.5);
+				SYSTEM.PWMValues.pwmSub_2_Channel_23_Value = FRAC16(0.5);
+				ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);
+	    		// Enable PWM outputs
+	    		ioctl(EFPWMA, EFPWM_SET_OUTPUTS_ENABLE, EFPWM_SUB0_PWM_A|EFPWM_SUB0_PWM_B|EFPWM_SUB1_PWM_A|EFPWM_SUB1_PWM_B|EFPWM_SUB2_PWM_A|EFPWM_SUB2_PWM_B);
+	    		
+				//systemVariables.ui16CalibrationState = CALIBRATE_INIT;
+				//ui16ParkState = PARK_INIT;
+	    		SYSTEM.systemState = SYSTEM_PARKROTOR;
 			}
 			
-			if(SYSTEM_GOTO_SPIN)
+			if(SYSTEM_SPINNINGROTOR == SYSTEM.i16StateTransition)
 			{
-				SYSTEM_GOTO_SPIN = 0;
-				SYSTEM_SPINNING = 1;				
 				// Set PWM values
-				ioctl(PWM, PWM_WRITE_VALUE_REG_0, MODULO/2); //update PWM0
-				ioctl(PWM, PWM_WRITE_VALUE_REG_2, MODULO/2); //update PWM2
-				ioctl(PWM, PWM_WRITE_VALUE_REG_4, MODULO/2); //update PWM4
-				ioctl(PWM, PWM_LOAD_OK, NULL); //load new PWM value	
-				// Set PWMs to outputs
-				ioctl( GPIO_A, GPIO_SETAS_PERIPHERAL, BIT_0 | BIT_1 | BIT_2|BIT_3 | BIT_4 | BIT_5);				
-				// Enable output pads
-				ioctl(PWM, PWM_OUTPUT_PAD, PWM_ENABLE);				
+				SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = FRAC16(0.5);
+				SYSTEM.PWMValues.pwmSub_1_Channel_23_Value = FRAC16(0.5);
+				SYSTEM.PWMValues.pwmSub_2_Channel_23_Value = FRAC16(0.5);
+				ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);
+	    		// Enable PWM outputs
+	    		ioctl(EFPWMA, EFPWM_SET_OUTPUTS_ENABLE, EFPWM_SUB0_PWM_A|EFPWM_SUB0_PWM_B|EFPWM_SUB1_PWM_A|EFPWM_SUB1_PWM_B|EFPWM_SUB2_PWM_A|EFPWM_SUB2_PWM_B);		
 				
 				
-				systemVariables.systemState = SYSTEM_SPINNINGROTOR;
+	    		SYSTEM.systemState = SYSTEM_SPINNINGROTOR;
 				
-				SYSTEM_MAN_ROTATE = 1;
+				//SYSTEM_MAN_ROTATE = 1;
 
-				systemVariables.f16IdReq = FRAC16(0.05);
-				systemVariables.f16IqReq = FRAC16(0.0);
+				//systemVariables.f16IdReq = FRAC16(0.05);
+				//systemVariables.f16IqReq = FRAC16(0.0);
 					
 			}
 			break;
-		}
+		}/*
 		case SYSTEM_ACTIVE:
 		{
 			// PWMs active

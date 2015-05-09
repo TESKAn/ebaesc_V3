@@ -143,4 +143,7 @@ void InitSysVars(void)
 	SYSTEM.PWMIN.i16PWMInLowValRef = PWM_IN_LOW_VAL_REF;
 	SYSTEM.PWMIN.i16PWMInMeasureTime = PWM_IN_MEASURE_TIME;
 	SYSTEM.PWMIN.i16PWMInOffZone = PWM_IN_OFF_ZONE;
+	
+	// Mark transition to idle state
+	SYSTEM.i16StateTransition = SYSTEM_IDLE;
 }

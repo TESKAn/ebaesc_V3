@@ -80,8 +80,12 @@ typedef struct tagSYSVARS
 		MCLIB_2_COOR_SYST_ALPHA_BETA_T m2UAlphaBetaRippleElim;
 		// U,V,W voltages after SVM
 		MCLIB_3_COOR_SYST_T m3U_UVW;
-		
+		// Voltages from X inputs
+		MCLIB_3_COOR_SYST_T m3U_X_UVW;
+		// Sector where the phase voltage vector is
+		UInt16 SVMVoltageSector;
 	}MCTRL;
+	
 	
 	// Position
 	struct tagPOSITION
@@ -111,6 +115,10 @@ typedef struct tagSYSVARS
 		// Angle values
 		Frac16 f16RotorAngle;
 		Frac16 f16RotorAngle_m;
+		// Angle value from sensor
+		Frac16 f16MeasuredRotorAngle;
+		// Phase error from observer
+		Frac16 f16ObserverAngleError;
 		// Phase error
 		Frac16 f16AnglePhaseError;
 		// Kp, Ki - AcToPos
@@ -122,7 +130,7 @@ typedef struct tagSYSVARS
 	// Calibration data
 	struct tagCALIBRATION
 	{
-		Frac16 f16CalibrationArray[1024];
+		Frac16 f16CalibrationArray[4096];
 		Int16 i16MotorPolePairs;
 		// Pole pair array
 		Int16 i16PolePairArray[32];
@@ -238,7 +246,8 @@ typedef struct tagSYSVARS
 	
 	// System state machine
 	Int16 systemState;
-
+	Int16 i16StateTransition;
+	
 	
 }SYSTEMVARIABLES;
 

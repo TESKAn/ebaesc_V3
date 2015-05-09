@@ -72,9 +72,10 @@ void main (void)
 
     
     // Set all flag values to initial value
-    SYS_DEBUG_MODE = 0;
+    SYS_DEBUG_MODE = 1;
     RUNNING_FROM_BEMF = 0;
     SYSTEM_CALIBRATED = 0;
+    SYSTEM_RUN_SENSORED = 0;
     
     // Enable gate driver
     EN_GATE_ON;
@@ -107,6 +108,22 @@ void main (void)
     	// Check freemaster
     	FMSTR_Poll();
     	
+    	// Check test bit - for testing code
+    	if(SYSTEM_TEST_BIT)
+    	{
+    		SYSTEM_TEST_BIT = 0;
+    		/*
+			// Set PWM values
+			SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = FRAC16(-0.1);
+			SYSTEM.PWMValues.pwmSub_1_Channel_23_Value = FRAC16(0.5);
+			SYSTEM.PWMValues.pwmSub_2_Channel_23_Value = FRAC16(0.8);
+			ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);
+			*/
+    		/*
+    		// Enable PWM outputs
+    		ioctl(EFPWMA, EFPWM_SET_OUTPUTS_ENABLE, EFPWM_SUB0_PWM_A|EFPWM_SUB0_PWM_B|EFPWM_SUB1_PWM_A|EFPWM_SUB1_PWM_B|EFPWM_SUB2_PWM_A|EFPWM_SUB2_PWM_B);
+    		*/
+    	}
     	
 
          /* feed the watchdog periodically */

@@ -13,6 +13,8 @@
 #define DRV8301_CONFIGURED 			flag0.BIT1
 #define SYSTEM_CALIBRATED			flag0.BIT2
 #define SYS_DEBUG_MODE				flag0.BIT3		// Enable/disable some stuff
+#define SYSTEM_TEST_BIT				flag0.BIT4
+#define SYSTEM_RUN_SENSORED			flag0.BIT5
 
 // Driver HW interface defs
 #define EN_GATE_ON					ioctl(GPIO_C, GPIO_SET_PIN, BIT_13)
@@ -20,23 +22,22 @@
 
 // System states
 #define SYSTEM_WAKEUP						0
-#define SYSTEM_MEAS_RPHA					1
-#define SYSTEM_MEAS_LPHA					2
-#define SYSTEM_INIT							3
-#define SYSTEM_IDLE							4
-#define SYSTEM_ACTIVE						5
-#define SYSTEM_RUN							6
-#define SYSTEM_FAULT						7
-#define SYSTEM_RESET						8
-#define SYSTEM_RESTARTING					9		// System restart after motor stalled
-#define SYSTEM_FAULT_DRV8301				10
-#define SYSTEM_FAULT_RESET					11
-#define SYSTEM_BLOCKEXEC					12
-#define SYSTEM_FOC_LOST_TIMEOUT				13
-#define SYSTEM_PWM_IN_LOST					14
-#define SYSTEM_CALIBRATE					15
-#define SYSTEM_PARKROTOR					16
-#define SYSTEM_SPINNINGROTOR				17
+#define SYSTEM_INIT							1
+#define SYSTEM_IDLE							2
+#define SYSTEM_RUN							3
+#define SYSTEM_FAULT						4
+#define SYSTEM_RESET						5
+#define SYSTEM_RESTARTING					6		// System restart after motor stalled
+#define SYSTEM_FAULT_DRV8301				7
+#define SYSTEM_FAULT_RESET					8
+#define SYSTEM_BLOCKEXEC					9
+#define SYSTEM_FOC_LOST_TIMEOUT				10
+#define SYSTEM_PWM_IN_LOST					11
+#define SYSTEM_CALIBRATE					12
+#define SYSTEM_PARKROTOR					13
+#define SYSTEM_SPINNINGROTOR				14
+#define SYSTEM_MEAS_RPHA					15
+#define SYSTEM_MEAS_LPHA					16
 
 // PWM input default values
 #define PWM_IN_MIDDLE_VALUE					2250	// 1.5 MHz, 0.6666 us/tick, ~1.5 ms
