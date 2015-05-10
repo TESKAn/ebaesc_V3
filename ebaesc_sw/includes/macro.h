@@ -8,6 +8,15 @@
 #ifndef MACRO_H_
 #define MACRO_H_
 
+// System macros
+#define MANUAL_ANGLE_INCREASE		FRAC16(0.0001)
+#define MANUAL_SPEED				FRAC16(0.0)
+
+#define TORQUE_RAMP_UP              FRAC16(0.0002)//FRAC16(0.000056818182)
+#define TORQUE_RAMP_DOWN            FRAC16(0.0002)//FRAC16(0.000056818182)
+
+#define TORQUE_FACTOR				FRAC16(1.0)
+
 // Flag definitions
 #define RUNNING_FROM_BEMF 			flag0.BIT0
 #define DRV8301_CONFIGURED 			flag0.BIT1
@@ -15,6 +24,17 @@
 #define SYS_DEBUG_MODE				flag0.BIT3		// Enable/disable some stuff
 #define SYSTEM_TEST_BIT				flag0.BIT4
 #define SYSTEM_RUN_SENSORED			flag0.BIT5
+#define CONTROL_TORQUE				flag0.BIT6		// Control motor torque
+#define CONTROL_SPEED				flag0.BIT7		// Control motor speed
+#define CONTROL_MANUAL				flag0.BIT8		// Control Id manually
+#define SYSTEM_RUN_MANUAL			flag0.BIT9		// Manual angle increase - for calibration etc.
+#define SYSTEM_RUN_MANUAL_CW		flag0.BIT10		// Manual run - CW
+#define SYSTEM_RUN_MANUAL_CCW		flag0.BIT11		// Manual run - CCW
+#define SENSORLESS_RUN				flag0.BIT12		// Use sensorless
+#define SENSORLESS_ALIGN			flag0.BIT13		// Align rotor
+#define SENSORLESS_ROTATE			flag0.BIT14		// Blind rotate until we get some speed
+#define SENSORLESS_MERGE			flag0.BIT15		// Merge from free running to observer
+#define SENSORLESS_RUN				flag0.BIT16		// Sensorless FOC locked
 
 // Driver HW interface defs
 #define EN_GATE_ON					ioctl(GPIO_C, GPIO_SET_PIN, BIT_13)

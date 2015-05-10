@@ -76,12 +76,14 @@ void main (void)
     RUNNING_FROM_BEMF = 0;
     SYSTEM_CALIBRATED = 0;
     SYSTEM_RUN_SENSORED = 0;
+    CONTROL_TORQUE = 0;
+    CONTROL_SPEED = 0;
     
     // Enable gate driver
     EN_GATE_ON;
     
     // Initialize system variables
-    InitSysVars();
+    InitSysVars(1);
     
     // Calculate float values from parameters 
     calculateFactors();

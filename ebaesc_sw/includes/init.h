@@ -8,6 +8,6 @@
 #ifndef INIT_H_
 #define INIT_H_
 
-void InitSysVars(void);
+void InitSysVars(Int16 initial);
 
 #endif /* INIT_H_ */

@@ -84,6 +84,8 @@ typedef struct tagSYSVARS
 		MCLIB_3_COOR_SYST_T m3U_X_UVW;
 		// Sector where the phase voltage vector is
 		UInt16 SVMVoltageSector;
+		// Torque -> Iq factor
+		Frac16 f16TorqueFactor;
 	}MCTRL;
 	
 	
@@ -99,9 +101,9 @@ typedef struct tagSYSVARS
 		// Fractional value of speed
 		Frac16 f16Speed;
 		// Filtered speed fractional value
-		Frac16 f16FilteredSpeed;
+		Frac16 f16SpeedFiltered;
 		// MA filter for speed
-		GDFLIB_FILTER_MA32_T SpeedFilterMA32;
+		GDFLIB_FILTER_MA32_T FilterMA32Speed;
 		// Value from position sensor
 		Int16 i16SensorIndex;
 		// Index in previous iteration
@@ -124,8 +126,17 @@ typedef struct tagSYSVARS
 		// Kp, Ki - AcToPos
 		float Kpactopos;
 		float Kiactopos;
+		// Manual angle increase
+		Frac16 f16ManualAngleIncrease;
 		
 	}POSITION;
+	
+	struct tagSENSORLESS
+	{
+		// When to start observer
+		Frac16 f16MinSpeed;
+		// Merge
+	}SENSORLESS;
 	
 	// Calibration data
 	struct tagCALIBRATION
@@ -190,6 +201,14 @@ typedef struct tagSYSVARS
 		// Kp, Ki - W
 		float Kpw;
 		float Kiw;
+		// Speed regulator interval time
+		UInt16 ui16SpeedRegCounter;
+		UInt16 ui16SpeedRegInterval;
+		// Saturation flags
+		Int16 i16SatFlagD;
+		Int16 i16SatFlagQ;
+		Int16 i16SatFlagW;
+		
 	}REGULATORS;
 	
 	struct tagRAMPS
