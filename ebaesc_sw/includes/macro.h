@@ -47,9 +47,18 @@
 #define CURRENT_SOURCE_SENSORLESS_ALIGN			4
 #define CURRENT_SOURCE_SENSORLESS_ROTATE		5
 
+// Calibration measure state
+#define CALIBRATE_INIT							0
+#define CALIBRATE_START							1
+#define CALIBRATE_FIND_ZERO_CROSS				2
+#define CALIBRATE_VERIFY_POLE					3
+#define CALIBRATE_WAIT_NEXT_POLE				4
+#define CALIBRATE_FIND_AD_IN_MAX				5
+#define CALIBRATE_FIND_AD_IN_MIN				6
+#define CALIBRATE_CALCULATE_VALUES				7
+
 
 // Flag definitions
-#define RUNNING_FROM_BEMF 			flag0.BIT0
 #define DRV8301_CONFIGURED 			flag0.BIT1
 #define SYSTEM_CALIBRATED			flag0.BIT2
 #define SYS_DEBUG_MODE				flag0.BIT3		// Enable/disable some stuff
@@ -64,7 +73,9 @@
 #define SENSORLESS_RUN				flag0.BIT12		// Use sensorless
 #define SENSORLESS_ALIGN			flag0.BIT13		// Align rotor
 #define SENSORLESS_ROTATE			flag0.BIT14		// Blind rotate until we get some speed
-#define SENSORLESS_BEMF_ON			flag0.BIT16		// BEMF observer is running
+#define SENSORLESS_BEMF_ON			flag0.BIT15		// BEMF observer is running
+#define SYS_CAL_ZERO_CROSSED		flag0.BIT16
+#define SYS_CAL_GOTO_NEXT_POLE		flag0.BIT17
 
 // Driver HW interface defs
 #define EN_GATE_ON					ioctl(GPIO_C, GPIO_SET_PIN, BIT_13)

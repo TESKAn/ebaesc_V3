@@ -182,6 +182,10 @@ typedef struct tagSYSVARS
 		// Min/max values that we get from sensor
 		Int16 i16MaxSensorIndex;
 		Int16 i16MinSensorIndex;
+		// Calibration states
+		Int16 i16CalibrationState;
+		// Time counter
+		Int16 i16Counter;
 		
 	}CALIBRATION;
 	

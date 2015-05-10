@@ -116,14 +116,16 @@ void ADC_1_EOS_ISR(void)
 				if(f16Temp < SYSTEM.SENSORLESS.f16MaxObserverError)
 				{
 					SENSORLESS_BEMF_ON = 1;
-					// Substract hysteresis
+					// Subtract hysteresis
 					SYSTEM.SENSORLESS.f16MinSpeed -= SYSTEM.SENSORLESS.f16MinSpeedHysteresis;					
 				}
 			}
 			else
 			{
 				// We are free - running - startup
-				
+				SENSORLESS_BEMF_ON = 1;
+				// Subtract hysteresis
+				SYSTEM.SENSORLESS.f16MinSpeed -= SYSTEM.SENSORLESS.f16MinSpeedHysteresis;	
 			}
 		}
 	}
@@ -144,14 +146,14 @@ void ADC_1_EOS_ISR(void)
 	{
 		case POSITION_SOURCE_NONE:
 		{
-			SYSTEM.POSITION.f16RotorAngle = FRAC16(1.0);
+			SYSTEM.POSITION.f16RotorAngle = FRAC16(0.0);
 			SYSTEM.POSITION.f16Speed = FRAC16(0.0);
 			SYSTEM.POSITION.f16SpeedFiltered = FRAC16(0.0);
 			break;
 		}
 		case POSITION_SOURCE_MANUAL:
 		{
-			// Check CW/CCW. If none, hold angle
+			// Check CW/CCW.
 			if(SYSTEM_RUN_MANUAL_CW)
 			{
 				// Increase angle
@@ -161,6 +163,27 @@ void ADC_1_EOS_ISR(void)
 			{
 				// Decrease angle
 				SYSTEM.POSITION.f16RotorAngle -= SYSTEM.POSITION.f16ManualAngleIncrease;
+			}
+			else if(SYS_CAL_GOTO_NEXT_POLE)
+			{
+				// Rotate until we get to next pole
+				SYSTEM.POSITION.f16RotorAngle += 1;
+				if(FRAC16(1.0) > SYSTEM.POSITION.f16RotorAngle)
+				{
+					if(FRAC16(0.95) > SYSTEM.POSITION.f16RotorAngle)
+					{
+						SYSTEM.POSITION.f16RotorAngle += 10;	
+					}
+					else
+					{
+						SYSTEM.POSITION.f16RotorAngle += 1;
+					}
+				}
+				else
+				{
+					SYS_CAL_GOTO_NEXT_POLE = 0;
+					SYSTEM.POSITION.f16RotorAngle = FRAC16(1.0);
+				}
 			}
 			break;
 		}
@@ -183,9 +206,6 @@ void ADC_1_EOS_ISR(void)
 		case POSITION_SOURCE_SENSORLESS_ROTATE:
 		{
 			// Manual angle increase for open loop startup
-			SYSTEM.RAMPS.f16OLSpeedRampDesiredValue = SYSTEM.SENSORLESS.f16MaxAngleIncrease;
-			// Do next in systemStates for open loop startup
-			//SYSTEM.RAMPS.f16OLSpeedRampActualValue = SYSTEM.SENSORLESS.f16InitialAngleIncrease;
 			if(SYSTEM.RAMPS.f16OLSpeedRampDesiredValue != SYSTEM.RAMPS.f16OLSpeedRampActualValue)
 			{
 				SYSTEM.RAMPS.f16OLSpeedRampActualValue = GFLIB_Ramp16(SYSTEM.RAMPS.f16OLSpeedRampDesiredValue, SYSTEM.RAMPS.f16OLSpeedRampActualValue, &SYSTEM.RAMPS.Ramp16_OLSpeedStartup);
@@ -202,8 +222,8 @@ void ADC_1_EOS_ISR(void)
 			{
 				// Calculate tracking observer with observer error
 				SYSTEM.POSITION.f16RotorAngle_OL = ACLIB_TrackObsrv(SYSTEM.POSITION.acBemfObsrvDQ.f16Error, &SYSTEM.POSITION.acToPos);
-				// Check tracking observer and forced speed
 				
+				// Check tracking observer and forced speed
 				f16Temp = abs_s(SYSTEM.POSITION.f16SpeedFiltered);
 				f16Temp1 = abs_s(extract_h(SYSTEM.POSITION.acToPos.f32Speed));
 				f16Temp = f16Temp - f16Temp1;
@@ -221,10 +241,11 @@ void ADC_1_EOS_ISR(void)
 		}
 		case POSITION_SOURCE_SENSORLESS_MERGE:
 		{
+			// Keep updating forced angle
+			SYSTEM.POSITION.f16RotorAngle += SYSTEM.RAMPS.f16OLSpeedRampActualValue;
 			// Calculate tracking observer with observer error
 			SYSTEM.POSITION.f16RotorAngle_OL = ACLIB_TrackObsrv(SYSTEM.POSITION.acBemfObsrvDQ.f16Error, &SYSTEM.POSITION.acToPos);
-			
-			// Store & filter speed
+			// Store & filter speed from tracking observer
 			SYSTEM.POSITION.f16Speed = extract_h(SYSTEM.POSITION.acToPos.f32Speed);
 			SYSTEM.POSITION.f16SpeedFiltered = GDFLIB_FilterMA32(SYSTEM.POSITION.f16Speed, &SYSTEM.POSITION.FilterMA32Speed);
 			
@@ -299,6 +320,11 @@ void ADC_1_EOS_ISR(void)
 			// Store & filter speed
 			SYSTEM.POSITION.f16Speed = extract_h(SYSTEM.POSITION.acToPos.f32Speed);
 			SYSTEM.POSITION.f16SpeedFiltered = GDFLIB_FilterMA32(SYSTEM.POSITION.f16Speed, &SYSTEM.POSITION.FilterMA32Speed);	
+			break;
+		}
+		default:
+		{
+			SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_NONE;
 			break;
 		}
 	}
@@ -426,6 +452,11 @@ void ADC_1_EOS_ISR(void)
 			{
 				SYSTEM.REGULATORS.m2IDQReq.f16Q = GFLIB_Ramp16(SYSTEM.SENSORLESS.f16StartCurrent, SYSTEM.REGULATORS.m2IDQReq.f16Q, &SYSTEM.RAMPS.Ramp16_AlignCurrent);						
 			}
+			break;
+		}
+		default:
+		{
+			SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_NONE;
 			break;
 		}
 	}

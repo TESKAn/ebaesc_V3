@@ -25,7 +25,8 @@ void InitSysVars(Int16 initial)
 		SYSTEM.CALIBRATION.i16PolePairArray[4] = 708;
 		SYSTEM.CALIBRATION.i16PolePairArray[5] = 853;
 		SYSTEM.CALIBRATION.i16PolePairArray[6] = 998;
-		SYSTEM.CALIBRATION.i16PolePairArray[7] = 134;		
+		SYSTEM.CALIBRATION.i16PolePairArray[7] = 134;
+		SYSTEM.CALIBRATION.i16CalibrationState = CALIBRATE_INIT;
 	}
 
 		

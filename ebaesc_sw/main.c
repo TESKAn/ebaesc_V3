@@ -73,7 +73,6 @@ void main (void)
     
     // Set all flag values to initial value
     SYS_DEBUG_MODE = 1;
-    RUNNING_FROM_BEMF = 0;
     SYSTEM_CALIBRATED = 0;
     SYSTEM_RUN_SENSORED = 0;
     CONTROL_TORQUE = 0;
