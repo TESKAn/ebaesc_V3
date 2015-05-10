@@ -78,6 +78,7 @@ void main (void)
     SYSTEM_RUN_SENSORED = 0;
     CONTROL_TORQUE = 0;
     CONTROL_SPEED = 0;
+    SENSORLESS_BEMF_ON = 0;
     
     // Enable gate driver
     EN_GATE_ON;

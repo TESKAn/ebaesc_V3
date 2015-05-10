@@ -76,6 +76,8 @@ void InitSysVars(Int16 initial)
 	SYSTEM.REGULATORS.i16SatFlagQ = 0;
 	SYSTEM.REGULATORS.i16SatFlagW = 0;
 	
+	SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_NONE;
+	
 	//******************************************
 	// Position
 	//******************************************
@@ -123,6 +125,10 @@ void InitSysVars(Int16 initial)
 	SYSTEM.POSITION.acToPos.f32Theta = FRAC32(0.0);
 	SYSTEM.POSITION.acToPos.f32Speed = FRAC32(0.0);
 	SYSTEM.POSITION.acToPos.f32I_1 = FRAC32(0.0);
+	
+	SYSTEM.POSITION.f16RotorAngle = FRAC16(0.0);
+	SYSTEM.POSITION.f16RotorAngle_m = FRAC16(0.0);
+	SYSTEM.POSITION.f16RotorAngle_OL = FRAC16(0.0);
 
 	// Initial speed
 	SYSTEM.POSITION.f16Speed = FRAC16(0.0);
@@ -130,10 +136,30 @@ void InitSysVars(Int16 initial)
 	// Filtered speed
 	SYSTEM.POSITION.f16SpeedFiltered = FRAC16(0.0);
 	
+	SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_NONE;
+	
 	//******************************************
 	// Sensorless
 	//******************************************
-	
+	if(0 != initial)
+	{
+		SYSTEM.SENSORLESS.f16MinSpeed = SENSORLESS_MIN_SPEED;
+		SYSTEM.SENSORLESS.f16MaxObserverError = SENSORLESS_MAX_ERROR;
+		SYSTEM.SENSORLESS.f16AlignCurrent = SENSORLESS_ALIGN_CURRENT;
+		SYSTEM.SENSORLESS.f16StartCurrent = SENSORLESS_START_CURRENT;
+		SYSTEM.SENSORLESS.f16InitialAngleIncrease = OL_START_RAMP_INC;
+		SYSTEM.SENSORLESS.f16MaxAngleIncrease = SENSORLESS_MAX_RAMP_INC;
+		SYSTEM.SENSORLESS.f16AngleIncreaseToSpeed = OL_ANGLE_TO_SPEED;
+		SYSTEM.SENSORLESS.i16AlignTime = OL_ALIGN_TIME;
+		SYSTEM.SENSORLESS.f16MergeSpeedDifference = OL_MERGE_SPEED_DIFFERENCE;
+		SYSTEM.SENSORLESS.i16MergeDifferenceCountThreshold = OL_MERGE_SPEED_COUNT;
+		SYSTEM.SENSORLESS.f16StartSpeed = SENSORLESS_START_SPEED;
+		SYSTEM.SENSORLESS.f16StartTorque = SENSORLESS_START_TORQUE;
+		
+	}
+	SYSTEM.SENSORLESS.f16MinSpeedHysteresis = mult(SYSTEM.SENSORLESS.f16MinSpeed, FRAC16(0.1));
+	SYSTEM.SENSORLESS.i16Counter = 0;
+	SYSTEM.SENSORLESS.i16MergeDifferenceCount = 0;
 
 	
 	//******************************************
@@ -141,15 +167,29 @@ void InitSysVars(Int16 initial)
 	//******************************************
 	if(0 != initial)
 	{
+		SYSTEM.RAMPS.Ramp16_AlignCurrent.f16RampUp = OL_I_RAMP_UP;
+		SYSTEM.RAMPS.Ramp16_AlignCurrent.f16RampDown = OL_I_RAMP_DOWN;	
+		
+		SYSTEM.RAMPS.Ramp16_OLSpeedStartup.f16RampUp = OL_START_RAMP_INC;
+		SYSTEM.RAMPS.Ramp16_OLSpeedStartup.f16RampDown = OL_START_RAMP_INC;	
+				
 		SYSTEM.RAMPS.Ramp16_Speed.f16RampUp = SPEED_RAMP_UP;
 		SYSTEM.RAMPS.Ramp16_Speed.f16RampDown = SPEED_RAMP_DOWN;	
 		
 		SYSTEM.RAMPS.Ramp16_Torque.f16RampUp = TORQUE_RAMP_UP;
 		SYSTEM.RAMPS.Ramp16_Torque.f16RampDown = TORQUE_RAMP_DOWN;	
 		
-		SYSTEM.RAMPS.Ramp16_Torque.f16RampUp = OL_START_RAMP_INC;
-		SYSTEM.RAMPS.Ramp16_Torque.f16RampDown = OL_START_RAMP_INC;			
+		
 	}
+	
+	// Startup current ramp
+	SYSTEM.RAMPS.f16AlignCurrentActualValue = FRAC16(0.0);
+	SYSTEM.RAMPS.f16AlignCurrentDesiredValue = FRAC16(0.0);	
+	
+	// Startup speed ramp
+	SYSTEM.RAMPS.f16OLSpeedRampActualValue = FRAC16(0.0);
+	SYSTEM.RAMPS.f16OLSpeedRampDesiredValue = FRAC16(0.0);	
+
 	// Speed ramp
 	SYSTEM.RAMPS.f16SpeedRampDesiredValue = FRAC16(0.0);
 	SYSTEM.RAMPS.f16SpeedRampActualValue = FRAC16(0.0);
@@ -157,12 +197,7 @@ void InitSysVars(Int16 initial)
 	// Torque ramp
 	SYSTEM.RAMPS.f16TorqueRampDesiredValue = FRAC16(0.0);
 	SYSTEM.RAMPS.f16TorqueRampActualValue = FRAC16(0.0);
-	
-	// Startup ramp
-	SYSTEM.RAMPS.f16RampupRampDesiredValue = FRAC16(0.0);
-	SYSTEM.RAMPS.f16RampupRampActualValue = FRAC16(0.0);
 
-	
 	//******************************************
 	// ADC
 	//******************************************

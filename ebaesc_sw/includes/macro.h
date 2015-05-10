@@ -17,6 +17,37 @@
 
 #define TORQUE_FACTOR				FRAC16(1.0)
 
+#define SENSORLESS_MIN_SPEED		FRAC16(0.005)	// When to calculate BEMF observer
+#define SENSORLESS_MAX_ERROR		FRAC16(0.0001)	// If error below this, we use observer result
+#define SENSORLESS_ALIGN_CURRENT	FRAC16(0.005)	// Rotor align current
+#define SENSORLESS_START_CURRENT	FRAC16(0.005)	// Rotor start current
+#define SENSORLESS_MAX_RAMP_INC		FRAC16(0.0004)	// Max speed for OL
+#define SENSORLESS_START_SPEED		FRAC16(0.1)
+#define SENSORLESS_START_TORQUE		FRAC16(0.005)
+#define OL_I_RAMP_UP                FRAC16(0.0001)	//FRAC16(0.000056818182)
+#define OL_I_RAMP_DOWN              FRAC16(0.0001)	//FRAC16(0.000056818182)
+#define OL_ANGLE_TO_SPEED			FRAC16(0.9)
+#define OL_ALIGN_TIME				2000			// Time in ms for aligning
+#define OL_MERGE_SPEED_DIFFERENCE	FRAC16(0.00166)
+#define OL_MERGE_SPEED_COUNT		20
+
+// Position sources states
+#define POSITION_SOURCE_NONE					0
+#define POSITION_SOURCE_MANUAL					1
+#define POSITION_SOURCE_SENSORLESS_ALIGN		2
+#define POSITION_SOURCE_SENSORLESS_ROTATE		3
+#define POSITION_SOURCE_SENSORLESS_MERGE		4
+#define POSITION_SOURCE_MULTIPLE				5
+
+// Current source states
+#define CURRENT_SOURCE_NONE						0
+#define CURRENT_SOURCE_CONTROL_TORQUE			1
+#define CURRENT_SOURCE_CONTROL_SPEED			2
+#define CURRENT_SOURCE_CONTROL_MANUAL			3
+#define CURRENT_SOURCE_SENSORLESS_ALIGN			4
+#define CURRENT_SOURCE_SENSORLESS_ROTATE		5
+
+
 // Flag definitions
 #define RUNNING_FROM_BEMF 			flag0.BIT0
 #define DRV8301_CONFIGURED 			flag0.BIT1
@@ -33,8 +64,7 @@
 #define SENSORLESS_RUN				flag0.BIT12		// Use sensorless
 #define SENSORLESS_ALIGN			flag0.BIT13		// Align rotor
 #define SENSORLESS_ROTATE			flag0.BIT14		// Blind rotate until we get some speed
-#define SENSORLESS_MERGE			flag0.BIT15		// Merge from free running to observer
-#define SENSORLESS_RUN				flag0.BIT16		// Sensorless FOC locked
+#define SENSORLESS_BEMF_ON			flag0.BIT16		// BEMF observer is running
 
 // Driver HW interface defs
 #define EN_GATE_ON					ioctl(GPIO_C, GPIO_SET_PIN, BIT_13)

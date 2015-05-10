@@ -221,40 +221,47 @@ Int16 checkSystemStates(void)
 				// Check - run from sensor or sensorless?
 				if(SYSTEM_CALIBRATED && SYSTEM_RUN_SENSORED)
 				{
-					//RUN_FROMSENSOR = 1;
-					//RUN_ADC_EOS_ALG = 0;	
-					// Set desired speed for sensor mode
-					//systemVariables.RAMPS.mf16SpeedRampDesiredValue = FRAC16(0.0);										
+					// Run from sensor
+					
+					SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_MULTIPLE;
+					if(CONTROL_SPEED)
+					{
+						SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_CONTROL_SPEED;
+						// Set default values
+						SYSTEM.RAMPS.f16SpeedRampDesiredValue = FRAC16(0.0);
+						SYSTEM.RAMPS.f16SpeedRampActualValue = FRAC16(0.0);
+					}
+					else if(CONTROL_TORQUE)
+					{
+						SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_CONTROL_TORQUE;
+						// Set default values
+						SYSTEM.RAMPS.f16TorqueRampActualValue = FRAC16(0.0);
+						SYSTEM.RAMPS.f16TorqueRampDesiredValue = FRAC16(0.0);
+					}
+					else
+					{
+						// No source, abort
+						SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_MANUAL;
+						SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_CONTROL_MANUAL;
+					}
+					SYSTEM.systemState = SYSTEM_RUN;					
 				}
 				else
 				{
-					// Mark run
-					//RUN_FROMSENSOR = 0;
-					//RUN_ADC_EOS_ALG = 1;
-					// Mark align rotor
-					//ALIGN = 1;			
-					// Set desired speed for sensorless mode
-					//systemVariables.RAMPS.mf16SpeedRampDesiredValue = systemVariables.REFERENCES.f16StartupSpeed;		
+					// Run sensorless
+					// Start open loop mode
+					SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_SENSORLESS_ALIGN;
+					SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_SENSORLESS_ALIGN;
+					// Set time for align
+					SYSTEM.SENSORLESS.i16Counter = SYSTEM.SENSORLESS.i16AlignTime;
+					// Mark no BEMF
+					SENSORLESS_BEMF_ON = 0;
+					// Go to run
+					SYSTEM.systemState = SYSTEM_RUN;
 				}
-				// Do not check merge
-				//MERGE_CHECK=0;
-				// Observer is inactive
-				//OBSERVER_ACTIVE = 0;
+
 				// System not running from BEMF
 				RUNNING_FROM_BEMF = 0;
-				// Align time is set in InitMotorVars
-				//InitMotorVars();
-			
-
-				// Clear FOC lost flag
-				//RESTART_MOTOR_FOC_LOST = 0;
-				//systemVariables.systemState = SYSTEM_RUN;
-				//SYSTEM_GOTO_RUN = 0;	
-				
-				
-				
-
-	    		SYSTEM.systemState = SYSTEM_RUN;
 			}
 			// Go to calibration
 			if(SYSTEM_CALIBRATE == SYSTEM.i16StateTransition)
@@ -306,7 +313,15 @@ Int16 checkSystemStates(void)
 					
 			}
 			break;
-		}/*
+		}
+		case SYSTEM_RUN:
+		{
+			
+			break;
+		}
+		
+		
+		/*
 		case SYSTEM_ACTIVE:
 		{
 			// PWMs active

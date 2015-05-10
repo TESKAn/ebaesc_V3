@@ -14,6 +14,7 @@ void ADC_1_EOS_ISR(void)
 	Int16 i16Temp1 = 0;
 	Int16 i16Temp2 = 0;
 	Frac16 f16Temp = FRAC16(0.0);
+	Frac16 f16Temp1 = FRAC16(0.0);
 	Frac16 mf16ErrorK;
 	Frac16 f16SpeedErrorK = FRAC16(0.0);
 	Int16 mi16SatFlag = 0;
@@ -95,36 +96,212 @@ void ADC_1_EOS_ISR(void)
 	MCLIB_ParkTrf(&SYSTEM.MCTRL.m2IDQ, &SYSTEM.MCTRL.m2IAlphaBeta, &SYSTEM.POSITION.mSinCosAngle);
 	
 	//******************************************
+	// BEMF observer calculation
+	//******************************************
+	// Absolute speed value
+	f16Temp = abs_s(SYSTEM.POSITION.f16SpeedFiltered);
+	// If speed over BEMF min speed
+	if(SYSTEM.SENSORLESS.f16MinSpeed < f16Temp)
+	{
+		// Calculate DQ observer
+		ACLIB_PMSMBemfObsrvDQ(&SYSTEM.MCTRL.m2IDQ, &SYSTEM.MCTRL.m2UDQ_m, SYSTEM.POSITION.f16SpeedFiltered, &SYSTEM.POSITION.acBemfObsrvDQ);
+		if(!SENSORLESS_BEMF_ON)
+		{
+			// Check that error is small enough before we enable use of observer
+			// Are we using sensor?
+			if(SYSTEM_CALIBRATED && SYSTEM_RUN_SENSORED)
+			{
+				// Check error
+				f16Temp = abs_s(SYSTEM.POSITION.acBemfObsrvDQ.f16Error);
+				if(f16Temp < SYSTEM.SENSORLESS.f16MaxObserverError)
+				{
+					SENSORLESS_BEMF_ON = 1;
+					// Substract hysteresis
+					SYSTEM.SENSORLESS.f16MinSpeed -= SYSTEM.SENSORLESS.f16MinSpeedHysteresis;					
+				}
+			}
+			else
+			{
+				// We are free - running - startup
+				
+			}
+		}
+	}
+	// Else if observer was ON
+	else if(SENSORLESS_BEMF_ON)
+	{
+		SENSORLESS_BEMF_ON = 0;
+		// Add hysteresis
+		SYSTEM.SENSORLESS.f16MinSpeed += SYSTEM.SENSORLESS.f16MinSpeedHysteresis;
+	}
+	
+	
+	//******************************************
 	// Motor angle calculation and manual increase
 	//******************************************
 	// Here are differences according to how we are running the motor	
-	if(SYSTEM_RUN_MANUAL)
+	switch(SYSTEM.POSITION.i16PositionSource)
 	{
-		// Check CW/CCW. If none, hold angle
-		if(SYSTEM_RUN_MANUAL_CW)
+		case POSITION_SOURCE_NONE:
 		{
-			// Increase angle
-			SYSTEM.POSITION.f16RotorAngle += SYSTEM.POSITION.f16ManualAngleIncrease;
+			SYSTEM.POSITION.f16RotorAngle = FRAC16(1.0);
+			SYSTEM.POSITION.f16Speed = FRAC16(0.0);
+			SYSTEM.POSITION.f16SpeedFiltered = FRAC16(0.0);
+			break;
 		}
-		else if(SYSTEM_RUN_MANUAL_CCW)
+		case POSITION_SOURCE_MANUAL:
 		{
-			// Decrease angle
-			SYSTEM.POSITION.f16RotorAngle -= SYSTEM.POSITION.f16ManualAngleIncrease;
+			// Check CW/CCW. If none, hold angle
+			if(SYSTEM_RUN_MANUAL_CW)
+			{
+				// Increase angle
+				SYSTEM.POSITION.f16RotorAngle += SYSTEM.POSITION.f16ManualAngleIncrease;
+			}
+			else if(SYSTEM_RUN_MANUAL_CCW)
+			{
+				// Decrease angle
+				SYSTEM.POSITION.f16RotorAngle -= SYSTEM.POSITION.f16ManualAngleIncrease;
+			}
+			break;
+		}
+		case POSITION_SOURCE_SENSORLESS_ALIGN:
+		{
+			SYSTEM.POSITION.f16RotorAngle = FRAC16(1.0);
+			SYSTEM.POSITION.f16Speed = FRAC16(0.0);
+			SYSTEM.POSITION.f16SpeedFiltered = FRAC16(0.0);
+			// Check align time
+			if(0 == SYSTEM.SENSORLESS.i16Counter)
+			{
+				// Go to rotate
+				SYSTEM.REGULATORS.m2IDQReq.f16Q = SYSTEM.REGULATORS.m2IDQReq.f16D;
+				SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.0);		
+				SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_SENSORLESS_ROTATE;
+				SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_SENSORLESS_ROTATE;
+			}
+			break;
+		}
+		case POSITION_SOURCE_SENSORLESS_ROTATE:
+		{
+			// Manual angle increase for open loop startup
+			SYSTEM.RAMPS.f16OLSpeedRampDesiredValue = SYSTEM.SENSORLESS.f16MaxAngleIncrease;
+			// Do next in systemStates for open loop startup
+			//SYSTEM.RAMPS.f16OLSpeedRampActualValue = SYSTEM.SENSORLESS.f16InitialAngleIncrease;
+			if(SYSTEM.RAMPS.f16OLSpeedRampDesiredValue != SYSTEM.RAMPS.f16OLSpeedRampActualValue)
+			{
+				SYSTEM.RAMPS.f16OLSpeedRampActualValue = GFLIB_Ramp16(SYSTEM.RAMPS.f16OLSpeedRampDesiredValue, SYSTEM.RAMPS.f16OLSpeedRampActualValue, &SYSTEM.RAMPS.Ramp16_OLSpeedStartup);
+			}	
+			
+			SYSTEM.POSITION.f16RotorAngle += SYSTEM.RAMPS.f16OLSpeedRampActualValue; 
+			// Multiply angle increase with some factor to get speed
+			SYSTEM.POSITION.f16Speed = mult(SYSTEM.SENSORLESS.f16AngleIncreaseToSpeed, SYSTEM.RAMPS.f16OLSpeedRampActualValue);
+			// Filter speed
+			SYSTEM.POSITION.f16SpeedFiltered = GDFLIB_FilterMA32(SYSTEM.POSITION.f16Speed, &SYSTEM.POSITION.FilterMA32Speed);
+			
+			// If BEMF calculating
+			if(SENSORLESS_BEMF_ON)
+			{
+				// Calculate tracking observer with observer error
+				SYSTEM.POSITION.f16RotorAngle_OL = ACLIB_TrackObsrv(SYSTEM.POSITION.acBemfObsrvDQ.f16Error, &SYSTEM.POSITION.acToPos);
+				// Check tracking observer and forced speed
+				
+				f16Temp = abs_s(SYSTEM.POSITION.f16SpeedFiltered);
+				f16Temp1 = abs_s(extract_h(SYSTEM.POSITION.acToPos.f32Speed));
+				f16Temp = f16Temp - f16Temp1;
+				f16Temp = abs_s(f16Temp);
+				if(SYSTEM.SENSORLESS.f16MergeSpeedDifference > f16Temp)
+				{
+					SYSTEM.SENSORLESS.i16MergeDifferenceCount++;
+					if(SYSTEM.SENSORLESS.i16MergeDifferenceCount > SYSTEM.SENSORLESS.i16MergeDifferenceCountThreshold)
+					{
+						SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_SENSORLESS_MERGE;
+					}
+				}
+			}			
+			break;
+		}
+		case POSITION_SOURCE_SENSORLESS_MERGE:
+		{
+			// Calculate tracking observer with observer error
+			SYSTEM.POSITION.f16RotorAngle_OL = ACLIB_TrackObsrv(SYSTEM.POSITION.acBemfObsrvDQ.f16Error, &SYSTEM.POSITION.acToPos);
+			
+			// Store & filter speed
+			SYSTEM.POSITION.f16Speed = extract_h(SYSTEM.POSITION.acToPos.f32Speed);
+			SYSTEM.POSITION.f16SpeedFiltered = GDFLIB_FilterMA32(SYSTEM.POSITION.f16Speed, &SYSTEM.POSITION.FilterMA32Speed);
+			
+			// Merge forced angle to observer angle
+			if(SYSTEM.POSITION.f16RotorAngle_OL > SYSTEM.POSITION.f16RotorAngle)
+			{
+				SYSTEM.POSITION.f16RotorAngle++;
+			}
+			else if(SYSTEM.POSITION.f16RotorAngle_OL < SYSTEM.POSITION.f16RotorAngle)
+			{
+				SYSTEM.POSITION.f16RotorAngle--;
+			}
+			else
+			{
+				// Angles merged, switch
+				SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_MULTIPLE;
+				// Set current source to speed or torque
+				if(CONTROL_SPEED)
+				{
+					SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_CONTROL_SPEED;
+					// Set default values
+					SYSTEM.RAMPS.f16SpeedRampDesiredValue = SYSTEM.SENSORLESS.f16StartSpeed;
+					SYSTEM.RAMPS.f16SpeedRampActualValue = SYSTEM.POSITION.f16Speed;
+				}
+				else if(CONTROL_TORQUE)
+				{
+					SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_CONTROL_TORQUE;
+					// Set default values
+					SYSTEM.RAMPS.f16TorqueRampActualValue = SYSTEM.REGULATORS.m2IDQReq.f16Q /  SYSTEM.MCTRL.f16TorqueFactor;
+					SYSTEM.RAMPS.f16TorqueRampDesiredValue = SYSTEM.SENSORLESS.f16StartTorque;
+				}
+				else
+				{
+					// No source, abort
+					SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_NONE;
+					SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_NONE;
+				}
+			}
+			break;
+		}
+		case POSITION_SOURCE_MULTIPLE:
+		{
+			// Get rotor angle from tracking observer
+			// Merge(?) errors from measured and observed angle
+			// i16Temp counts error sources
+			i16Temp = 0;
+			mf16ErrorK = FRAC16(0.0);
+			if(SYSTEM_CALIBRATED && SYSTEM_RUN_SENSORED)
+			{
+				// Sensor calibrated and use sensor
+				i16Temp ++;
+				// SYSTEM.POSITION.f16AnglePhaseError holds sensor error
+				mf16ErrorK += SYSTEM.POSITION.f16AnglePhaseError;
+			}
+			if(SENSORLESS_BEMF_ON)
+			{
+				// We have good BEMF signal, use it
+				i16Temp ++;
+				mf16ErrorK += SYSTEM.POSITION.acBemfObsrvDQ.f16Error;
+			}
+			// Divide by 2?
+			if(1 < i16Temp)
+			{
+				mf16ErrorK = mult(mf16ErrorK, FRAC16(0.5));
+			}
+			
+			SYSTEM.POSITION.f16AnglePhaseError = mf16ErrorK;
+			
+			// Calculate angle tracking observer or use forced angle
+			SYSTEM.POSITION.f16RotorAngle = ACLIB_TrackObsrv(SYSTEM.POSITION.f16AnglePhaseError, &SYSTEM.POSITION.acToPos);
+			
+			// Store & filter speed
+			SYSTEM.POSITION.f16Speed = extract_h(SYSTEM.POSITION.acToPos.f32Speed);
+			SYSTEM.POSITION.f16SpeedFiltered = GDFLIB_FilterMA32(SYSTEM.POSITION.f16Speed, &SYSTEM.POSITION.FilterMA32Speed);	
+			break;
 		}
 	}
-	
-	else
-	{
-		// Get rotor angle from tracking observer
-		// Run BEMF observer to get BEMF error
-		// Merge(?) errors from measured and observed angle
-		// Calculate angle tracking observer or use forced angle
-		SYSTEM.POSITION.f16RotorAngle = ACLIB_TrackObsrv(SYSTEM.POSITION.f16AnglePhaseError, &SYSTEM.POSITION.acToPos);
-		
-		// Store & filter speed
-		SYSTEM.POSITION.f16Speed = extract_h(SYSTEM.POSITION.acToPos.f32Speed);
-		SYSTEM.POSITION.f16SpeedFiltered = GDFLIB_FilterMA32(SYSTEM.POSITION.f16Speed, &SYSTEM.POSITION.FilterMA32Speed);		
-	}		
 	
 	// Calculate new sin/cos
 	SYSTEM.POSITION.mSinCosAngle.f16Sin = GFLIB_SinTlr(SYSTEM.POSITION.f16RotorAngle);
@@ -133,105 +310,133 @@ void ADC_1_EOS_ISR(void)
 	//******************************************
 	// Set Id, Iq currents
 	//******************************************
-	// Torque mode?
-	if(CONTROL_TORQUE)
+	switch(SYSTEM.REGULATORS.i16CurrentSource)
 	{
-		// Torque control, set Iq for some torque
-		// Torque ramp
-		if(SYSTEM.RAMPS.f16TorqueRampDesiredValue != SYSTEM.RAMPS.f16TorqueRampActualValue)
+		case CURRENT_SOURCE_NONE:
 		{
-			SYSTEM.RAMPS.f16TorqueRampActualValue = GFLIB_Ramp16(SYSTEM.RAMPS.f16TorqueRampDesiredValue, SYSTEM.RAMPS.f16TorqueRampActualValue, &SYSTEM.RAMPS.Ramp16_Torque);
+			// Set currents to 0
+			SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.0);
+			SYSTEM.REGULATORS.m2IDQReq.f16Q = FRAC16(0.0);
+			break;
 		}
-		// Scale with some factor
-		SYSTEM.REGULATORS.m2IDQReq.f16Q = mult(SYSTEM.RAMPS.f16TorqueRampActualValue, SYSTEM.MCTRL.f16TorqueFactor); 
-	}
-	// Speed mode?
-	else if(CONTROL_SPEED)
-	{
-		// Run speed PI
-		// Speed loop			
-		SYSTEM.REGULATORS.ui16SpeedRegCounter++;
-		if(SYSTEM.REGULATORS.ui16SpeedRegInterval < SYSTEM.REGULATORS.ui16SpeedRegCounter)
+		case CURRENT_SOURCE_CONTROL_TORQUE:
 		{
-			SYSTEM.REGULATORS.ui16SpeedRegCounter = 0;
-			
-			//******************************
-			// TODO: If Id and/or Iq is on limit, stop integrator
-			//******************************
-			// Do we have to do ramp?
-			if(SYSTEM.RAMPS.f16SpeedRampActualValue != SYSTEM.RAMPS.f16SpeedRampDesiredValue)
+			// Torque control, set Iq for some torque
+			// Id = 0
+			SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.0);
+			// Torque ramp
+			if(SYSTEM.RAMPS.f16TorqueRampDesiredValue != SYSTEM.RAMPS.f16TorqueRampActualValue)
 			{
-				SYSTEM.RAMPS.f16SpeedRampActualValue = GFLIB_Ramp16(SYSTEM.RAMPS.f16SpeedRampDesiredValue, SYSTEM.RAMPS.f16SpeedRampActualValue, &SYSTEM.RAMPS.Ramp16_Speed);						
+				SYSTEM.RAMPS.f16TorqueRampActualValue = GFLIB_Ramp16(SYSTEM.RAMPS.f16TorqueRampDesiredValue, SYSTEM.RAMPS.f16TorqueRampActualValue, &SYSTEM.RAMPS.Ramp16_Torque);
 			}
-			
-			f16SpeedErrorK = SYSTEM.RAMPS.f16SpeedRampActualValue - SYSTEM.POSITION.f16SpeedFiltered;
-			// Check Iq
-			// If Iq > Iqmax, check speed error
-			// If error leads to lower Iq, OK
-			// Else skip regulator
-			// mi16SatFlagQ -> Iq regulator is saturated
-			
-			if(0 != SYSTEM.REGULATORS.i16SatFlagQ)
+			// Scale with some factor
+			SYSTEM.REGULATORS.m2IDQReq.f16Q = mult(SYSTEM.RAMPS.f16TorqueRampActualValue, SYSTEM.MCTRL.f16TorqueFactor); 
+			break;
+		}
+		case CURRENT_SOURCE_CONTROL_SPEED:
+		{
+			// Run speed PI
+			// Speed loop			
+			SYSTEM.REGULATORS.ui16SpeedRegCounter++;
+			if(SYSTEM.REGULATORS.ui16SpeedRegInterval < SYSTEM.REGULATORS.ui16SpeedRegCounter)
 			{
-				// Iq is saturated, decrease Iq
-				if(FRAC16(0.0) < SYSTEM.REGULATORS.m2IDQReq.f16Q)
+				SYSTEM.REGULATORS.ui16SpeedRegCounter = 0;
+				
+				//******************************
+				// TODO: If Id and/or Iq is on limit, stop integrator
+				//******************************
+				// Do we have to do ramp?
+				if(SYSTEM.RAMPS.f16SpeedRampActualValue != SYSTEM.RAMPS.f16SpeedRampDesiredValue)
 				{
-					SYSTEM.REGULATORS.m2IDQReq.f16Q--;
+					SYSTEM.RAMPS.f16SpeedRampActualValue = GFLIB_Ramp16(SYSTEM.RAMPS.f16SpeedRampDesiredValue, SYSTEM.RAMPS.f16SpeedRampActualValue, &SYSTEM.RAMPS.Ramp16_Speed);						
+				}
+				
+				f16SpeedErrorK = SYSTEM.RAMPS.f16SpeedRampActualValue - SYSTEM.POSITION.f16SpeedFiltered;
+				// Check Iq
+				// If Iq > Iqmax, check speed error
+				// If error leads to lower Iq, OK
+				// Else skip regulator
+				// mi16SatFlagQ -> Iq regulator is saturated
+				
+				if(0 != SYSTEM.REGULATORS.i16SatFlagQ)
+				{
+					// Iq is saturated, decrease Iq
+					if(FRAC16(0.0) < SYSTEM.REGULATORS.m2IDQReq.f16Q)
+					{
+						SYSTEM.REGULATORS.m2IDQReq.f16Q--;
+					}
+					else
+					{
+						SYSTEM.REGULATORS.m2IDQReq.f16Q++;
+					}
 				}
 				else
 				{
-					SYSTEM.REGULATORS.m2IDQReq.f16Q++;
+					// Iq available, run regulation
+					SYSTEM.REGULATORS.i16SatFlagW = 0;
+					SYSTEM.REGULATORS.m2IDQReq.f16Q = GFLIB_ControllerPIp(f16SpeedErrorK, &SYSTEM.REGULATORS.mudtControllerParamW, &SYSTEM.REGULATORS.i16SatFlagW);
 				}
+				// Set some small D value
+				//SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.01);
+			}		
+			break;
+		}
+		case CURRENT_SOURCE_CONTROL_MANUAL:
+		{
+			// Calculate ramp
+			if(SYSTEM.RAMPS.f16AlignCurrentActualValue != SYSTEM.RAMPS.f16AlignCurrentDesiredValue)
+			{
+				SYSTEM.RAMPS.f16AlignCurrentActualValue = GFLIB_Ramp16(SYSTEM.RAMPS.f16AlignCurrentDesiredValue, SYSTEM.RAMPS.f16AlignCurrentActualValue, &SYSTEM.RAMPS.Ramp16_AlignCurrent);						
+			}		
+			// If SYSTEM_RUN_MANUAL, set Id
+			if(SYSTEM_RUN_MANUAL)
+			{
+				SYSTEM.REGULATORS.m2IDQReq.f16D = SYSTEM.RAMPS.f16AlignCurrentActualValue;
+				SYSTEM.REGULATORS.m2IDQReq.f16Q = FRAC16(0.0);
 			}
+			// Else Iq if we are running from sensor
+			else if(SYSTEM_CALIBRATED && SYSTEM_RUN_SENSORED)
+			{
+				SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.0);
+				SYSTEM.REGULATORS.m2IDQReq.f16Q = SYSTEM.RAMPS.f16AlignCurrentActualValue;
+			}
+			// Else set Id, Iq to 0
 			else
 			{
-				// Iq available, run regulation
-				SYSTEM.REGULATORS.i16SatFlagW = 0;
-				SYSTEM.REGULATORS.m2IDQReq.f16Q = GFLIB_ControllerPIp(f16SpeedErrorK, &SYSTEM.REGULATORS.mudtControllerParamW, &SYSTEM.REGULATORS.i16SatFlagW);
+				SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.0);
+				SYSTEM.REGULATORS.m2IDQReq.f16Q = FRAC16(0.0);
 			}
-			// Set some small D value
-			//SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.01);
-		}				
-	}
-	// Manual mode?
-	else if(CONTROL_MANUAL)
-	{
-		// If SYSTEM_RUN_MANUAL, set Id
-		if(SYSTEM_RUN_MANUAL)
-		{
-			if(SYSTEM.RAMPS.f16RampupRampActualValue != SYSTEM.RAMPS.f16RampupRampDesiredValue)
-			{
-				SYSTEM.RAMPS.f16RampupRampActualValue = GFLIB_Ramp16(SYSTEM.RAMPS.f16RampupRampDesiredValue, SYSTEM.RAMPS.f16RampupRampActualValue, &SYSTEM.RAMPS.Ramp16_Startup);						
-			}
-			SYSTEM.REGULATORS.m2IDQReq.f16D = SYSTEM.RAMPS.f16RampupRampActualValue;
+			break;
 		}
-		// Else Iq if we are running from sensor
-		else if(SYSTEM_CALIBRATED && SYSTEM_RUN_SENSORED)
+		case CURRENT_SOURCE_SENSORLESS_ALIGN:
 		{
-			if(SYSTEM.RAMPS.f16RampupRampActualValue != SYSTEM.RAMPS.f16RampupRampDesiredValue)
+			// Set Id to align current
+			if(SYSTEM.REGULATORS.m2IDQReq.f16D != SYSTEM.SENSORLESS.f16AlignCurrent)
 			{
-				SYSTEM.RAMPS.f16RampupRampActualValue = GFLIB_Ramp16(SYSTEM.RAMPS.f16RampupRampDesiredValue, SYSTEM.RAMPS.f16RampupRampActualValue, &SYSTEM.RAMPS.Ramp16_Startup);						
+				SYSTEM.REGULATORS.m2IDQReq.f16D = GFLIB_Ramp16(SYSTEM.SENSORLESS.f16AlignCurrent, SYSTEM.REGULATORS.m2IDQReq.f16D, &SYSTEM.RAMPS.Ramp16_AlignCurrent);						
 			}
-			SYSTEM.REGULATORS.m2IDQReq.f16Q = SYSTEM.RAMPS.f16RampupRampActualValue;
-		}
-		// Else set Id, Iq to 0
-		else
-		{
-			SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.0);
 			SYSTEM.REGULATORS.m2IDQReq.f16Q = FRAC16(0.0);
+			break;
 		}
-	}
-	// Else set currents to 0
-	else
-	{
-		SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.0);
-		SYSTEM.REGULATORS.m2IDQReq.f16Q = FRAC16(0.0);
+		case CURRENT_SOURCE_SENSORLESS_ROTATE:
+		{
+			// Set Id to 0, Iq to start current
+			SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.0);		
+			if(SYSTEM.REGULATORS.m2IDQReq.f16Q != SYSTEM.SENSORLESS.f16StartCurrent)
+			{
+				SYSTEM.REGULATORS.m2IDQReq.f16Q = GFLIB_Ramp16(SYSTEM.SENSORLESS.f16StartCurrent, SYSTEM.REGULATORS.m2IDQReq.f16Q, &SYSTEM.RAMPS.Ramp16_AlignCurrent);						
+			}
+			break;
+		}
 	}
 	
 	//******************************************
 	// Regulation
 	//******************************************
 	
+	// First store current voltage values for next iteration
+	SYSTEM.MCTRL.m2UDQ_m.f16D = SYSTEM.MCTRL.m2UDQ.f16D;
+	SYSTEM.MCTRL.m2UDQ_m.f16Q = SYSTEM.MCTRL.m2UDQ.f16Q;
 	// Do PI regulation for D, Q current to get D, Q voltages
 	// Store result in systemVariables.MOTOR.mudtDQInv
 	// D
@@ -301,4 +506,9 @@ void PIT_0_ISR(void)
 {
 	ioctl(PIT_0, PIT_CLEAR_ROLLOVER_INT, NULL);
 	checkSystemStates();
+	// Decrease counters
+	if(0 < SYSTEM.SENSORLESS.i16Counter)
+	{
+		SYSTEM.SENSORLESS.i16Counter --;
+	}
 }

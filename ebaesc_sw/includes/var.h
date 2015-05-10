@@ -117,6 +117,8 @@ typedef struct tagSYSVARS
 		// Angle values
 		Frac16 f16RotorAngle;
 		Frac16 f16RotorAngle_m;
+		// Rotor angle for open loop startup
+		Frac16 f16RotorAngle_OL;
 		// Angle value from sensor
 		Frac16 f16MeasuredRotorAngle;
 		// Phase error from observer
@@ -128,6 +130,8 @@ typedef struct tagSYSVARS
 		float Kiactopos;
 		// Manual angle increase
 		Frac16 f16ManualAngleIncrease;
+		// Position source
+		Int16 i16PositionSource;
 		
 	}POSITION;
 	
@@ -135,6 +139,34 @@ typedef struct tagSYSVARS
 	{
 		// When to start observer
 		Frac16 f16MinSpeed;
+		// Start speed hysteresis
+		Frac16 f16MinSpeedHysteresis;
+		// Max error for BEMF observer to use it
+		Frac16 f16MaxObserverError;
+		// Align current
+		Frac16 f16AlignCurrent;
+		// Start current
+		Frac16 f16StartCurrent;
+		// Initial angle increase
+		Frac16 f16InitialAngleIncrease;
+		// Max OL angle increase
+		Frac16 f16MaxAngleIncrease;
+		// Factor angle increase - speed
+		Frac16 f16AngleIncreaseToSpeed;
+		// Time counter
+		Int16 i16Counter;
+		// Align time
+		Int16 i16AlignTime;
+		// Merge speed difference
+		Frac16 f16MergeSpeedDifference;
+		// How many times was this difference small?
+		Int16 i16MergeDifferenceCount;
+		Int16 i16MergeDifferenceCountThreshold;
+		// Speed regulator start speed
+		Frac16 f16StartSpeed;
+		// Torque regulator start torque
+		Frac16 f16StartTorque;
+		
 		// Merge
 	}SENSORLESS;
 	
@@ -209,19 +241,31 @@ typedef struct tagSYSVARS
 		Int16 i16SatFlagQ;
 		Int16 i16SatFlagW;
 		
+		// Current reference source
+		Int16 i16CurrentSource;
+		
 	}REGULATORS;
 	
 	struct tagRAMPS
 	{
 		// Ramp for alignment current
-		GFLIB_RAMP16_T Ramp16_Startup;
-		Frac16 f16RampupRampDesiredValue;
-		Frac16 f16RampupRampActualValue;	
+		GFLIB_RAMP16_T Ramp16_AlignCurrent;
+		// Rampup vars
+		Frac16 f16AlignCurrentDesiredValue;
+		Frac16 f16AlignCurrentActualValue;	
+		
+		// Ramp for open loop speed startup
+		GFLIB_RAMP16_T Ramp16_OLSpeedStartup;
+		// Rampup vars
+		Frac16 f16OLSpeedRampDesiredValue;
+		Frac16 f16OLSpeedRampActualValue;	
+		
 		// Speed ramp
 		GFLIB_RAMP16_T Ramp16_Speed;
 		// Rampup vars
 		Frac16 f16SpeedRampDesiredValue;
 		Frac16 f16SpeedRampActualValue;
+		
 		// Torque ramp
 		GFLIB_RAMP16_T Ramp16_Torque;
 		// Rampup vars
