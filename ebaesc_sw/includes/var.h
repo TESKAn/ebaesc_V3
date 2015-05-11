@@ -14,7 +14,7 @@ typedef struct tagFLAGBITS
 {
   union 
   {
-    UInt32 FLAG;
+    UInt16 FLAG;
     struct 
     {
       unsigned BIT0:1;
@@ -33,22 +33,6 @@ typedef struct tagFLAGBITS
       unsigned BIT13:1;
       unsigned BIT14:1;
       unsigned BIT15:1;
-      unsigned BIT16:1;
-      unsigned BIT17:1;
-      unsigned BIT18:1;
-      unsigned BIT19:1;
-      unsigned BIT20:1;
-      unsigned BIT21:1;
-      unsigned BIT22:1;
-      unsigned BIT23:1;
-      unsigned BIT24:1;
-      unsigned BIT25:1;
-      unsigned BIT26:1;
-      unsigned BIT27:1;
-      unsigned BIT28:1;
-      unsigned BIT29:1;
-      unsigned BIT30:1;
-      unsigned BIT31:1;
     };
   };
 } FLAGBITS ;
@@ -196,6 +180,9 @@ typedef struct tagSYSVARS
 	{
 		// Phase currents
 		MCLIB_3_COOR_SYST_T m3IphUVW;	
+		// Offsets
+		Frac16 f16OffsetU;
+		Frac16 f16OffsetW;
 		// Phase voltages
 		MCLIB_3_COOR_SYST_T m3UphUVW;
 		// Voltage
@@ -321,6 +308,9 @@ typedef struct tagSYSVARS
 // Some flags
 extern FLAGBITS flag0;
 extern FLAGBITS flag1;
+
+extern Int16 i16CurrentCalArrayIndex;
+extern Frac16 f16CurrentCalArrayData;
 
 // Variable that holds all system data
 extern SYSTEMVARIABLES SYSTEM;

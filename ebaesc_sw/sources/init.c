@@ -216,7 +216,10 @@ void InitSysVars(Int16 initial)
 		
 		// Temperature MA filter
 		SYSTEM.ADC.FilterMA32Temperature.w16N = 6;
-		GDFLIB_FilterMA32Init(&SYSTEM.ADC.FilterMA32Temperature);		
+		GDFLIB_FilterMA32Init(&SYSTEM.ADC.FilterMA32Temperature);	
+		
+		SYSTEM.ADC.f16OffsetU = FRAC16(0.0);
+		SYSTEM.ADC.f16OffsetW = FRAC16(0.0);
 
 	}
 
@@ -277,12 +280,13 @@ void InitSysVars(Int16 initial)
 		SYSTEM.i16StateTransition = SYSTEM_IDLE;
 		
 		// If there is calibration data
+		/*
 		if(0 != SYSTEM.CALIBRATION.i16PolePairArray[0])
 		{
 			// Calculate calibration values
 			CalculateCalibrationData();	
 			// Mark calibrated
 			SYSTEM_CALIBRATED = 1;	
-		}		
+		}		*/
 	}	
 }

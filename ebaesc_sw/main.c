@@ -81,6 +81,7 @@ void main (void)
     
     // Enable gate driver
     EN_GATE_ON;
+    delay(30000);
     
     // Initialize system variables
     InitSysVars(1);

@@ -11,6 +11,9 @@
 FLAGBITS flag0;
 FLAGBITS flag1;
 
+Int16 i16CurrentCalArrayIndex = 4096;
+Frac16 f16CurrentCalArrayData = FRAC16(0.0);
+
 // Variable that holds all system data
 SYSTEMVARIABLES SYSTEM;
 

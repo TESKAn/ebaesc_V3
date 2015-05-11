@@ -209,6 +209,7 @@ Int16 CalculateShiftGain(float K)
 // Function calculates frac factors from float values
 void calculateFactors(void)
 {
+	/*
 	// Id regulator
 	// D regulator proportional term
 	CalculateShiftGain(SYSTEM.REGULATORS.Kpd);
@@ -248,11 +249,13 @@ void calculateFactors(void)
 	CalculateShiftGain(SYSTEM.POSITION.Kiactopos);
 	SYSTEM.POSITION.acToPos.f16IntegGain = pConv.gain;
 	SYSTEM.POSITION.acToPos.i16IntegGainShift = pConv.shift;
+	*/
 }
 
 // Function calculates float values from frac factors
 void calculateFloats(void)
 {
+	/*
 	// Calculate regulator gains
 	// Kpd
 	pConv.gain = SYSTEM.REGULATORS.mudtControllerParamId.f16PropGain;
@@ -298,22 +301,47 @@ void calculateFloats(void)
 	pConv.shift = SYSTEM.POSITION.acToPos.i16IntegGainShift;
 	CalculateFloat();
 	SYSTEM.POSITION.Kiactopos = pConv.value;
+	*/
 }
 
 // Stop motor - set all variables to required value
 #pragma interrupt called
 void StopMotor(void)
 {
+	// Turn OFF PWM
+	ioctl(EFPWMA, EFPWM_SET_OUTPUTS_DISABLE, EFPWM_SUB0_PWM_A|EFPWM_SUB0_PWM_B|EFPWM_SUB1_PWM_A|EFPWM_SUB1_PWM_B|EFPWM_SUB2_PWM_A|EFPWM_SUB2_PWM_B);
+	// Reinitialize variables
+	InitSysVars(0);
+	
+	// Disable regulators
+	PWM_ENABLED = 0;
+	// Set current source
+	SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_NONE;
+	// Set position source
+	SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_NONE;
+	// Set no control
+	CONTROL_TORQUE = 0;
+	CONTROL_SPEED = 0;
+	CONTROL_MANUAL = 0;
+	
+	// Set regulator outputs to 0
+	SYSTEM.MCTRL.m2UDQ.f16D = FRAC16(0.0);
+	SYSTEM.MCTRL.m2UDQ.f16Q = FRAC16(0.0);
+	SYSTEM.MCTRL.m2UDQ_m.f16D = FRAC16(0.0);
+	SYSTEM.MCTRL.m2UDQ_m.f16Q = FRAC16(0.0);
+	SYSTEM.MCTRL.m3U_UVW.f16A = FRAC16(0.5);
+	SYSTEM.MCTRL.m3U_UVW.f16B = FRAC16(0.5);
+	SYSTEM.MCTRL.m3U_UVW.f16C = FRAC16(0.5);
+	// Store PWMs
+	SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = FRAC16(0.5);
+	SYSTEM.PWMValues.pwmSub_1_Channel_23_Value = FRAC16(0.5);
+	SYSTEM.PWMValues.pwmSub_2_Channel_23_Value = FRAC16(0.5);
+	
+	// Load new PWM values	
+	ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);	
+	
 	/*
 	// Disable PWMs
-	ioctl(PWM, PWM_OUTPUT_PAD, PWM_DISABLE);
-	// Set PWM outputs to 0
-	ioctl(PWM, PWM_WRITE_VALUE_REG_0, MODULO/2); //update PWM0
-	ioctl(PWM, PWM_WRITE_VALUE_REG_2, MODULO/2); //update PWM2
-	ioctl(PWM, PWM_WRITE_VALUE_REG_4, MODULO/2); //update PWM4
-	ioctl(PWM, PWM_LOAD_OK, NULL); //load new PWM value	
-	// Reset FOC and vars
-	InitMotorVars();
 	// Mark dont align rotor
 	ALIGN = 0;
 	// Do not check merge

@@ -56,14 +56,14 @@
 #define CLOOP_LIMIT                     FRAC16(0.9)
 //D-axis Controller - Parallel type     
 #define D_KP_GAIN                       FRAC16(0.897500791784)
-#define D_KP_SHIFT                      (-2)
+#define D_KP_SHIFT                      (-2)//-2
 #define D_KI_GAIN                       FRAC16(0.765389513237)
-#define D_KI_SHIFT                      (-4)
+#define D_KI_SHIFT                      (-5)//-5
 //Q-axis Controller - Parallel type     
 #define Q_KP_GAIN                       FRAC16(0.897500791784)
-#define Q_KP_SHIFT                      (-2)
+#define Q_KP_SHIFT                      (-2)//-2
 #define Q_KI_GAIN                       FRAC16(0.765389513237)
-#define Q_KI_SHIFT                      (-4)
+#define Q_KI_SHIFT                      (-5)//-5
 
 //Speed Loop Control                    
 //----------------------------------------------------------------------

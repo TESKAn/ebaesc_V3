@@ -211,7 +211,9 @@ Int16 checkSystemStates(void)
 							SYSTEM_RUN_MANUAL_CW = 0;
 							SYSTEM_RUN_MANUAL_CCW = 0;
 						}
-						SYSTEM.systemState = SYSTEM_RUN;					
+						SYSTEM.systemState = SYSTEM_RUN;	
+						// Enable regulators
+						PWM_ENABLED = 1;
 					}
 					else if(CONTROL_SPEED || CONTROL_TORQUE)
 					{
@@ -229,6 +231,8 @@ Int16 checkSystemStates(void)
 						SENSORLESS_BEMF_ON = 0;
 						// Go to run
 						SYSTEM.systemState = SYSTEM_RUN;
+						// Enable regulators
+						PWM_ENABLED = 1;
 					}
 					else if(CONTROL_MANUAL)
 					{
@@ -244,6 +248,10 @@ Int16 checkSystemStates(void)
 						SYSTEM_RUN_MANUAL = 1;
 						SYSTEM_RUN_MANUAL_CW = 0;
 						SYSTEM_RUN_MANUAL_CCW = 0;
+						// Go to run
+						SYSTEM.systemState = SYSTEM_RUN;
+						// Enable regulators
+						PWM_ENABLED = 1;
 					}
 					else
 					{
@@ -281,7 +289,8 @@ Int16 checkSystemStates(void)
 					ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);
 					// Enable PWM outputs
 					ioctl(EFPWMA, EFPWM_SET_OUTPUTS_ENABLE, EFPWM_SUB0_PWM_A|EFPWM_SUB0_PWM_B|EFPWM_SUB1_PWM_A|EFPWM_SUB1_PWM_B|EFPWM_SUB2_PWM_A|EFPWM_SUB2_PWM_B);
-					
+					// Enable regulators
+					PWM_ENABLED = 1;
 					SYSTEM.systemState = SYSTEM_CALIBRATE;		
 					SYSTEM.CALIBRATION.i16CalibrationState = CALIBRATE_INIT;
 					break;
@@ -295,7 +304,8 @@ Int16 checkSystemStates(void)
 					ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);
 					// Enable PWM outputs
 					ioctl(EFPWMA, EFPWM_SET_OUTPUTS_ENABLE, EFPWM_SUB0_PWM_A|EFPWM_SUB0_PWM_B|EFPWM_SUB1_PWM_A|EFPWM_SUB1_PWM_B|EFPWM_SUB2_PWM_A|EFPWM_SUB2_PWM_B);
-					
+					// Enable regulators
+					PWM_ENABLED = 1;
 					//systemVariables.ui16CalibrationState = CALIBRATE_INIT;
 					//ui16ParkState = PARK_INIT;
 					SYSTEM.systemState = SYSTEM_PARKROTOR;
@@ -320,6 +330,11 @@ Int16 checkSystemStates(void)
 					//systemVariables.f16IqReq = FRAC16(0.0);
 					break;
 				}
+				case SYSTEM_RESET:
+				{
+					SYSTEM.systemState = SYSTEM_RESET;
+					break;
+				}
 			}	
 			break;
 		}
@@ -329,6 +344,7 @@ Int16 checkSystemStates(void)
 			{
 				case SYSTEM_RESET:
 				{
+					SYSTEM.systemState = SYSTEM_RESET;
 					break;
 				}
 			}
@@ -510,7 +526,7 @@ Int16 checkSystemStates(void)
 					{
 						SYSTEM.CALIBRATION.i16Counter++;
 						// Spin forward until we get min value
-						if(20 < SYSTEM.POSITION.i16SensorIndexFiltered)
+						if(500 < SYSTEM.POSITION.i16SensorIndexFiltered)
 						{
 							// Rotate back
 							SYSTEM.POSITION.f16RotorAngle ++;
@@ -620,6 +636,19 @@ Int16 checkSystemStates(void)
 				}
 			}
 
+			break;
+		}
+		case SYSTEM_FAULT:
+		{
+			ioctl(EFPWMA, EFPWM_SET_OUTPUTS_DISABLE, EFPWM_SUB0_PWM_A|EFPWM_SUB0_PWM_B|EFPWM_SUB1_PWM_A|EFPWM_SUB1_PWM_B|EFPWM_SUB2_PWM_A|EFPWM_SUB2_PWM_B);
+			break;
+		}
+		case SYSTEM_RESET:
+		{
+			// Stop motor
+			StopMotor();
+			// Change state
+			SYSTEM.systemState = SYSTEM_WAKEUP;
 			break;
 		}
 		

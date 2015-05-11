@@ -19,8 +19,8 @@
 
 #define SENSORLESS_MIN_SPEED		FRAC16(0.005)	// When to calculate BEMF observer
 #define SENSORLESS_MAX_ERROR		FRAC16(0.0001)	// If error below this, we use observer result
-#define SENSORLESS_ALIGN_CURRENT	FRAC16(0.005)	// Rotor align current
-#define SENSORLESS_START_CURRENT	FRAC16(0.005)	// Rotor start current
+#define SENSORLESS_ALIGN_CURRENT	FRAC16(0.025)	// Rotor align current
+#define SENSORLESS_START_CURRENT	FRAC16(0.025)	// Rotor start current
 #define SENSORLESS_MAX_RAMP_INC		FRAC16(0.0004)	// Max speed for OL
 #define SENSORLESS_START_SPEED		FRAC16(0.1)
 #define SENSORLESS_START_TORQUE		FRAC16(0.005)
@@ -59,23 +59,29 @@
 
 
 // Flag definitions
-#define DRV8301_CONFIGURED 			flag0.BIT1
-#define SYSTEM_CALIBRATED			flag0.BIT2
-#define SYS_DEBUG_MODE				flag0.BIT3		// Enable/disable some stuff
-#define SYSTEM_TEST_BIT				flag0.BIT4
-#define SYSTEM_RUN_SENSORED			flag0.BIT5
-#define CONTROL_TORQUE				flag0.BIT6		// Control motor torque
-#define CONTROL_SPEED				flag0.BIT7		// Control motor speed
-#define CONTROL_MANUAL				flag0.BIT8		// Control Id manually
-#define SYSTEM_RUN_MANUAL			flag0.BIT9		// Manual angle increase - for calibration etc.
-#define SYSTEM_RUN_MANUAL_CW		flag0.BIT10		// Manual run - CW
-#define SYSTEM_RUN_MANUAL_CCW		flag0.BIT11		// Manual run - CCW
-#define SENSORLESS_RUN				flag0.BIT12		// Use sensorless
-#define SENSORLESS_ALIGN			flag0.BIT13		// Align rotor
-#define SENSORLESS_ROTATE			flag0.BIT14		// Blind rotate until we get some speed
-#define SENSORLESS_BEMF_ON			flag0.BIT15		// BEMF observer is running
-#define SYS_CAL_ZERO_CROSSED		flag0.BIT16
-#define SYS_CAL_GOTO_NEXT_POLE		flag0.BIT17
+#define DRV8301_CONFIGURED 			flag0.BIT0
+#define SYSTEM_CALIBRATED			flag0.BIT1
+#define SYS_DEBUG_MODE				flag0.BIT2		// Enable/disable some stuff
+#define SYSTEM_TEST_BIT				flag0.BIT3
+#define SYSTEM_RUN_SENSORED			flag0.BIT4
+#define CONTROL_TORQUE				flag0.BIT5		// Control motor torque
+#define CONTROL_SPEED				flag0.BIT6		// Control motor speed
+#define CONTROL_MANUAL				flag0.BIT7		// Control Id manually
+#define SYSTEM_RUN_MANUAL			flag0.BIT8		// Manual angle increase - for calibration etc.
+#define SYSTEM_RUN_MANUAL_CW		flag0.BIT9		// Manual run - CW
+#define SYSTEM_RUN_MANUAL_CCW		flag0.BIT10		// Manual run - CCW
+#define SENSORLESS_RUN				flag0.BIT11		// Use sensorless
+#define SENSORLESS_ALIGN			flag0.BIT12		// Align rotor
+#define SENSORLESS_ROTATE			flag0.BIT13		// Blind rotate until we get some speed
+#define SENSORLESS_BEMF_ON			flag0.BIT14		// BEMF observer is running
+#define SYS_CAL_ZERO_CROSSED		flag0.BIT15
+
+#define SYS_CAL_GOTO_NEXT_POLE		flag1.BIT0
+#define SYS_ZERO_CURRENT			flag1.BIT1
+#define PWM_ENABLED					flag1.BIT2		// Only do regulation when PWMs are enabled
+
+
+
 
 // Driver HW interface defs
 #define EN_GATE_ON					ioctl(GPIO_C, GPIO_SET_PIN, BIT_13)

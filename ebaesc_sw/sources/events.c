@@ -23,6 +23,14 @@ void ADC_1_EOS_ISR(void)
 	ioctl(ADC_1, ADC_CLEAR_STATUS_EOSI, NULL);
 	// Call freemaster recorder
 	FMSTR_Recorder();
+	// Calibration data readout
+	// Go through calibration data?
+	if(4096 > i16CurrentCalArrayIndex)
+	{
+		// First increase index, then store value
+		i16CurrentCalArrayIndex++;
+		f16CurrentCalArrayData = SYSTEM.CALIBRATION.f16CalibrationArray[i16CurrentCalArrayIndex];					
+	}	
 	
 	//******************************************
 	// Read data
@@ -30,6 +38,17 @@ void ADC_1_EOS_ISR(void)
 	// Phase currents
 	SYSTEM.ADC.m3IphUVW.f16A = ioctl(ADC_1, ADC_READ_SAMPLE, 0);
 	SYSTEM.ADC.m3IphUVW.f16C = ioctl(ADC_1, ADC_READ_SAMPLE, 8);
+	// Zero currents?
+	if(SYS_ZERO_CURRENT)
+	{
+		SYS_ZERO_CURRENT = 0;
+		SYSTEM.ADC.f16OffsetU = SYSTEM.ADC.m3IphUVW.f16A;
+		SYSTEM.ADC.f16OffsetW = SYSTEM.ADC.m3IphUVW.f16C;
+	}
+	
+	// Remove offsets
+	SYSTEM.ADC.m3IphUVW.f16A = SYSTEM.ADC.m3IphUVW.f16A - SYSTEM.ADC.f16OffsetU;
+	SYSTEM.ADC.m3IphUVW.f16C = SYSTEM.ADC.m3IphUVW.f16C - SYSTEM.ADC.f16OffsetW;
 	// Calculate third
 	SYSTEM.ADC.m3IphUVW.f16B = -SYSTEM.ADC.m3IphUVW.f16A - SYSTEM.ADC.m3IphUVW.f16C;
 	
@@ -464,44 +483,46 @@ void ADC_1_EOS_ISR(void)
 	//******************************************
 	// Regulation
 	//******************************************
-	
-	// First store current voltage values for next iteration
-	SYSTEM.MCTRL.m2UDQ_m.f16D = SYSTEM.MCTRL.m2UDQ.f16D;
-	SYSTEM.MCTRL.m2UDQ_m.f16Q = SYSTEM.MCTRL.m2UDQ.f16Q;
-	// Do PI regulation for D, Q current to get D, Q voltages
-	// Store result in systemVariables.MOTOR.mudtDQInv
-	// D
-	// Error calculation
-	mf16ErrorK = SYSTEM.REGULATORS.m2IDQReq.f16D - SYSTEM.MCTRL.m2IDQ.f16D;
-	// Controller calculation
-	SYSTEM.MCTRL.m2UDQ.f16D = GFLIB_ControllerPIp(mf16ErrorK, &SYSTEM.REGULATORS.mudtControllerParamId, &SYSTEM.REGULATORS.i16SatFlagD);
-	// Q
-	// Calculate error
-	mf16ErrorK = SYSTEM.REGULATORS.m2IDQReq.f16Q - SYSTEM.MCTRL.m2IDQ.f16Q;
-	/*
-	 * TODO: Limit voltages to available 
-	 */  
-	// Controller calculation
-	SYSTEM.MCTRL.m2UDQ.f16Q = GFLIB_ControllerPIp(mf16ErrorK, &SYSTEM.REGULATORS.mudtControllerParamIq, &SYSTEM.REGULATORS.i16SatFlagQ);
-	
-	//******************************************
-	// Transformation to stationary frame, SVM, PWM
-	//******************************************
-	// We have Ud, Uq
-	// Do inverse park
-	MCLIB_ParkTrfInv(&SYSTEM.MCTRL.m2UAlphaBeta, &SYSTEM.MCTRL.m2UDQ, &SYSTEM.POSITION.mSinCosAngle);
-	// Eliminate DC bus ripple
-	//MCLIB_ElimDcBusRip(systemVariables.MOTOR.f16InvModeIndex, systemVariables.MOTOR.f16DCBusVoltage, &systemVariables.MOTOR.m2UAlphaBeta, &systemVariables.MOTOR.m2UAlphaBetaRippleElim);
-	// Do SVM
-	SYSTEM.MCTRL.SVMVoltageSector = MCLIB_SvmStd(&SYSTEM.MCTRL.m2UAlphaBeta, &SYSTEM.MCTRL.m3U_UVW);
-	// Store PWMs
-	SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = SYSTEM.MCTRL.m3U_UVW.f16A;
-	SYSTEM.PWMValues.pwmSub_1_Channel_23_Value = SYSTEM.MCTRL.m3U_UVW.f16B;
-	SYSTEM.PWMValues.pwmSub_2_Channel_23_Value = SYSTEM.MCTRL.m3U_UVW.f16C;
-	
-	// Load new PWM values	
-	//ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);
-
+	// Do only when PWM is enabled
+	if(PWM_ENABLED)
+	{
+		// First store current voltage values for next iteration
+		SYSTEM.MCTRL.m2UDQ_m.f16D = SYSTEM.MCTRL.m2UDQ.f16D;
+		SYSTEM.MCTRL.m2UDQ_m.f16Q = SYSTEM.MCTRL.m2UDQ.f16Q;
+		// Do PI regulation for D, Q current to get D, Q voltages
+		// Store result in systemVariables.MOTOR.mudtDQInv
+		// D
+		// Error calculation
+		mf16ErrorK = SYSTEM.REGULATORS.m2IDQReq.f16D - SYSTEM.MCTRL.m2IDQ.f16D;
+		// Controller calculation
+		SYSTEM.MCTRL.m2UDQ.f16D = GFLIB_ControllerPIp(mf16ErrorK, &SYSTEM.REGULATORS.mudtControllerParamId, &SYSTEM.REGULATORS.i16SatFlagD);
+		// Q
+		// Calculate error
+		mf16ErrorK = SYSTEM.REGULATORS.m2IDQReq.f16Q - SYSTEM.MCTRL.m2IDQ.f16Q;
+		/*
+		 * TODO: Limit voltages to available 
+		 */  
+		// Controller calculation
+		SYSTEM.MCTRL.m2UDQ.f16Q = GFLIB_ControllerPIp(mf16ErrorK, &SYSTEM.REGULATORS.mudtControllerParamIq, &SYSTEM.REGULATORS.i16SatFlagQ);
+		
+		//******************************************
+		// Transformation to stationary frame, SVM, PWM
+		//******************************************
+		// We have Ud, Uq
+		// Do inverse park
+		MCLIB_ParkTrfInv(&SYSTEM.MCTRL.m2UAlphaBeta, &SYSTEM.MCTRL.m2UDQ, &SYSTEM.POSITION.mSinCosAngle);
+		// Eliminate DC bus ripple
+		//MCLIB_ElimDcBusRip(systemVariables.MOTOR.f16InvModeIndex, systemVariables.MOTOR.f16DCBusVoltage, &systemVariables.MOTOR.m2UAlphaBeta, &systemVariables.MOTOR.m2UAlphaBetaRippleElim);
+		// Do SVM
+		SYSTEM.MCTRL.SVMVoltageSector = MCLIB_SvmStd(&SYSTEM.MCTRL.m2UAlphaBeta, &SYSTEM.MCTRL.m3U_UVW);
+		// Store PWMs
+		SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = SYSTEM.MCTRL.m3U_UVW.f16A;
+		SYSTEM.PWMValues.pwmSub_1_Channel_23_Value = SYSTEM.MCTRL.m3U_UVW.f16B;
+		SYSTEM.PWMValues.pwmSub_2_Channel_23_Value = SYSTEM.MCTRL.m3U_UVW.f16C;
+		
+		// Load new PWM values	
+		ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);		
+	}
 }
 
 #pragma interrupt saveall
