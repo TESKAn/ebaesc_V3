@@ -577,7 +577,7 @@ Int16 checkSystemStates(void)
 							// Add difference
 							if(0 == i16Temp1)
 							{
-								SYSTEM.CALIBRATION.f16CalibrationArray[i16Temp1] = SYSTEM.CALIBRATION.f16CalibrationArray[1023] + f16Temp0;
+								SYSTEM.CALIBRATION.f16CalibrationArray[i16Temp1] = SYSTEM.CALIBRATION.f16CalibrationArray[4095] + f16Temp0;
 							}
 							else
 							{
@@ -589,18 +589,21 @@ Int16 checkSystemStates(void)
 					//i16MaxSensorIndex
 					//i16MinSensorIndex
 					// Store index for zero angle
-					i16Temp1 = SYSTEM.CALIBRATION.i16PolePairArray[SYSTEM.CALIBRATION.i16MotorPolePairs - 1];
+					i16Temp1 = SYSTEM.CALIBRATION.i16MaxSensorIndex - SYSTEM.CALIBRATION.i16PolePairArray[SYSTEM.CALIBRATION.i16MotorPolePairs - 1];
 					// Get increment
-					i16Temp2 = 4096 - i16Temp1 + SYSTEM.CALIBRATION.i16PolePairArray[0] - (4096 - SYSTEM.CALIBRATION.i16MaxSensorIndex) - SYSTEM.CALIBRATION.i16MinSensorIndex;
+					i16Temp2 = SYSTEM.CALIBRATION.i16PolePairArray[0] - SYSTEM.CALIBRATION.i16MinSensorIndex;
+					i16Temp2 = i16Temp2 + i16Temp1;
 					// f16Temp0 stores angle delta in current pole
 					i32Temp0 = 65536 / i16Temp2;
 					f16Temp0 = (Frac16)i32Temp0;
+					// Set first index
+					i16Temp1 = SYSTEM.CALIBRATION.i16PolePairArray[SYSTEM.CALIBRATION.i16MotorPolePairs - 1];
 					// Set first value
 					SYSTEM.CALIBRATION.f16CalibrationArray[i16Temp1] = FRAC16(-1.0);
 					// Fill until last
 					for(i16Temp0 = i16Temp1 + 1; i16Temp0 < SYSTEM.CALIBRATION.i16MaxSensorIndex; i16Temp0 ++)	
 					{
-						SYSTEM.CALIBRATION.f16CalibrationArray[i16Temp0] = SYSTEM.CALIBRATION.f16CalibrationArray[i16Temp0] + f16Temp0;
+						SYSTEM.CALIBRATION.f16CalibrationArray[i16Temp0] = SYSTEM.CALIBRATION.f16CalibrationArray[i16Temp0 - 1] + f16Temp0;
 					}
 					// Fill until last					
 					for(i16Temp0 = SYSTEM.CALIBRATION.i16MaxSensorIndex; i16Temp0 < 4096; i16Temp0 ++)	
@@ -619,9 +622,14 @@ Int16 checkSystemStates(void)
 					for(i16Temp0 = SYSTEM.CALIBRATION.i16MinSensorIndex; i16Temp0 < SYSTEM.CALIBRATION.i16PolePairArray[0]; i16Temp0 ++)	
 					{
 						SYSTEM.CALIBRATION.f16CalibrationArray[i16Temp0] = SYSTEM.CALIBRATION.f16CalibrationArray[i16Temp0 - 1] + f16Temp0;
-					}								
+					}		
+					// Set last value
+					SYSTEM.CALIBRATION.f16CalibrationArray[SYSTEM.CALIBRATION.i16PolePairArray[0]] = FRAC16(1.0);
+					
 					SYSTEM.CALIBRATION.i16CalibrationState = CALIBRATE_INIT;
 					SYSTEM.systemState = SYSTEM_RESET;
+					SYSTEM.i16StateTransition = SYSTEM_WAKEUP;
+					
 					SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.0);
 					SYSTEM.REGULATORS.m2IDQReq.f16Q = FRAC16(0.0);
 					SYSTEM_CALIBRATED = 1;

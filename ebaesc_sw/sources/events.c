@@ -97,11 +97,11 @@ void ADC_1_EOS_ISR(void)
      */
 	SYSTEM.POSITION.i16SensorIndex = SYSTEM.POSITION.i16SensorIndex & 4095;
 	// Get measured angle from previous iteration
-	f16Temp = SYSTEM.CALIBRATION.f16CalibrationArray[SYSTEM.POSITION.i16SensorIndex_m];
+	SYSTEM.POSITION.f16MeasuredRotorAngle = SYSTEM.CALIBRATION.f16CalibrationArray[SYSTEM.POSITION.i16SensorIndex];
 	// Calculate phase error
 	// SYSTEM.POSITION.f16RotorAngle = calculated angle from previous iteration
 	// f16Temp = measured angle from previous iteration
-	SYSTEM.POSITION.f16AnglePhaseError = f16Temp - SYSTEM.POSITION.f16RotorAngle; 
+	SYSTEM.POSITION.f16AnglePhaseError = SYSTEM.POSITION.f16MeasuredRotorAngle - SYSTEM.POSITION.f16RotorAngle; 
 	// Store to previous angle
 	SYSTEM.POSITION.f16RotorAngle_m = SYSTEM.POSITION.f16RotorAngle;
 	

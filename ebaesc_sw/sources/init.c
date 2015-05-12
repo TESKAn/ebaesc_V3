@@ -18,14 +18,16 @@ void InitSysVars(Int16 initial)
 	if(0 != initial)
 	{
 		SYSTEM.CALIBRATION.i16MotorPolePairs = 7;
-		SYSTEM.CALIBRATION.i16PolePairArray[0] = 134;
-		SYSTEM.CALIBRATION.i16PolePairArray[1] = 277;
-		SYSTEM.CALIBRATION.i16PolePairArray[2] = 421;
-		SYSTEM.CALIBRATION.i16PolePairArray[3] = 565;
-		SYSTEM.CALIBRATION.i16PolePairArray[4] = 708;
-		SYSTEM.CALIBRATION.i16PolePairArray[5] = 853;
-		SYSTEM.CALIBRATION.i16PolePairArray[6] = 998;
-		SYSTEM.CALIBRATION.i16PolePairArray[7] = 134;
+		SYSTEM.CALIBRATION.i16PolePairArray[0] = 568;
+		SYSTEM.CALIBRATION.i16PolePairArray[1] = 1037;
+		SYSTEM.CALIBRATION.i16PolePairArray[2] = 1508;
+		SYSTEM.CALIBRATION.i16PolePairArray[3] = 1976;
+		SYSTEM.CALIBRATION.i16PolePairArray[4] = 2443;
+		SYSTEM.CALIBRATION.i16PolePairArray[5] = 2918;
+		SYSTEM.CALIBRATION.i16PolePairArray[6] = 3384;
+		SYSTEM.CALIBRATION.i16PolePairArray[7] = 568;
+		SYSTEM.CALIBRATION.i16MaxSensorIndex = 3709;
+		SYSTEM.CALIBRATION.i16MinSensorIndex = 425;
 		SYSTEM.CALIBRATION.i16CalibrationState = CALIBRATE_INIT;
 	}
 
@@ -280,13 +282,12 @@ void InitSysVars(Int16 initial)
 		SYSTEM.i16StateTransition = SYSTEM_IDLE;
 		
 		// If there is calibration data
-		/*
 		if(0 != SYSTEM.CALIBRATION.i16PolePairArray[0])
 		{
 			// Calculate calibration values
 			CalculateCalibrationData();	
 			// Mark calibrated
 			SYSTEM_CALIBRATED = 1;	
-		}		*/
+		}
 	}	
 }
