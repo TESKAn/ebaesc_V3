@@ -101,7 +101,7 @@ void ADC_1_EOS_ISR(void)
 	// Calculate phase error
 	// SYSTEM.POSITION.f16RotorAngle = calculated angle from previous iteration
 	// f16Temp = measured angle from previous iteration
-	SYSTEM.POSITION.f16AnglePhaseError = SYSTEM.POSITION.f16MeasuredRotorAngle - SYSTEM.POSITION.f16RotorAngle; 
+	SYSTEM.POSITION.f16MeasuredAngleError = SYSTEM.POSITION.f16MeasuredRotorAngle - SYSTEM.POSITION.f16RotorAngle; 
 	// Store to previous angle
 	SYSTEM.POSITION.f16RotorAngle_m = SYSTEM.POSITION.f16RotorAngle;
 	
@@ -317,18 +317,20 @@ void ADC_1_EOS_ISR(void)
 				// Sensor calibrated and use sensor
 				i16Temp ++;
 				// SYSTEM.POSITION.f16AnglePhaseError holds sensor error
-				mf16ErrorK += SYSTEM.POSITION.f16AnglePhaseError;
+				mf16ErrorK += SYSTEM.POSITION.f16MeasuredAngleError;
 			}
 			if(SENSORLESS_BEMF_ON)
 			{
 				// We have good BEMF signal, use it
 				i16Temp ++;
+				i16Temp ++;
+				mf16ErrorK += SYSTEM.POSITION.acBemfObsrvDQ.f16Error;
 				mf16ErrorK += SYSTEM.POSITION.acBemfObsrvDQ.f16Error;
 			}
 			// Divide by 2?
 			if(1 < i16Temp)
 			{
-				mf16ErrorK = mult(mf16ErrorK, FRAC16(0.5));
+				mf16ErrorK = mult(mf16ErrorK, FRAC16(0.33));
 			}
 			
 			SYSTEM.POSITION.f16AnglePhaseError = mf16ErrorK;

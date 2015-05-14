@@ -107,6 +107,8 @@ typedef struct tagSYSVARS
 		Frac16 f16MeasuredRotorAngle;
 		// Phase error from observer
 		Frac16 f16ObserverAngleError;
+		// Phase error from measurement
+		Frac16 f16MeasuredAngleError;
 		// Phase error
 		Frac16 f16AnglePhaseError;
 		// Kp, Ki - AcToPos
