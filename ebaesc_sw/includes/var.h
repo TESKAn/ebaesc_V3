@@ -208,6 +208,17 @@ typedef struct tagSYSVARS
 		Frac16 f16SensorValueBFiltered;
 	}ADC;
 	
+	// Input capture PWM values
+	struct tagINPUTCAPTURE
+	{
+		Int16 Val0;
+		Int16 Val1;
+		Int16 Val2;
+		Int16 Val3;
+		Int16 Val4;
+		Int16 Val5;
+	}INPUTCAPTURE;
+	
 	// Regulators
 	struct tagREGULATOR
 	{

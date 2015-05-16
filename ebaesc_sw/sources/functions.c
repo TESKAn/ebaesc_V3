@@ -215,7 +215,7 @@ Int16 CalculateShiftGain(float K)
 // Function calculates frac factors from float values
 void calculateFactors(void)
 {
-	/*
+	
 	// Id regulator
 	// D regulator proportional term
 	CalculateShiftGain(SYSTEM.REGULATORS.Kpd);
@@ -255,13 +255,13 @@ void calculateFactors(void)
 	CalculateShiftGain(SYSTEM.POSITION.Kiactopos);
 	SYSTEM.POSITION.acToPos.f16IntegGain = pConv.gain;
 	SYSTEM.POSITION.acToPos.i16IntegGainShift = pConv.shift;
-	*/
+	
 }
 
 // Function calculates float values from frac factors
 void calculateFloats(void)
 {
-	/*
+	
 	// Calculate regulator gains
 	// Kpd
 	pConv.gain = SYSTEM.REGULATORS.mudtControllerParamId.f16PropGain;
@@ -307,7 +307,7 @@ void calculateFloats(void)
 	pConv.shift = SYSTEM.POSITION.acToPos.i16IntegGainShift;
 	CalculateFloat();
 	SYSTEM.POSITION.Kiactopos = pConv.value;
-	*/
+	
 }
 
 // Stop motor - set all variables to required value

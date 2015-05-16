@@ -79,7 +79,7 @@
 #define SYS_CAL_GOTO_NEXT_POLE		flag1.BIT0
 #define SYS_ZERO_CURRENT			flag1.BIT1
 #define PWM_ENABLED					flag1.BIT2		// Only do regulation when PWMs are enabled
-
+#define SYSTEM_RECALCULATE_FACTORS	flag1.BIT3		// Recalculate gain, shift factors from float values
 
 
 

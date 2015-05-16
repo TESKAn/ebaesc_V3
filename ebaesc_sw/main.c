@@ -87,7 +87,10 @@ void main (void)
     InitSysVars(1);
     
     // Calculate float values from parameters 
-    calculateFactors();
+    calculateFloats();
+    
+    // Set current offsets
+    SYS_ZERO_CURRENT = 1;
     
     
     // Initialize MOSFET driver
@@ -115,17 +118,13 @@ void main (void)
     	if(SYSTEM_TEST_BIT)
     	{
     		SYSTEM_TEST_BIT = 0;
-    		/*
-			// Set PWM values
-			SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = FRAC16(-0.1);
-			SYSTEM.PWMValues.pwmSub_1_Channel_23_Value = FRAC16(0.5);
-			SYSTEM.PWMValues.pwmSub_2_Channel_23_Value = FRAC16(0.8);
-			ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);
-			*/
-    		/*
-    		// Enable PWM outputs
-    		ioctl(EFPWMA, EFPWM_SET_OUTPUTS_ENABLE, EFPWM_SUB0_PWM_A|EFPWM_SUB0_PWM_B|EFPWM_SUB1_PWM_A|EFPWM_SUB1_PWM_B|EFPWM_SUB2_PWM_A|EFPWM_SUB2_PWM_B);
-    		*/
+    	}
+    	
+    	// Recalculate factors?
+    	if(SYSTEM_RECALCULATE_FACTORS)
+    	{
+    		SYSTEM_RECALCULATE_FACTORS = 0;
+    		calculateFactors();
     	}
     	
 
