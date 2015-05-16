@@ -121,7 +121,7 @@
 #define TO_SPEED_IIR_A1 				FRAC16(0.014215681036) 
 
 //Open loop start-up                    
-#define OL_START_RAMP_INC 				FRAC32(0.000045454545)  
+#define OL_START_RAMP_INC 				FRAC16(0.000145454545)  
 #define OL_START_I 						FRAC16(0.015169902913)  
 #define MERG_SPEED_TRH 					FRAC16(0.008333333333)  
 #define MERG_COEFF 						FRAC16(0.007324218750)  

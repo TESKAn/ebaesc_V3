@@ -17,19 +17,19 @@
 
 #define TORQUE_FACTOR				FRAC16(1.0)
 
-#define SENSORLESS_MIN_SPEED		FRAC16(0.005)	// When to calculate BEMF observer
+#define SENSORLESS_MIN_SPEED		FRAC16(0.003)	// When to calculate BEMF observer
 #define SENSORLESS_MAX_ERROR		FRAC16(0.005)	// If error below this, we use observer result
 #define SENSORLESS_ALIGN_CURRENT	FRAC16(0.025)	// Rotor align current
 #define SENSORLESS_START_CURRENT	FRAC16(0.025)	// Rotor start current
-#define SENSORLESS_MAX_RAMP_INC		FRAC16(0.002)	// Max speed for OL
+#define SENSORLESS_MAX_RAMP_INC		FRAC16(0.004)	// Max speed for OL
 #define SENSORLESS_START_SPEED		FRAC16(0.1)
 #define SENSORLESS_START_TORQUE		FRAC16(0.005)
 #define OL_I_RAMP_UP                FRAC16(0.0001)	//FRAC16(0.000056818182)
 #define OL_I_RAMP_DOWN              FRAC16(0.0001)	//FRAC16(0.000056818182)
-#define OL_ANGLE_TO_SPEED			FRAC16(0.9)
+#define OL_ANGLE_TO_SPEED			FRAC16(0.5)
 #define OL_ALIGN_TIME				2000			// Time in ms for aligning
-#define OL_MERGE_SPEED_DIFFERENCE	FRAC16(0.00166)
-#define OL_MERGE_SPEED_COUNT		20
+#define OL_MERGE_SPEED_DIFFERENCE	FRAC16(0.01)
+#define OL_MERGE_SPEED_COUNT		100
 
 // Position sources states
 #define POSITION_SOURCE_NONE					0

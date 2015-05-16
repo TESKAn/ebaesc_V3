@@ -152,6 +152,10 @@ typedef struct tagSYSVARS
 		Frac16 f16StartSpeed;
 		// Torque regulator start torque
 		Frac16 f16StartTorque;
+		// Difference between forced and observer speed
+		Frac16 f16SpeedDifference;
+		// Merge value - add this to observed angle until it reaches 0
+		Frac16 f16MergeAngleOffset;
 		
 		// Merge
 	}SENSORLESS;

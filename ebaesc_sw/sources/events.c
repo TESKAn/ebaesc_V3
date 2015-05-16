@@ -217,6 +217,8 @@ void ADC_1_EOS_ISR(void)
 				// Go to rotate
 				SYSTEM.REGULATORS.m2IDQReq.f16Q = SYSTEM.REGULATORS.m2IDQReq.f16D;
 				SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.0);		
+				// Set open loop ramp
+				SYSTEM.RAMPS.f16OLSpeedRampActualValue = FRAC16(0.0);
 				SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_SENSORLESS_ROTATE;
 				SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_SENSORLESS_ROTATE;
 			}
@@ -225,17 +227,15 @@ void ADC_1_EOS_ISR(void)
 		case POSITION_SOURCE_SENSORLESS_ROTATE:
 		{
 			// Manual angle increase for open loop startup
+			SYSTEM.POSITION.f16RotorAngle += SYSTEM.RAMPS.f16OLSpeedRampActualValue;
+			// Multiply angle increase with some factor to get speed
+			SYSTEM.POSITION.f16Speed = SYSTEM.RAMPS.f16OLSpeedRampActualValue;
+			// Filter speed
+			SYSTEM.POSITION.f16SpeedFiltered = GDFLIB_FilterMA32(SYSTEM.POSITION.f16Speed, &SYSTEM.POSITION.FilterMA32Speed);
 			if(SYSTEM.RAMPS.f16OLSpeedRampDesiredValue != SYSTEM.RAMPS.f16OLSpeedRampActualValue)
 			{
 				SYSTEM.RAMPS.f16OLSpeedRampActualValue = GFLIB_Ramp16(SYSTEM.RAMPS.f16OLSpeedRampDesiredValue, SYSTEM.RAMPS.f16OLSpeedRampActualValue, &SYSTEM.RAMPS.Ramp16_OLSpeedStartup);
-			}	
-			
-			SYSTEM.POSITION.f16RotorAngle += SYSTEM.RAMPS.f16OLSpeedRampActualValue; 
-			// Multiply angle increase with some factor to get speed
-			SYSTEM.POSITION.f16Speed = mult(SYSTEM.SENSORLESS.f16AngleIncreaseToSpeed, SYSTEM.RAMPS.f16OLSpeedRampActualValue);
-			// Filter speed
-			SYSTEM.POSITION.f16SpeedFiltered = GDFLIB_FilterMA32(SYSTEM.POSITION.f16Speed, &SYSTEM.POSITION.FilterMA32Speed);
-			
+			}			
 			// If BEMF calculating
 			if(SENSORLESS_BEMF_ON)
 			{
@@ -243,15 +243,16 @@ void ADC_1_EOS_ISR(void)
 				SYSTEM.POSITION.f16RotorAngle_OL = ACLIB_TrackObsrv(SYSTEM.POSITION.acBemfObsrvDQ.f16Error, &SYSTEM.POSITION.acToPos);
 				
 				// Check tracking observer and forced speed
-				f16Temp = abs_s(SYSTEM.POSITION.f16SpeedFiltered);
-				f16Temp1 = abs_s(extract_h(SYSTEM.POSITION.acToPos.f32Speed));
+				f16Temp = SYSTEM.POSITION.f16SpeedFiltered;
+				f16Temp1 = extract_h(SYSTEM.POSITION.acToPos.f32Speed);
 				f16Temp = f16Temp - f16Temp1;
-				f16Temp = abs_s(f16Temp);
-				if(SYSTEM.SENSORLESS.f16MergeSpeedDifference > f16Temp)
+				SYSTEM.SENSORLESS.f16SpeedDifference = abs_s(f16Temp);
+				if(SYSTEM.SENSORLESS.f16MergeSpeedDifference > SYSTEM.SENSORLESS.f16SpeedDifference)
 				{
 					SYSTEM.SENSORLESS.i16MergeDifferenceCount++;
 					if(SYSTEM.SENSORLESS.i16MergeDifferenceCount > SYSTEM.SENSORLESS.i16MergeDifferenceCountThreshold)
 					{
+						SYSTEM.SENSORLESS.f16MergeAngleOffset = SYSTEM.POSITION.f16RotorAngle - SYSTEM.POSITION.f16RotorAngle_OL;
 						SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_SENSORLESS_MERGE;
 					}
 				}
@@ -261,21 +262,20 @@ void ADC_1_EOS_ISR(void)
 		case POSITION_SOURCE_SENSORLESS_MERGE:
 		{
 			// Keep updating forced angle
-			SYSTEM.POSITION.f16RotorAngle += SYSTEM.RAMPS.f16OLSpeedRampActualValue;
+			//SYSTEM.POSITION.f16RotorAngle += SYSTEM.RAMPS.f16OLSpeedRampActualValue;
 			// Calculate tracking observer with observer error
-			SYSTEM.POSITION.f16RotorAngle_OL = ACLIB_TrackObsrv(SYSTEM.POSITION.acBemfObsrvDQ.f16Error, &SYSTEM.POSITION.acToPos);
-			// Store & filter speed from tracking observer
-			SYSTEM.POSITION.f16Speed = extract_h(SYSTEM.POSITION.acToPos.f32Speed);
-			SYSTEM.POSITION.f16SpeedFiltered = GDFLIB_FilterMA32(SYSTEM.POSITION.f16Speed, &SYSTEM.POSITION.FilterMA32Speed);
+			SYSTEM.POSITION.f16RotorAngle = ACLIB_TrackObsrv(SYSTEM.POSITION.acBemfObsrvDQ.f16Error, &SYSTEM.POSITION.acToPos);
+			
+			SYSTEM.POSITION.f16RotorAngle += SYSTEM.SENSORLESS.f16MergeAngleOffset;
 			
 			// Merge forced angle to observer angle
-			if(SYSTEM.POSITION.f16RotorAngle_OL > SYSTEM.POSITION.f16RotorAngle)
+			if(0 < SYSTEM.SENSORLESS.f16MergeAngleOffset)
 			{
-				SYSTEM.POSITION.f16RotorAngle++;
+				SYSTEM.SENSORLESS.f16MergeAngleOffset --;
 			}
-			else if(SYSTEM.POSITION.f16RotorAngle_OL < SYSTEM.POSITION.f16RotorAngle)
+			else if(0 > SYSTEM.SENSORLESS.f16MergeAngleOffset)
 			{
-				SYSTEM.POSITION.f16RotorAngle--;
+				SYSTEM.SENSORLESS.f16MergeAngleOffset ++;
 			}
 			else
 			{
@@ -286,6 +286,7 @@ void ADC_1_EOS_ISR(void)
 				{
 					SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_CONTROL_SPEED;
 					// Set default values
+					SYSTEM.REGULATORS.ui16SpeedRegCounter = 0;
 					SYSTEM.RAMPS.f16SpeedRampDesiredValue = SYSTEM.SENSORLESS.f16StartSpeed;
 					SYSTEM.RAMPS.f16SpeedRampActualValue = SYSTEM.POSITION.f16Speed;
 				}
@@ -303,6 +304,10 @@ void ADC_1_EOS_ISR(void)
 					SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_NONE;
 				}
 			}
+			// Store & filter speed from tracking observer
+			SYSTEM.POSITION.f16Speed = extract_h(SYSTEM.POSITION.acToPos.f32Speed);
+			SYSTEM.POSITION.f16SpeedFiltered = GDFLIB_FilterMA32(SYSTEM.POSITION.f16Speed, &SYSTEM.POSITION.FilterMA32Speed);
+			
 			break;
 		}
 		case POSITION_SOURCE_MULTIPLE:
@@ -323,14 +328,12 @@ void ADC_1_EOS_ISR(void)
 			{
 				// We have good BEMF signal, use it
 				i16Temp ++;
-				i16Temp ++;
-				mf16ErrorK += SYSTEM.POSITION.acBemfObsrvDQ.f16Error;
 				mf16ErrorK += SYSTEM.POSITION.acBemfObsrvDQ.f16Error;
 			}
 			// Divide by 2?
 			if(1 < i16Temp)
 			{
-				mf16ErrorK = mult(mf16ErrorK, FRAC16(0.33));
+				mf16ErrorK = mult(mf16ErrorK, FRAC16(0.5));
 			}
 			
 			SYSTEM.POSITION.f16AnglePhaseError = mf16ErrorK;

@@ -229,6 +229,8 @@ Int16 checkSystemStates(void)
 						SYSTEM.SENSORLESS.i16Counter = SYSTEM.SENSORLESS.i16AlignTime;
 						// Mark no BEMF
 						SENSORLESS_BEMF_ON = 0;
+						// Reset merge count
+						SYSTEM.SENSORLESS.i16MergeDifferenceCount = 0;
 						// Go to run
 						SYSTEM.systemState = SYSTEM_RUN;
 						// Enable regulators
