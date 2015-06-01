@@ -55,6 +55,7 @@ void main (void)
     ioctl(ADC_1, ADC_INIT, null);
     ioctl(PIT_0, PIT_INIT, NULL);
     ioctl(SPI_0, SPI_INIT, NULL);
+    ioctl(SCI_0, SCI_INIT, NULL);
     ioctl(SCI_1, SCI_INIT, NULL);
     ioctl(QTIMER_B3, QT_INIT, NULL);
     
@@ -69,6 +70,9 @@ void main (void)
      * TODO: perform additional initialisations here 
      *
      */
+    
+    // RS485 communication setup
+    RS485_initData();
 
     
     // Set all flag values to initial value

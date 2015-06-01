@@ -571,6 +571,24 @@ void SPI_0_RX_FULL_ISR(void)
 	
 }
 
+// RS485 interrupts
+#pragma interrupt saveall
+void RX0_Full_ISR(void)
+{
+	unsigned int data;
+
+	data = ioctl(SCI_0, SCI_GET_STATUS_REG, NULL);		// Clear RDRF flag
+	data = ioctl(SCI_0, SCI_READ_DATA, NULL);			// Read data
+	// Call state machine
+	RS485_States_slave((UInt8)data);
+}
+
+#pragma interrupt saveall
+void TX0_Empty_ISR(void)
+{
+	RS485_writeByte();
+}
+
 #pragma interrupt saveall
 void PIT_0_ISR(void)
 {

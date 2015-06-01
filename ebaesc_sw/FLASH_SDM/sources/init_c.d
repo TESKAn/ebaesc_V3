@@ -111,4 +111,5 @@ sources/init_c.obj: C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\sources\init.c \
 	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\includes\functions.h \
 	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\includes\events.h \
 	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\includes\init.h \
-	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\includes\systemStates.h 
+	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\includes\systemStates.h \
+	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\includes\RS485comm.h 

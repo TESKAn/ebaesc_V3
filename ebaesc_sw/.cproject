@@ -46,7 +46,59 @@
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_MLIB/56800Ex_MLIB.lib}&quot;"/>
 								</option>
 								<option id="com.freescale.dsc.cdt.toolchain.linker.output.generateSRecord.1020752415" name="Generate S-Record File" superClass="com.freescale.dsc.cdt.toolchain.linker.output.generateSRecord" value="true" valueType="boolean"/>
-								<option id="com.freescale.dsc.cdt.toolchain.linker.output.maxRecordLength.167952771" name="Max S-Record Length" superClass="com.freescale.dsc.cdt.toolchain.linker.output.maxRecordLength" value="128" valueType="string"/>
+								<option id="com.freescale.dsc.cdt.toolchain.linker.input.linkorder.802220652" name="Link Order" superClass="com.freescale.dsc.cdt.toolchain.linker.input.linkorder" valueType="stringList">
+									<listOptionValue builtIn="false" value="SystemConfig/appconfig.c"/>
+									<listOptionValue builtIn="false" value="SystemConfig/startup.c"/>
+									<listOptionValue builtIn="false" value="SystemConfig/vectors.c"/>
+									<listOptionValue builtIn="false" value="main.c"/>
+									<listOptionValue builtIn="false" value="sources/drv8301.c"/>
+									<listOptionValue builtIn="false" value="sources/events.c"/>
+									<listOptionValue builtIn="false" value="sources/functions.c"/>
+									<listOptionValue builtIn="false" value="sources/init.c"/>
+									<listOptionValue builtIn="false" value="sources/systemStates.c"/>
+									<listOptionValue builtIn="false" value="sources/var.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/adc12.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/aoi.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/cop.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/crc.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/dac.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/dma.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/fcan.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/fmc.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/ftfl.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/gpio.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/hscmp.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/iic.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/intc.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/mcm.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/occs.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/pdb.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/pit.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/pmc.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/pwm.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/qtimer.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/sci.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/scibf.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/scibl.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/spi.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/spibl.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/sys.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/xbar.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/system/arch.c"/>
+									<listOptionValue builtIn="false" value="src/support/freemaster/freemaster_56F8xxx.c"/>
+									<listOptionValue builtIn="false" value="src/support/freemaster/freemaster_appcmd.c"/>
+									<listOptionValue builtIn="false" value="src/support/freemaster/freemaster_can.c"/>
+									<listOptionValue builtIn="false" value="src/support/freemaster/freemaster_fastrec.c"/>
+									<listOptionValue builtIn="false" value="src/support/freemaster/freemaster_protocol.c"/>
+									<listOptionValue builtIn="false" value="src/support/freemaster/freemaster_rec.c"/>
+									<listOptionValue builtIn="false" value="src/support/freemaster/freemaster_scope.c"/>
+									<listOptionValue builtIn="false" value="src/support/freemaster/freemaster_serial.c"/>
+									<listOptionValue builtIn="false" value="src/support/freemaster/freemaster_sfio.c"/>
+									<listOptionValue builtIn="false" value="src/support/freemaster/freemaster_tsa.c"/>
+									<listOptionValue builtIn="false" value="RS485comm_HAL.c"/>
+									<listOptionValue builtIn="false" value="sources/RS485comm.c"/>
+								</option>
+								<option id="com.freescale.dsc.cdt.toolchain.linker.output.maxRecordLength.252632363" name="Max S-Record Length" superClass="com.freescale.dsc.cdt.toolchain.linker.output.maxRecordLength" value="128" valueType="string"/>
 								<inputType id="com.freescale.dsc.cdt.toolchain.linker.inputType.111688189" name="DSC Linker Input" superClass="com.freescale.dsc.cdt.toolchain.linker.inputType">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>

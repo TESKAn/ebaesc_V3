@@ -1,10 +1,10 @@
-sources/var_c.obj: C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\sources\var.c \
+sources/RS485comm_c.obj: C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\sources\RS485comm.c \
 	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\SystemConfig\Internal_pFlash_SDM.prefix \
 	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\SystemConfig\Internal_PFlash_SDM.cmd \
 	C:\Freescale\DSC56800EX_Quick_Start_r2.6\src\include\version.h \
 	C:\Freescale\DSC56800EX_Quick_Start_r2.6\src\include\hawkcpu.h \
 	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\ApplicationConfig\appconfig.h \
-	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\includes\allincludes.h \
+	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\includes\Allincludes.h \
 	C:\Freescale\DSC56800EX_Quick_Start_r2.6\src\include\qs.h \
 	C:\Freescale\DSC56800EX_Quick_Start_r2.6\src\include\types.h \
 	C:\Freescale\DSC56800EX_Quick_Start_r2.6\src\MC56F84763\system\arch.h \
