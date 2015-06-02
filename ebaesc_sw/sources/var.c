@@ -20,7 +20,7 @@ SYSTEMVARIABLES SYSTEM;
 // Variable for MOSFET driver
 DRV8301DATA DRV8301;
 
-
+UInt8 ui8SerialBuffer[16];
 
 PARAMCONVERSION pConv;
 

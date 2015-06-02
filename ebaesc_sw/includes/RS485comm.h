@@ -9,7 +9,7 @@
 #define RS485COMM_H_
 
 // This unit ID
-#define RS485_ID		0x01
+#define RS485_ID		0x03
 
 // Master mode macros
 // Define number of slave devices
@@ -34,8 +34,10 @@ UInt16 RS485_decodeMessage(void);
 #define RS485_ENABLE_TX_IDLE_INT			ioctl(SCI_0, SCI_TX_IDLE_INT, SCI_ENABLE)
 #define RS485_DISABLE_TX_IDLE_INT			ioctl(SCI_0, SCI_TX_IDLE_INT, SCI_DISABLE)
 #define RS485_WRITE(X)						ioctl(SCI_0, SCI_WRITE_DATA, X)
+#define RS485_READ							ioctl(SCI_0, SCI_READ_DATA, NULL)
 #define RS485_TEST_TX_EMPTY					ioctl(SCI_0, SCI_GET_TX_EMPTY, NULL)
 #define RS485_TEST_TX_IDLE					ioctl(SCI_0, SCI_GET_TX_IDLE, NULL)
+#define RS485_TEST_RX_FULL					ioctl(SCI_0, SCI_GET_RX_FULL, NULL)
 
 // Master defines
 // Receiver states
@@ -55,12 +57,12 @@ UInt16 RS485_decodeMessage(void);
 // Slave defines
 // Receiver states
 #define RS485_IDLE					0
-#define RS485_WAIT_FOR_SIGNAL		1
-#define RS485_WAIT_FOR_ID			2
-#define RS485_WAIT_FOR_LENGTH		3
-#define RS485_WAIT_FOR_INSTR_ERR	4
-#define RS485_WAIT_FOR_PARAMETERS	5
-#define RS485_WAIT_FOR_CHECKSUM		6
+#define RS485_WAIT_FOR_SIGNAL		2
+#define RS485_WAIT_FOR_ID			4
+#define RS485_WAIT_FOR_LENGTH		8
+#define RS485_WAIT_FOR_INSTR_ERR	16
+#define RS485_WAIT_FOR_PARAMETERS	32
+#define RS485_WAIT_FOR_CHECKSUM		64
 
 // Transmitter states
 #define RS485_TX_IDLE				0
@@ -81,23 +83,28 @@ typedef struct tagRS485SERVO
 {
 	union
 	{
-		UInt8 ui8Data[49];				// Main data structure
-		UInt8 ui8SendRcvBuffer[56];		// Buffer for transmitting/receiving data
-		UInt8 ui8RcvBufferIndex;		// Index in buffer for receiving/transmitting
-		UInt8 ui8BytesToSend;			// How many bytes to transmitt (including signal, ID, checksum)
-		UInt8 ui8RcvState;				// Receiver state
-		UInt8 ui8TxState;				// Transmitter state
-		UInt8 ui8DataLength;			// How many parameter bytes to receive/read
-		UInt8 ui8InstrErr;				// Instruction/error code of current message
-		UInt8 ui8RWAddress;				// Address to start read/write
-		UInt8 ui8BytesToRW;				// Bytes to read/write
-		UInt8 ui8ParamsReceived;		
-		UInt8 ui8Checksum;				// Checksum of received data
-		union 
+		struct
 		{
-			UInt8 ui8Bytes[2];
-			UInt16 ui16Word;
-		}RcvdData;
+			UInt8 ui8Data[49];				// Main data structure
+			UInt8 ui8SendRcvBuffer[56];		// Buffer for transmitting/receiving data
+			UInt8 ui8RcvBufferIndex;		// Index in buffer for receiving/transmitting
+			UInt8 ui8BytesToSend;			// How many bytes to transmitt (including signal, ID, checksum)
+			UInt8 ui8RcvState;				// Receiver state
+			UInt8 ui8TxState;				// Transmitter state
+			UInt8 ui8DataLength;			// How many parameter bytes to receive/read
+			UInt8 ui8InstrErr;				// Instruction/error code of current message
+			UInt8 ui8RWAddress;				// Address to start read/write
+			UInt8 ui8BytesToRW;				// Bytes to read/write
+			UInt8 ui8ParamsReceived;		
+			UInt8 ui8Empty[1];		
+			UInt8 ui8Checksum;				// Checksum of received data
+			/*
+			union 
+			{
+				UInt8 ui8Bytes[2];
+				UInt16 ui16Word;
+			}RcvdData;*/
+		};
 		struct
 		{
 			UInt16 ui16ModelNumber;
@@ -145,8 +152,10 @@ typedef struct tagRS485SERVO
 			UInt8 ui8RWAddress_;
 			UInt8 ui8BytesToRW_;
 			UInt8 ui8ParamsReceived_;
+			UInt8 ui8Empty_[1];			
 			UInt8 ui8Checksum_;
-			UInt8 ui8RcvdData[2];
+			//UInt8 ui8RcvdData[2];
+
 		}REGS;
 	};
 	

@@ -25,6 +25,11 @@
 
 void main (void) 
 {
+	// Some temporary variables
+	
+	UInt8 ui8Temp0 = 0;
+	UInt8 ui8Temp1 = 0;
+	
 	/* initialise SYS module */
     ioctl(SYS, SYS_INIT, NULL);
 
@@ -46,18 +51,18 @@ void main (void)
      *
      */
     ioctl(XBAR_A, XBAR_A_INIT, null);
-    ioctl(EFPWMA, EFPWM_INIT, null);
-    ioctl(EFPWM_A_SUB0, EFPWM_INIT, null);
-    ioctl(EFPWM_A_SUB1, EFPWM_INIT, null);
-    ioctl(EFPWM_A_SUB2, EFPWM_INIT, null);
+    //ioctl(EFPWMA, EFPWM_INIT, null);
+    //ioctl(EFPWM_A_SUB0, EFPWM_INIT, null);
+    //ioctl(EFPWM_A_SUB1, EFPWM_INIT, null);
+    //ioctl(EFPWM_A_SUB2, EFPWM_INIT, null);
     
     
-    ioctl(ADC_1, ADC_INIT, null);
-    ioctl(PIT_0, PIT_INIT, NULL);
+    //ioctl(ADC_1, ADC_INIT, null);
+    //ioctl(PIT_0, PIT_INIT, NULL);
     ioctl(SPI_0, SPI_INIT, NULL);
     ioctl(SCI_0, SCI_INIT, NULL);
     ioctl(SCI_1, SCI_INIT, NULL);
-    ioctl(QTIMER_B3, QT_INIT, NULL);
+    //ioctl(QTIMER_B3, QT_INIT, NULL);
     
     FMSTR_Init();    
     
@@ -122,6 +127,50 @@ void main (void)
     	if(SYSTEM_TEST_BIT)
     	{
     		SYSTEM_TEST_BIT = 0;
+    		/*
+    		// Test serial comm - request
+    		// Setup data
+    		ui8SerialBuffer[0] = 0xff;
+    		ui8SerialBuffer[1] = 0xff;
+    		// ID
+    		ui8SerialBuffer[2] = 0x01;
+    		ui8SerialBuffer[3] = 0x02;
+    		ui8SerialBuffer[4] = 0x01;
+    		ui8SerialBuffer[5] = 0xfb;
+    		// Enable transmitter
+    		RS485_ENABLE_TX;
+    		// Send
+    		for(ui8Temp0 = 0; ui8Temp0 < 6; ui8Temp0++)
+    		{
+    			while(!RS485_TEST_TX_EMPTY)
+    			{
+    				asm(nop);
+    			}
+    			RS485_WRITE(ui8SerialBuffer[ui8Temp0]);
+    		}
+    		// Wait for end of transmission
+			while(!RS485_TEST_TX_IDLE)
+			{
+				asm(nop);
+			}
+    		// Enable receiver
+    		RS485_ENABLE_RX;    		
+    		// Clear buffer
+    		for(ui8Temp0 = 0; ui8Temp0 < 8; ui8Temp0++)
+    		{
+    			ui8SerialBuffer[ui8Temp0] = 0;
+    		}
+    		// Wait for data
+    		for(ui8Temp0 = 0; ui8Temp0 < 8; ui8Temp0++)
+    		{
+    			while(!RS485_TEST_RX_FULL)
+    			{
+    				asm(nop);
+    			}
+    			ui8SerialBuffer[ui8Temp0] = RS485_READ;
+    		}   		
+    		*/
+    		
     	}
     	
     	// Recalculate factors?

@@ -339,6 +339,6 @@ extern DRV8301DATA DRV8301;
 
 extern PARAMCONVERSION pConv;
 
-
+extern UInt8 ui8SerialBuffer[16];
 
 #endif /* VAR_H_ */
