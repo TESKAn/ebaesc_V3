@@ -58,7 +58,7 @@ void main (void)
     
     
     //ioctl(ADC_1, ADC_INIT, null);
-    //ioctl(PIT_0, PIT_INIT, NULL);
+    ioctl(PIT_0, PIT_INIT, NULL);
     ioctl(SPI_0, SPI_INIT, NULL);
     ioctl(SCI_0, SCI_INIT, NULL);
     ioctl(SCI_1, SCI_INIT, NULL);
@@ -78,7 +78,7 @@ void main (void)
     
     // RS485 communication setup
     RS485_initData();
-
+    RS485_MasterInitData();
     
     // Set all flag values to initial value
     SYS_DEBUG_MODE = 1;
@@ -123,44 +123,91 @@ void main (void)
     	// Check freemaster
     	FMSTR_Poll();
     	
-    	// Check test bit - for testing code
-    	if(SYSTEM_TEST_BIT)
+    	/*
+    	// Send out ping
+    	if(ui8Temp1 != RS485Address)
     	{
-    		SYSTEM_TEST_BIT = 0;
-    		/*
-    		// Test serial comm - request
-    		// Setup data
-    		ui8SerialBuffer[0] = 0xff;
-    		ui8SerialBuffer[1] = 0xff;
-    		// ID
-    		ui8SerialBuffer[2] = 0x01;
-    		ui8SerialBuffer[3] = 0x02;
-    		ui8SerialBuffer[4] = 0x01;
-    		ui8SerialBuffer[5] = 0xfb;
-    		// Enable transmitter
-    		RS485_ENABLE_TX;
-    		// Send
-    		for(ui8Temp0 = 0; ui8Temp0 < 6; ui8Temp0++)
-    		{
-    			while(!RS485_TEST_TX_EMPTY)
-    			{
-    				asm(nop);
-    			}
-    			RS485_WRITE(ui8SerialBuffer[ui8Temp0]);
-    		}
-    		// Wait for end of transmission
+    		ui8Temp1 = RS485Address;
+			// Test serial comm - request
+			// Setup data
+			// FF FF 01 04 02 1E 04 D6
+			ui8SerialBuffer[0] = 0xff;
+			ui8SerialBuffer[1] = 0xff;
+			// ID
+			ui8SerialBuffer[2] = RS485Address;
+			ui8SerialBuffer[3] = 0x02;
+			ui8SerialBuffer[4] = 0x01;
+			ui8SerialBuffer[5] = ~(RS485Address + 0x03);
+			// Enable transmitter
+			RS485_ENABLE_TX;
+			// Send
+			for(ui8Temp0 = 0; ui8Temp0 < 6; ui8Temp0++)
+			{
+				while(!RS485_TEST_TX_EMPTY)
+				{
+					asm(nop);
+				}
+				RS485_WRITE(ui8SerialBuffer[ui8Temp0]);
+			}
+			// Wait for end of transmission
 			while(!RS485_TEST_TX_IDLE)
 			{
 				asm(nop);
 			}
-    		// Enable receiver
-    		RS485_ENABLE_RX;    		
+			// Enable receiver
+			RS485_ENABLE_RX;   
+    	}
+    	*/
+    	// Check test bit - for testing code
+    	if(SYSTEM_TEST_BIT)
+    	{
+    		SYSTEM_TEST_BIT = 0;
+    		
+    		if(RS485Address < 254)
+    		{
+				// Test serial comm - request
+				// Setup data
+				// FF FF 01 04 02 1E 04 D6
+				ui8SerialBuffer[0] = 0xff;
+				ui8SerialBuffer[1] = 0xff;
+				// ID
+				ui8SerialBuffer[2] = RS485Address;
+				ui8SerialBuffer[3] = 0x02;
+				ui8SerialBuffer[4] = 0x01;
+				ui8SerialBuffer[5] = ~(RS485Address + 0x03);
+				// Enable transmitter
+				RS485_ENABLE_TX;
+				// Send
+				for(ui8Temp0 = 0; ui8Temp0 < 6; ui8Temp0++)
+				{
+					while(!RS485_TEST_TX_EMPTY)
+					{
+						asm(nop);
+					}
+					RS485_WRITE(ui8SerialBuffer[ui8Temp0]);
+				}
+				// Wait for end of transmission
+				while(!RS485_TEST_TX_IDLE)
+				{
+					asm(nop);
+				}
+				// Enable receiver
+				RS485_ENABLE_RX;      			
+    			
+    			
+    			
+    			RS485Address++;
+    		}
+    		
+
+ 		
     		// Clear buffer
     		for(ui8Temp0 = 0; ui8Temp0 < 8; ui8Temp0++)
     		{
     			ui8SerialBuffer[ui8Temp0] = 0;
     		}
     		// Wait for data
+    		/*
     		for(ui8Temp0 = 0; ui8Temp0 < 8; ui8Temp0++)
     		{
     			while(!RS485_TEST_RX_FULL)

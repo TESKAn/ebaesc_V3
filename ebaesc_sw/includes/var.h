@@ -340,5 +340,7 @@ extern DRV8301DATA DRV8301;
 extern PARAMCONVERSION pConv;
 
 extern UInt8 ui8SerialBuffer[16];
+extern UInt8 RS485Address;
+extern UInt8 ui8RS485RcvdByte;
 
 #endif /* VAR_H_ */

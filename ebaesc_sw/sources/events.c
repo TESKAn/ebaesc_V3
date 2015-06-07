@@ -579,21 +579,28 @@ void RX0_Full_ISR(void)
 
 	data = ioctl(SCI_0, SCI_GET_STATUS_REG, NULL);		// Clear RDRF flag
 	data = ioctl(SCI_0, SCI_READ_DATA, NULL);			// Read data
+	// Call master decode
+	RS485_MasterecodeMessage(data);
+	//ui8RS485RcvdByte = (UInt8)data;
 	// Call state machine
-	RS485_States_slave((UInt8)data);
+	//RS485_States_slave((UInt8)data);
 }
 
 #pragma interrupt saveall
 void TX0_Empty_ISR(void)
 {
-	RS485_writeByte();
+	//RS485_writeByte();
+	RS485_MasterWriteByte();
 }
 
 #pragma interrupt saveall
 void PIT_0_ISR(void)
 {
 	ioctl(PIT_0, PIT_CLEAR_ROLLOVER_INT, NULL);
-	checkSystemStates();
+	//RS485CommTest();
+	// Check RS485 master
+	RS485_States_Master();
+	//checkSystemStates();
 	// Decrease counters
 	if(0 < SYSTEM.SENSORLESS.i16Counter)
 	{

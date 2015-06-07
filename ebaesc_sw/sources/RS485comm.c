@@ -12,6 +12,63 @@ RS485SERVO RS485Data;
 
 RS485SERVOMASTER RS485Master;
 
+UInt16 ui16RS485Timer = 5000;
+UInt8 ui8RS485TestSequence = 0;
+UInt8 ui8Temp0;
+
+void RS485CommTest(void)
+{
+	ui16RS485Timer--;
+	if(1 > ui16RS485Timer)
+	{
+		ui16RS485Timer = 1000;
+		ui8RS485TestSequence = 0;
+		switch(ui8RS485TestSequence)
+		{
+			case 0:
+			{
+				// Set rcvd data to 0
+				ui8RS485RcvdByte = 0;
+				// Prepare data
+				// Test serial comm - request
+				// Setup data
+				// FF FF 01 04 02 1E 04 D6
+				ui8SerialBuffer[0] = 0xff;
+				ui8SerialBuffer[1] = 0xff;
+				// ID
+				ui8SerialBuffer[2] = RS485Address;
+				ui8SerialBuffer[3] = 0x02;
+				ui8SerialBuffer[4] = 0x01;
+				ui8SerialBuffer[5] = ~(RS485Address + 0x03);
+				// Enable transmitter
+				RS485_ENABLE_TX;
+				// Send
+				for(ui8Temp0 = 0; ui8Temp0 < 6; ui8Temp0++)
+				{
+					while(!RS485_TEST_TX_EMPTY)
+					{
+						asm(nop);
+					}
+					RS485_WRITE(ui8SerialBuffer[ui8Temp0]);
+				}
+				// Wait for end of transmission
+				while(!RS485_TEST_TX_IDLE)
+				{
+					asm(nop);
+				}
+				// Enable receiver
+				RS485_ENABLE_RX;   
+				// Next address
+				//RS485Address++;
+				RS485Address = 1;
+				if(255 < RS485Address) RS485Address = 0;
+				break;
+			}
+		}
+		
+	}
+}
+
 // Master functions
 UInt16 RS485_MasterInitData(void)
 {
@@ -34,6 +91,7 @@ UInt16 RS485_MasterInitData(void)
 	return 0;
 }
 
+#pragma interrupt called
 UInt16 RS485_MasterWriteByte(void)
 {
 	switch(RS485Master.ui8TxState)
@@ -90,6 +148,8 @@ UInt16 RS485_MasterWriteByte(void)
 			{
 				// Yes, enable receive
 				RS485_ENABLE_RX;
+				// Reset index
+				RS485Master.ui8RcvBufferIndex = 0;
 				// Disable interrupt
 				RS485_DISABLE_TX_IDLE_INT;
 				// Go to idle state
@@ -111,13 +171,165 @@ UInt16 RS485_MasterWriteByte(void)
 	return 0;
 }
 
-UInt16 RS485_States_Master(UInt8 data)
+// Special functions for servos - fill buffer with data
+#pragma interrupt called
+UInt16 RS485_WriteReg(UInt8 ID, UInt8 reg, UInt8 data)
 {
+	RS485Master.ui8SendRcvBuffer[0] = 0xff;
+	RS485Master.ui8SendRcvBuffer[1] = 0xff;
+	// ID
+	RS485Master.ui8SendRcvBuffer[2] = ID;
+	RS485Master.ui8SendRcvBuffer[3] = 0x02;
+	RS485Master.ui8SendRcvBuffer[4] = RS485_COMMAND_WRITE;
+	
+	
+	
+	
+	
+	RS485Master.ui8SendRcvBuffer[5] = ~(RS485Master.ui8ReqSlaveAddress + 0x03);
+	// Set data length
+	RS485Master.ui8BytesToSend = 6;
+	RS485Master.ui8RcvBufferIndex = 0;
+}
+
+#pragma interrupt called
+UInt16 RS485_WriteAll(UInt8 ID)
+{
+	RS485Master.ui8SendRcvBuffer[0] = 0xff;
+	RS485Master.ui8SendRcvBuffer[1] = 0xff;
+	// ID
+	RS485Master.ui8SendRcvBuffer[2] = ID;
+	RS485Master.ui8SendRcvBuffer[3] = 0x02;	// Length
+	RS485Master.ui8SendRcvBuffer[4] = RS485_COMMAND_WRITE;
+	RS485Master.ui8SendRcvBuffer[5]
+	
+	
+	
+	
+	
+	
+	
+	RS485Master.ui8SendRcvBuffer[5] = ~(RS485Master.ui8ReqSlaveAddress + 0x03);
+	// Set data length
+	RS485Master.ui8BytesToSend = 6;
+	RS485Master.ui8RcvBufferIndex = 0;
+}
+
+#pragma interrupt called
+UInt16 RS485_States_Master(void)
+{
+	switch(RS485Master.ui8MasterState)
+	{
+		case RS485_M_STATE_IDLE:
+		{
+			// Check - command waiting?
+			if(0 != RS485Master.ui8MasterRequest)
+			{
+				switch(RS485Master.ui8MasterRequest)
+				{
+					case RS485_COMMAND_PING:
+					{
+						// Send ping command
+						// Prepare data
+						RS485Master.ui8SendRcvBuffer[0] = 0xff;
+						RS485Master.ui8SendRcvBuffer[1] = 0xff;
+						// ID
+						RS485Master.ui8SendRcvBuffer[2] = RS485Master.ui8ReqSlaveAddress;
+						RS485Master.ui8SendRcvBuffer[3] = 0x02;
+						RS485Master.ui8SendRcvBuffer[4] = 0x01;
+						RS485Master.ui8SendRcvBuffer[5] = ~(RS485Master.ui8ReqSlaveAddress + 0x03);
+						// Set data length
+						RS485Master.ui8BytesToSend = 6;
+						RS485Master.ui8RcvBufferIndex = 0;
+						// Enable TX interrupts
+						RS485_ENABLE_TX_INT;
+						// Send first byte
+						RS485_MasterWriteByte();
+						// Set timeout
+						RS485Master.ui16SlaveTimeout = RS485_SLAVE_TIMEOUT;
+						// Reset request
+						RS485Master.ui8MasterRequest = RS485_COMMAND_NONE;
+						break;
+					}
+					case RS485_COMMAND_READ:
+					{
+						
+						break;
+					}
+					case RS485_COMMAND_WRITE:
+					{
+						break;
+					}
+					default:
+					{
+						break;
+					}
+				}
+			}
+			break;
+		}
+		case RS485_M_STATE_REQUEST:
+		{
+			// Wait for response
+			// Check timeout
+			RS485Master.ui16SlaveTimeout--;
+			// Timeout?
+			if(0 == RS485Master.ui16SlaveTimeout)
+			{
+				// Disable interrupts
+				RS485_DISABLE_TX_INT;
+				RS485_DISABLE_TX_IDLE_INT;
+				RS485Master.ui8BytesToSend = 0;
+				RS485Master.ui8RcvBufferIndex = 0;
+				RS485Master.ui8MasterState = RS485_M_STATE_IDLE;
+				RS485Master.ui8MasterRequest = RS485_COMMAND_NONE;
+			}
+			break;
+		}
+		default:
+		{
+			// Disable interrupts
+			RS485_DISABLE_TX_INT;
+			RS485_DISABLE_TX_IDLE_INT;
+			RS485Master.ui8BytesToSend = 0;
+			RS485Master.ui8RcvBufferIndex = 0;
+			RS485Master.ui8MasterState = RS485_M_STATE_IDLE;
+			RS485Master.ui8MasterRequest = RS485_COMMAND_NONE;
+			break;
+		}
+	}
 	return 0;
 }
 
-UInt16 RS485_MasterecodeMessage(void)
-{
+#pragma interrupt called
+UInt16 RS485_MasterecodeMessage(UInt8 data)
+{/*
+#define RS485_M_IDLE				0
+#define RS485_M_WAIT_FOR_SIGNAL		1
+#define RS485_M_WAIT_FOR_ID			2
+#define RS485_M_WAIT_FOR_LENGTH		3
+#define RS485_M_WAIT_FOR_INSTR_ERR	4
+#define RS485_M_WAIT_FOR_PARAMETERS	5
+#define RS485_M_WAIT_FOR_CHECKSUM	6*/
+	// Just put stuff in a array
+	RS485Master.ui8SendRcvBuffer[RS485Master.ui8RcvBufferIndex] = data;
+	RS485Master.ui8RcvBufferIndex++;
+	/*
+	switch(RS485Master.ui8RcvState)
+	{
+		case RS485_M_IDLE:
+		{
+			// Data = signal?
+			
+			break;
+		}
+		default:
+		{
+			RS485Master.ui8RcvState = RS485_M_IDLE;
+			break;
+		}
+	}*/
+	
 	return 0;
 }
 
@@ -134,6 +346,7 @@ UInt16 RS485_initData(void)
 	RS485Data.ui8TxState = RS485_TX_IDLE;
 }
 
+#pragma interrupt called
 UInt16 RS485_writeByte(void)
 {
 	switch(RS485Data.ui8TxState)
@@ -212,6 +425,7 @@ UInt16 RS485_writeByte(void)
 	return 0;
 }
 
+#pragma interrupt called
 UInt16 RS485_States_slave(UInt8 data)
 {
 	switch(RS485Data.ui8RcvState)
@@ -260,6 +474,7 @@ UInt16 RS485_States_slave(UInt8 data)
 		case RS485_WAIT_FOR_LENGTH:
 		{
 			// Store how many bytes will follow
+			// 
 			RS485Data.ui8DataLength = data - 2;
 			// Add to checksum
 			RS485Data.ui8Checksum += data;
@@ -285,7 +500,8 @@ UInt16 RS485_States_slave(UInt8 data)
 			{
 				// Wait for checksum
 				RS485Data.ui8RcvState = RS485_WAIT_FOR_CHECKSUM;
-			}			
+			}		
+			break;
 		}
 		case RS485_WAIT_FOR_PARAMETERS:
 		{
@@ -328,6 +544,7 @@ UInt16 RS485_States_slave(UInt8 data)
 	return 0;
 }
 
+#pragma interrupt called
 UInt16 RS485_decodeMessage(void)
 {
 	UInt8 ui8Temp = 0;

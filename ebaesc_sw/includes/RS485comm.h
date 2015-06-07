@@ -14,12 +14,18 @@
 // Master mode macros
 // Define number of slave devices
 #define RS485_NUMSLAVES		3
+// Slave timeout in ms
+#define RS485_SLAVE_TIMEOUT		1000
 
 // Function declarations
+void RS485CommTest(void);
+
 UInt16 RS485_MasterInitData(void);
 UInt16 RS485_MasterWriteByte(void);
-UInt16 RS485_States_Master(UInt8 data);
-UInt16 RS485_MasterecodeMessage(void);
+UInt16 RS485_WriteReg(UInt8 ID, UInt8 reg, UInt8 data);
+UInt16 RS485_WriteAll(UInt8 ID);
+UInt16 RS485_States_Master(void);
+UInt16 RS485_MasterecodeMessage(UInt8 data);
 
 UInt16 RS485_initData(void);
 UInt16 RS485_writeByte(void);
@@ -39,7 +45,28 @@ UInt16 RS485_decodeMessage(void);
 #define RS485_TEST_TX_IDLE					ioctl(SCI_0, SCI_GET_TX_IDLE, NULL)
 #define RS485_TEST_RX_FULL					ioctl(SCI_0, SCI_GET_RX_FULL, NULL)
 
+// Commands macros
+#define RS485_COMMAND_NONE					0x00
+#define RS485_COMMAND_PING					0x01
+#define RS485_COMMAND_READ					0x02
+#define RS485_COMMAND_WRITE					0x03
+#define RS485_COMMAND_REG_WRITE				0x04
+#define RS485_COMMAND_GO					0x05
+#define RS485_COMMAND_RESET_TOFACTORY		0x06
+#define RS485_COMMAND_REBOOT				0x08
+#define RS485_COMMAND_REQSTATUS				0x55
+#define RS485_COMMAND_SYNC_READ				0x82
+#define RS485_COMMAND_SYNC_WRITE			0x83
+#define RS485_COMMAND_BULK_READ				0x92
+#define RS485_COMMAND_BULK_WRITE			0x93
+
 // Master defines
+// Master state machine
+#define RS485_M_STATE_IDLE			0	
+#define RS485_M_STATE_REQUEST		1
+//#define RS485_M_STATE_
+//#define RS485_M_STATE_
+
 // Receiver states
 #define RS485_M_IDLE				0
 #define RS485_M_WAIT_FOR_SIGNAL		1
@@ -221,12 +248,16 @@ typedef struct tagRS485SERVOMASTER
 	UInt8 ui8BytesToSend;			// How many bytes to transmitt (including signal, ID, checksum)
 	UInt8 ui8RcvState;				// Receiver state
 	UInt8 ui8TxState;				// Transmitter state
+	UInt8 ui8MasterState;			// Master state
+	UInt8 ui8MasterRequest;			// Request to send
+	UInt8 ui8ReqSlaveAddress;		// Slave to query
 	UInt8 ui8DataLength;			// How many parameter bytes to receive/read
 	UInt8 ui8InstrErr;				// Instruction/error code of current message
 	UInt8 ui8RWAddress;				// Address to start read/write
 	UInt8 ui8BytesToRW;				// Bytes to read/write
 	UInt8 ui8ParamsReceived;		
 	UInt8 ui8Checksum;				// Checksum of received data
+	UInt16 ui16SlaveTimeout;		// Holds timeout value for slave comm. When 0, timeout
 	union 
 	{
 		UInt8 ui8Bytes[2];
