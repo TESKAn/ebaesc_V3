@@ -62,8 +62,15 @@ UInt16 RS485_decodeMessage(void);
 
 // Master defines
 // Master state machine
-#define RS485_M_STATE_IDLE			0	
-#define RS485_M_STATE_REQUEST		1
+#define RS485_M_STATE_IDLE					0	
+#define RS485_M_STATE_WRITE					1
+#define RS485_M_STATE_TORQUE_ON				2
+#define RS485_M_STATE_TORQUE_OFF			3
+#define RS485_M_STATE_READ_ALL				4
+#define RS485_M_STATE_SET_POS				5
+#define RS485_M_STATE_SET_SPEED				6
+#define RS485_M_STATE_SET_COMPLIANCE		7
+#define RS485_M_STATE_REQUEST				8
 //#define RS485_M_STATE_
 //#define RS485_M_STATE_
 
@@ -191,6 +198,14 @@ typedef struct tagRS485SERVO
 
 typedef struct tagRS485SERVOSLAVE
 {
+	// Reading from address
+	UInt8 ui8ReadStartAddress;
+	// Status 
+	UInt8 ui8Status;
+	// Is data good?
+	UInt8 ui8DataGood;
+	// Checksum
+	UInt8 ui8Checksum;
 	union
 	{
 		UInt8 ui8Data[49];				// Main data structure
@@ -243,6 +258,8 @@ typedef struct tagRS485SERVOMASTER
 {
 	// Structures that hold data for all servos
 	RS485SERVOSLAVE RS485Slaves[RS485_NUMSLAVES];
+	// Pointer to slave that we are receiving transmission for
+	RS485SERVOSLAVE* RS485CurrentSlave;
 	UInt8 ui8SendRcvBuffer[56];		// Buffer for transmitting/receiving data
 	UInt8 ui8RcvBufferIndex;		// Index in buffer for receiving/transmitting
 	UInt8 ui8BytesToSend;			// How many bytes to transmitt (including signal, ID, checksum)
