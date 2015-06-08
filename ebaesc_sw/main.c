@@ -51,18 +51,18 @@ void main (void)
      *
      */
     ioctl(XBAR_A, XBAR_A_INIT, null);
-    //ioctl(EFPWMA, EFPWM_INIT, null);
-    //ioctl(EFPWM_A_SUB0, EFPWM_INIT, null);
-    //ioctl(EFPWM_A_SUB1, EFPWM_INIT, null);
-    //ioctl(EFPWM_A_SUB2, EFPWM_INIT, null);
+    ioctl(EFPWMA, EFPWM_INIT, null);
+    ioctl(EFPWM_A_SUB0, EFPWM_INIT, null);
+    ioctl(EFPWM_A_SUB1, EFPWM_INIT, null);
+    ioctl(EFPWM_A_SUB2, EFPWM_INIT, null);
     
     
-    //ioctl(ADC_1, ADC_INIT, null);
+    ioctl(ADC_1, ADC_INIT, null);
     ioctl(PIT_0, PIT_INIT, NULL);
     ioctl(SPI_0, SPI_INIT, NULL);
     ioctl(SCI_0, SCI_INIT, NULL);
     ioctl(SCI_1, SCI_INIT, NULL);
-    //ioctl(QTIMER_B3, QT_INIT, NULL);
+    ioctl(QTIMER_B3, QT_INIT, NULL);
     
     FMSTR_Init();    
     
