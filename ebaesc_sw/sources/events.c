@@ -57,6 +57,15 @@ void ADC_1_EOS_ISR(void)
 	SYSTEM.ADC.m3IphUVW.f16B = mult(DRV8301_GAIN_FACTOR, SYSTEM.ADC.m3IphUVW.f16B);
 	SYSTEM.ADC.m3IphUVW.f16C = mult(DRV8301_GAIN_FACTOR, SYSTEM.ADC.m3IphUVW.f16C);
 	
+	// Measure phase voltages
+	// U
+	SYSTEM.ADC.m3UphUVW.f16A = ioctl(ADC_1, ADC_READ_SAMPLE, 3);
+	// V
+	SYSTEM.ADC.m3UphUVW.f16B = ioctl(ADC_1, ADC_READ_SAMPLE, 11);
+	// W
+	SYSTEM.ADC.m3UphUVW.f16C = ioctl(ADC_1, ADC_READ_SAMPLE, 4);
+	
+	
 	// Measure DC link voltage
 	SYSTEM.ADC.f16DCLinkVoltage = ioctl(ADC_1, ADC_READ_SAMPLE, 2);
 	// Filter	
