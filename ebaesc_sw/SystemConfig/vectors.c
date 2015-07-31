@@ -453,14 +453,14 @@ static asm void pll_losslock(void)
 
 static asm void int_vec(void)
 {
-	jmp >Start;           	/* Reset */
-	//jmp boot_start;
+	//jmp >Start;           	/* Reset */
+	jmp boot_start;
 	
 #ifdef INT_VECTOR_ADDR_1	
 	jmp >INT_VECTOR_ADDR_1	/* 0x02: COP Reset */							
 #else
-	jmp >Start;
-	//jmp boot_start;
+	//jmp >Start;
+	jmp boot_start;
 #endif
 	
 #ifdef INT_VECTOR_ADDR_2

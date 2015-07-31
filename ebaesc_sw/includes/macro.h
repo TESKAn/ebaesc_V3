@@ -8,6 +8,9 @@
 #ifndef MACRO_H_
 #define MACRO_H_
 
+// Time before jumping to bootloader code
+#define BOOTLOADER_TIMEOUT			4000
+
 // System macros
 #define MANUAL_ANGLE_INCREASE		FRAC16(0.0001)
 #define MANUAL_SPEED				FRAC16(0.0)
