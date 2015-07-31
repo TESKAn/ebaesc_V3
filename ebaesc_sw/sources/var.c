@@ -20,6 +20,8 @@ SYSTEMVARIABLES SYSTEM;
 // Variable for MOSFET driver
 DRV8301DATA DRV8301;
 
+Int16 i16RecorderTrigger = 0;
+
 UInt8 ui8SerialBuffer[16];
 UInt8 RS485Address = 1;
 UInt8 ui8RS485RcvdByte = 0;

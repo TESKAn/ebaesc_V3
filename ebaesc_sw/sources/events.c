@@ -84,6 +84,16 @@ void ADC_1_EOS_ISR(void)
 	SYSTEM.ADC.f16SensorValueBFiltered = GDFLIB_FilterMA32(SYSTEM.ADC.f16SensorValueB, &SYSTEM.ADC.FilterMA32SensorB);
 	
 	// Get phase voltage values
+	
+	SYSTEM.INPUTCAPTURE.Val0 = ioctl(QTIMER_B0, QT_READ_COUNTER_REG, NULL);
+	SYSTEM.INPUTCAPTURE.Val1 = ioctl(QTIMER_B1, QT_READ_COUNTER_REG, NULL);
+	SYSTEM.INPUTCAPTURE.Val2 = ioctl(QTIMER_B2, QT_READ_COUNTER_REG, NULL);
+	
+	ioctl(QTIMER_B0, QT_WRITE_COUNTER_REG, 0);
+	ioctl(QTIMER_B1, QT_WRITE_COUNTER_REG, 0);
+	ioctl(QTIMER_B2, QT_WRITE_COUNTER_REG, 0);
+	
+	/*
 	SYSTEM.INPUTCAPTURE.Val0 = ioctl(EFPWMA_SUB0, EFPWMS_READ_CAPTURE_VAL0, NULL);
 	SYSTEM.INPUTCAPTURE.Val1 = ioctl(EFPWMA_SUB0, EFPWMS_READ_CAPTURE_VAL1, NULL);
 	SYSTEM.INPUTCAPTURE.Val2 = ioctl(EFPWMA_SUB0, EFPWMS_READ_CAPTURE_VAL2, NULL);
@@ -101,6 +111,7 @@ void ADC_1_EOS_ISR(void)
 	i16Temp1 = ioctl(EFPWMA_SUB0, EFPWMS_READ_CAPTURE_VAL1, NULL);
 	i16Temp2 = i16Temp1 - i16Temp;
 	SYSTEM.MCTRL.m3U_X_UVW.f16A = (Frac16)i16Temp2;
+	*/
 	
 	// Get measured angle
 	// Get current position index
@@ -230,7 +241,7 @@ void ADC_1_EOS_ISR(void)
 		}
 		case POSITION_SOURCE_SENSORLESS_ALIGN:
 		{
-			SYSTEM.POSITION.f16RotorAngle = FRAC16(1.0);
+			SYSTEM.POSITION.f16RotorAngle = FRAC16(0.0);
 			SYSTEM.POSITION.f16Speed = FRAC16(0.0);
 			SYSTEM.POSITION.f16SpeedFiltered = FRAC16(0.0);
 			// Check align time
@@ -243,97 +254,83 @@ void ADC_1_EOS_ISR(void)
 				SYSTEM.RAMPS.f16OLSpeedRampActualValue = FRAC16(0.0);
 				SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_SENSORLESS_ROTATE;
 				SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_SENSORLESS_ROTATE;
+				// Reset bemf observer error part
+				SYSTEM.SENSORLESS.f16BEMFErrorPart = FRAC16(0.0);
 			}
 			break;
 		}
 		case POSITION_SOURCE_SENSORLESS_ROTATE:
-		{
-			// Manual angle increase for open loop startup
-			SYSTEM.POSITION.f16RotorAngle += SYSTEM.RAMPS.f16OLSpeedRampActualValue;
-			// Multiply angle increase with some factor to get speed
-			SYSTEM.POSITION.f16Speed = SYSTEM.RAMPS.f16OLSpeedRampActualValue;
-			// Filter speed
-			SYSTEM.POSITION.f16SpeedFiltered = GDFLIB_FilterMA32(SYSTEM.POSITION.f16Speed, &SYSTEM.POSITION.FilterMA32Speed);
-			if(SYSTEM.RAMPS.f16OLSpeedRampDesiredValue != SYSTEM.RAMPS.f16OLSpeedRampActualValue)
-			{
-				SYSTEM.RAMPS.f16OLSpeedRampActualValue = GFLIB_Ramp16(SYSTEM.RAMPS.f16OLSpeedRampDesiredValue, SYSTEM.RAMPS.f16OLSpeedRampActualValue, &SYSTEM.RAMPS.Ramp16_OLSpeedStartup);
-			}			
-			// If BEMF calculating
+		{			
+			// Use manual error
+			i16RecorderTrigger = 1;
+			
 			if(SENSORLESS_BEMF_ON)
 			{
-				// Calculate tracking observer with observer error
-				SYSTEM.POSITION.f16RotorAngle_OL = ACLIB_TrackObsrv(SYSTEM.POSITION.acBemfObsrvDQ.f16Error, &SYSTEM.POSITION.acToPos);
-				
-				// Check tracking observer and forced speed
-				f16Temp = SYSTEM.POSITION.f16SpeedFiltered;
-				f16Temp1 = extract_h(SYSTEM.POSITION.acToPos.f32Speed);
-				f16Temp = f16Temp - f16Temp1;
-				SYSTEM.SENSORLESS.f16SpeedDifference = abs_s(f16Temp);
-				if(SYSTEM.SENSORLESS.f16MergeSpeedDifference > SYSTEM.SENSORLESS.f16SpeedDifference)
+				f16Temp = mult(SYSTEM.SENSORLESS.f16BEMFErrorPart, SYSTEM.POSITION.acBemfObsrvDQ.f16Error);
+				if(FRAC16(1.0) > SYSTEM.SENSORLESS.f16BEMFErrorPart)
 				{
-					SYSTEM.SENSORLESS.i16MergeDifferenceCount++;
-					if(SYSTEM.SENSORLESS.i16MergeDifferenceCount > SYSTEM.SENSORLESS.i16MergeDifferenceCountThreshold)
+					if(FRAC16(0.95) < SYSTEM.SENSORLESS.f16BEMFErrorPart)
 					{
-						SYSTEM.SENSORLESS.f16MergeAngleOffset = SYSTEM.POSITION.f16RotorAngle - SYSTEM.POSITION.f16RotorAngle_OL;
-						SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_SENSORLESS_MERGE;
+						SYSTEM.SENSORLESS.f16BEMFErrorPart = FRAC16(1.0);
+					}
+					else
+					{
+						SYSTEM.SENSORLESS.f16BEMFErrorPart += 20;
+					}
+					
+				}
+				else
+				{
+					// Angles merged, switch
+					SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_MULTIPLE;
+					// Set current source to speed or torque
+					if(CONTROL_SPEED)
+					{
+						SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_CONTROL_SPEED;
+						// Set default values
+						// Set current
+						SYSTEM.REGULATORS.mudtControllerParamW.f32IntegPartK_1 = SYSTEM.REGULATORS.m2IDQReq.f16Q;
+						SYSTEM.REGULATORS.ui16SpeedRegCounter = 0;
+						SYSTEM.RAMPS.f16SpeedRampDesiredValue = SYSTEM.SENSORLESS.f16StartSpeed;
+						SYSTEM.RAMPS.f16SpeedRampActualValue = SYSTEM.POSITION.f16Speed;
+					}
+					else if(CONTROL_TORQUE)
+					{
+						SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_CONTROL_TORQUE;
+						// Set default values
+						SYSTEM.RAMPS.f16TorqueRampActualValue = SYSTEM.REGULATORS.m2IDQReq.f16Q /  SYSTEM.MCTRL.f16TorqueFactor;
+						SYSTEM.RAMPS.f16TorqueRampDesiredValue = SYSTEM.SENSORLESS.f16StartTorque;
+					}
+					else
+					{
+						// No source, abort
+						SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_NONE;
+						SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_NONE;
 					}
 				}
-			}			
+				SYSTEM.POSITION.f16RotorAngle = ACLIB_TrackObsrv(f16Temp, &SYSTEM.POSITION.acToPos);
+				
+			}
+			else
+			{
+				SYSTEM.POSITION.f16RotorAngle = ACLIB_TrackObsrv(SYSTEM.SENSORLESS.f16AngleManualError, &SYSTEM.POSITION.acToPos);
+			}
+			
+			// Store & filter speed
+			SYSTEM.POSITION.f16Speed = extract_h(SYSTEM.POSITION.acToPos.f32Speed);
+			SYSTEM.POSITION.f16SpeedFiltered = GDFLIB_FilterMA32(SYSTEM.POSITION.f16Speed, &SYSTEM.POSITION.FilterMA32Speed);	
 			break;
 		}
 		case POSITION_SOURCE_SENSORLESS_MERGE:
 		{
-			// Keep updating forced angle
-			//SYSTEM.POSITION.f16RotorAngle += SYSTEM.RAMPS.f16OLSpeedRampActualValue;
-			// Calculate tracking observer with observer error
-			SYSTEM.POSITION.f16RotorAngle = ACLIB_TrackObsrv(SYSTEM.POSITION.acBemfObsrvDQ.f16Error, &SYSTEM.POSITION.acToPos);
-			
-			SYSTEM.POSITION.f16RotorAngle += SYSTEM.SENSORLESS.f16MergeAngleOffset;
-			
-			// Merge forced angle to observer angle
-			if(0 < SYSTEM.SENSORLESS.f16MergeAngleOffset)
-			{
-				SYSTEM.SENSORLESS.f16MergeAngleOffset --;
-			}
-			else if(0 > SYSTEM.SENSORLESS.f16MergeAngleOffset)
-			{
-				SYSTEM.SENSORLESS.f16MergeAngleOffset ++;
-			}
-			else
-			{
-				// Angles merged, switch
-				SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_MULTIPLE;
-				// Set current source to speed or torque
-				if(CONTROL_SPEED)
-				{
-					SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_CONTROL_SPEED;
-					// Set default values
-					SYSTEM.REGULATORS.ui16SpeedRegCounter = 0;
-					SYSTEM.RAMPS.f16SpeedRampDesiredValue = SYSTEM.SENSORLESS.f16StartSpeed;
-					SYSTEM.RAMPS.f16SpeedRampActualValue = SYSTEM.POSITION.f16Speed;
-				}
-				else if(CONTROL_TORQUE)
-				{
-					SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_CONTROL_TORQUE;
-					// Set default values
-					SYSTEM.RAMPS.f16TorqueRampActualValue = SYSTEM.REGULATORS.m2IDQReq.f16Q /  SYSTEM.MCTRL.f16TorqueFactor;
-					SYSTEM.RAMPS.f16TorqueRampDesiredValue = SYSTEM.SENSORLESS.f16StartTorque;
-				}
-				else
-				{
-					// No source, abort
-					SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_NONE;
-					SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_NONE;
-				}
-			}
-			// Store & filter speed from tracking observer
-			SYSTEM.POSITION.f16Speed = extract_h(SYSTEM.POSITION.acToPos.f32Speed);
-			SYSTEM.POSITION.f16SpeedFiltered = GDFLIB_FilterMA32(SYSTEM.POSITION.f16Speed, &SYSTEM.POSITION.FilterMA32Speed);
-			
+			// No source, abort
+			SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_NONE;
+			SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_NONE;
 			break;
 		}
 		case POSITION_SOURCE_MULTIPLE:
 		{
+			
 			// Get rotor angle from tracking observer
 			// Merge(?) errors from measured and observed angle
 			// i16Temp counts error sources

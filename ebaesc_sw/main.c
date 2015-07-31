@@ -62,6 +62,9 @@ void main (void)
     ioctl(SPI_0, SPI_INIT, NULL);
     ioctl(SCI_0, SCI_INIT, NULL);
     ioctl(SCI_1, SCI_INIT, NULL);
+    ioctl(QTIMER_B0, QT_INIT, NULL);
+    ioctl(QTIMER_B1, QT_INIT, NULL);
+    ioctl(QTIMER_B2, QT_INIT, NULL);
     ioctl(QTIMER_B3, QT_INIT, NULL);
     
     FMSTR_Init();    

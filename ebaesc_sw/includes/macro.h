@@ -20,13 +20,14 @@
 
 #define TORQUE_FACTOR				FRAC16(1.0)
 
-#define SENSORLESS_MIN_SPEED		FRAC16(0.003)	// When to calculate BEMF observer
+#define SENSORLESS_MIN_SPEED		FRAC16(0.01)	// When to calculate BEMF observer
 #define SENSORLESS_MAX_ERROR		FRAC16(0.005)	// If error below this, we use observer result
 #define SENSORLESS_ALIGN_CURRENT	FRAC16(0.025)	// Rotor align current
 #define SENSORLESS_START_CURRENT	FRAC16(0.025)	// Rotor start current
 #define SENSORLESS_MAX_RAMP_INC		FRAC16(0.004)	// Max speed for OL
 #define SENSORLESS_START_SPEED		FRAC16(0.1)
 #define SENSORLESS_START_TORQUE		FRAC16(0.005)
+#define SENSORLESS_ANGLE_MAN_ERROR	FRAC16(0.01)	
 #define OL_I_RAMP_UP                FRAC16(0.0001)	//FRAC16(0.000056818182)
 #define OL_I_RAMP_DOWN              FRAC16(0.0001)	//FRAC16(0.000056818182)
 #define OL_ANGLE_TO_SPEED			FRAC16(0.5)
@@ -83,7 +84,7 @@
 #define SYS_ZERO_CURRENT			flag1.BIT1
 #define PWM_ENABLED					flag1.BIT2		// Only do regulation when PWMs are enabled
 #define SYSTEM_RECALCULATE_FACTORS	flag1.BIT3		// Recalculate gain, shift factors from float values
-
+#define SYSTEM_TEST_NEW_STARTUP		flag1.BIT4		// Flag to test new startup procedure
 
 
 // Driver HW interface defs

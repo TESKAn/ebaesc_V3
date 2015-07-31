@@ -82,6 +82,8 @@ typedef struct tagSYSVARS
 		ACLIB_BEMF_OBSRV_DQ_T acBemfObsrvDQ;
 		// Angle tracking observer
 		ACLIB_TRACK_OBSRV_T acToPos;	
+		// Temporary observer
+		ACLIB_TRACK_OBSRV_T acToPos_temp;
 		// Fractional value of speed
 		Frac16 f16Speed;
 		// Filtered speed fractional value
@@ -103,6 +105,8 @@ typedef struct tagSYSVARS
 		Frac16 f16RotorAngle_m;
 		// Rotor angle for open loop startup
 		Frac16 f16RotorAngle_OL;
+		// Temp rotor angle
+		Frac16 f16RotorAngle_temp;
 		// Angle value from sensor
 		Frac16 f16MeasuredRotorAngle;
 		// Phase error from observer
@@ -156,6 +160,10 @@ typedef struct tagSYSVARS
 		Frac16 f16SpeedDifference;
 		// Merge value - add this to observed angle until it reaches 0
 		Frac16 f16MergeAngleOffset;
+		// Angle increase on each iteration
+		Frac16 f16AngleManualError;
+		// How much BEMF error to use?
+		Frac16 f16BEMFErrorPart;
 		
 		// Merge
 	}SENSORLESS;
@@ -211,12 +219,12 @@ typedef struct tagSYSVARS
 	// Input capture PWM values
 	struct tagINPUTCAPTURE
 	{
-		Int16 Val0;
-		Int16 Val1;
-		Int16 Val2;
-		Int16 Val3;
-		Int16 Val4;
-		Int16 Val5;
+		UInt16 Val0;
+		UInt16 Val1;
+		UInt16 Val2;
+		UInt16 Val3;
+		UInt16 Val4;
+		UInt16 Val5;
 	}INPUTCAPTURE;
 	
 	// Regulators
@@ -335,7 +343,7 @@ extern SYSTEMVARIABLES SYSTEM;
 // Variable for MOSFET driver
 extern DRV8301DATA DRV8301;
 
-
+extern Int16 i16RecorderTrigger;
 
 extern PARAMCONVERSION pConv;
 
