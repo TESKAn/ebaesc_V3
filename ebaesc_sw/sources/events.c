@@ -21,8 +21,7 @@ void ADC_1_EOS_ISR(void)
 	
 	// Clear EOSI flag
 	ioctl(ADC_1, ADC_CLEAR_STATUS_EOSI, NULL);
-	// Call freemaster recorder
-	FMSTR_Recorder();
+
 	// Calibration data readout
 	// Go through calibration data?
 	if(4096 > i16CurrentCalArrayIndex)
@@ -82,35 +81,28 @@ void ADC_1_EOS_ISR(void)
 	// Filter
 	SYSTEM.ADC.f16SensorValueAFiltered = GDFLIB_FilterMA32(SYSTEM.ADC.f16SensorValueA, &SYSTEM.ADC.FilterMA32SensorA);
 	SYSTEM.ADC.f16SensorValueBFiltered = GDFLIB_FilterMA32(SYSTEM.ADC.f16SensorValueB, &SYSTEM.ADC.FilterMA32SensorB);
+		
+	// Call freemaster recorder
+	FMSTR_Recorder();
 	
-	// Get phase voltage values
+	// Recalculate input capture values
+	// Values are read from timer modules in PWM reload interrupt
+	SYSTEM.INPUTCAPTURE.m3UphUVW.f16A = (Frac16)(SYSTEM.INPUTCAPTURE.Val0 * 5);
+	mac_r(SYSTEM.INPUTCAPTURE.m3UphUVW.f16A, SYSTEM.INPUTCAPTURE.Val0, FRAC16(0.24288));
 	
-	SYSTEM.INPUTCAPTURE.Val0 = ioctl(QTIMER_B0, QT_READ_COUNTER_REG, NULL);
-	SYSTEM.INPUTCAPTURE.Val1 = ioctl(QTIMER_B1, QT_READ_COUNTER_REG, NULL);
-	SYSTEM.INPUTCAPTURE.Val2 = ioctl(QTIMER_B2, QT_READ_COUNTER_REG, NULL);
+	SYSTEM.INPUTCAPTURE.m3UphUVW.f16B = (Frac16)(SYSTEM.INPUTCAPTURE.Val1 * 5);
+	mac_r(SYSTEM.INPUTCAPTURE.m3UphUVW.f16B, SYSTEM.INPUTCAPTURE.Val1, FRAC16(0.24288));
 	
-	ioctl(QTIMER_B0, QT_WRITE_COUNTER_REG, 0);
-	ioctl(QTIMER_B1, QT_WRITE_COUNTER_REG, 0);
-	ioctl(QTIMER_B2, QT_WRITE_COUNTER_REG, 0);
+	SYSTEM.INPUTCAPTURE.m3UphUVW.f16C = (Frac16)(SYSTEM.INPUTCAPTURE.Val2 * 5);
+	mac_r(SYSTEM.INPUTCAPTURE.m3UphUVW.f16C, SYSTEM.INPUTCAPTURE.Val2, FRAC16(0.24288));
 	
 	/*
-	SYSTEM.INPUTCAPTURE.Val0 = ioctl(EFPWMA_SUB0, EFPWMS_READ_CAPTURE_VAL0, NULL);
-	SYSTEM.INPUTCAPTURE.Val1 = ioctl(EFPWMA_SUB0, EFPWMS_READ_CAPTURE_VAL1, NULL);
-	SYSTEM.INPUTCAPTURE.Val2 = ioctl(EFPWMA_SUB0, EFPWMS_READ_CAPTURE_VAL2, NULL);
-	SYSTEM.INPUTCAPTURE.Val3 = ioctl(EFPWMA_SUB0, EFPWMS_READ_CAPTURE_VAL3, NULL);
-	SYSTEM.INPUTCAPTURE.Val4 = ioctl(EFPWMA_SUB0, EFPWMS_READ_CAPTURE_VAL4, NULL);
-	SYSTEM.INPUTCAPTURE.Val5 = ioctl(EFPWMA_SUB0, EFPWMS_READ_CAPTURE_VAL5, NULL);
-	
-	// Enable capture
-	ioctl(EFPWMA_SUB0, EFPWMS_ACTIVE_CAPTURE_X, NULL);
-	
-	
-	
-	
-	i16Temp = ioctl(EFPWMA_SUB0, EFPWMS_READ_CAPTURE_VAL0, NULL);
-	i16Temp1 = ioctl(EFPWMA_SUB0, EFPWMS_READ_CAPTURE_VAL1, NULL);
-	i16Temp2 = i16Temp1 - i16Temp;
-	SYSTEM.MCTRL.m3U_X_UVW.f16A = (Frac16)i16Temp2;
+	// Calculate clark park transform for voltages
+	// Clark transform to get Ua, Ub
+	MCLIB_ClarkTrf(&SYSTEM.INPUTCAPTURE.m2UAlphaBeta, &SYSTEM.INPUTCAPTURE.m3UphUVW);
+	// Calculate park transform to get Ud, Uq
+	// Out m2IDQ
+	MCLIB_ParkTrf(&SYSTEM.INPUTCAPTURE.m2UDQ, &SYSTEM.INPUTCAPTURE.m2UAlphaBeta, &SYSTEM.POSITION.mSinCosAngle);	
 	*/
 	
 	// Get measured angle
@@ -250,8 +242,7 @@ void ADC_1_EOS_ISR(void)
 				// Go to rotate
 				SYSTEM.REGULATORS.m2IDQReq.f16Q = SYSTEM.REGULATORS.m2IDQReq.f16D;
 				SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.0);		
-				// Set open loop ramp
-				SYSTEM.RAMPS.f16OLSpeedRampActualValue = FRAC16(0.0);
+				
 				SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_SENSORLESS_ROTATE;
 				SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_SENSORLESS_ROTATE;
 				// Reset bemf observer error part
@@ -539,6 +530,7 @@ void ADC_1_EOS_ISR(void)
 		//MCLIB_ElimDcBusRip(systemVariables.MOTOR.f16InvModeIndex, systemVariables.MOTOR.f16DCBusVoltage, &systemVariables.MOTOR.m2UAlphaBeta, &systemVariables.MOTOR.m2UAlphaBetaRippleElim);
 		// Do SVM
 		SYSTEM.MCTRL.SVMVoltageSector = MCLIB_SvmStd(&SYSTEM.MCTRL.m2UAlphaBeta, &SYSTEM.MCTRL.m3U_UVW);
+		
 		// Store PWMs
 		SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = SYSTEM.MCTRL.m3U_UVW.f16A;
 		SYSTEM.PWMValues.pwmSub_1_Channel_23_Value = SYSTEM.MCTRL.m3U_UVW.f16B;
@@ -547,6 +539,27 @@ void ADC_1_EOS_ISR(void)
 		// Load new PWM values	
 		ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);		
 	}
+}
+
+#pragma interrupt saveall
+void PWM_A0_Reload_ISR(void)
+{
+	// Get phase voltage values
+	
+	SYSTEM.INPUTCAPTURE.Val0 = ioctl(QTIMER_B0, QT_READ_COUNTER_REG, NULL);
+	SYSTEM.INPUTCAPTURE.Val1 = ioctl(QTIMER_B1, QT_READ_COUNTER_REG, NULL);
+	SYSTEM.INPUTCAPTURE.Val2 = ioctl(QTIMER_B2, QT_READ_COUNTER_REG, NULL);
+	
+	ioctl(QTIMER_B0, QT_WRITE_COUNTER_REG, 0);
+	ioctl(QTIMER_B1, QT_WRITE_COUNTER_REG, 0);
+	ioctl(QTIMER_B2, QT_WRITE_COUNTER_REG, 0);
+	
+	// Read val registers from PWM
+	//SYSTEM.INPUTCAPTURE.w16PWM0VAL2 = ioctl(EFPWMA_SUB0, EFPWMS_READ_VALUE_REG_2, NULL);
+	//SYSTEM.INPUTCAPTURE.w16PWM0VAL3 = ioctl(EFPWMA_SUB0, EFPWMS_READ_VALUE_REG_3, NULL);
+	
+	// Clear reload flag
+	ioctl(EFPWMA_SUB0, EFPWMS_CLEAR_SUBMODULE_FLAGS, EFPWM_RELOAD);
 }
 
 #pragma interrupt saveall

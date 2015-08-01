@@ -82,8 +82,6 @@ typedef struct tagSYSVARS
 		ACLIB_BEMF_OBSRV_DQ_T acBemfObsrvDQ;
 		// Angle tracking observer
 		ACLIB_TRACK_OBSRV_T acToPos;	
-		// Temporary observer
-		ACLIB_TRACK_OBSRV_T acToPos_temp;
 		// Fractional value of speed
 		Frac16 f16Speed;
 		// Filtered speed fractional value
@@ -102,11 +100,8 @@ typedef struct tagSYSVARS
 		Int16 i16SensorIndexPhaseDelay;
 		// Angle values
 		Frac16 f16RotorAngle;
+		// Previous angle 
 		Frac16 f16RotorAngle_m;
-		// Rotor angle for open loop startup
-		Frac16 f16RotorAngle_OL;
-		// Temp rotor angle
-		Frac16 f16RotorAngle_temp;
 		// Angle value from sensor
 		Frac16 f16MeasuredRotorAngle;
 		// Phase error from observer
@@ -137,29 +132,14 @@ typedef struct tagSYSVARS
 		Frac16 f16AlignCurrent;
 		// Start current
 		Frac16 f16StartCurrent;
-		// Initial angle increase
-		Frac16 f16InitialAngleIncrease;
-		// Max OL angle increase
-		Frac16 f16MaxAngleIncrease;
-		// Factor angle increase - speed
-		Frac16 f16AngleIncreaseToSpeed;
 		// Time counter
 		Int16 i16Counter;
 		// Align time
 		Int16 i16AlignTime;
-		// Merge speed difference
-		Frac16 f16MergeSpeedDifference;
-		// How many times was this difference small?
-		Int16 i16MergeDifferenceCount;
-		Int16 i16MergeDifferenceCountThreshold;
 		// Speed regulator start speed
 		Frac16 f16StartSpeed;
 		// Torque regulator start torque
 		Frac16 f16StartTorque;
-		// Difference between forced and observer speed
-		Frac16 f16SpeedDifference;
-		// Merge value - add this to observed angle until it reaches 0
-		Frac16 f16MergeAngleOffset;
 		// Angle increase on each iteration
 		Frac16 f16AngleManualError;
 		// How much BEMF error to use?
@@ -222,9 +202,17 @@ typedef struct tagSYSVARS
 		UInt16 Val0;
 		UInt16 Val1;
 		UInt16 Val2;
-		UInt16 Val3;
-		UInt16 Val4;
-		UInt16 Val5;
+		// Fractional values of voltages
+		MCLIB_3_COOR_SYST_T m3UphUVW;
+		// Measured voltages after clark transform
+		MCLIB_2_COOR_SYST_ALPHA_BETA_T m2UAlphaBeta;
+		// Measured voltages after park transform
+		MCLIB_2_COOR_SYST_D_Q_T m2UDQ;	
+		
+		// Values in PWM compare registers
+		Word16 w16PWM0VAL2;
+		Word16 w16PWM0VAL3;
+		
 	}INPUTCAPTURE;
 	
 	// Regulators
@@ -269,13 +257,7 @@ typedef struct tagSYSVARS
 		// Rampup vars
 		Frac16 f16AlignCurrentDesiredValue;
 		Frac16 f16AlignCurrentActualValue;	
-		
-		// Ramp for open loop speed startup
-		GFLIB_RAMP16_T Ramp16_OLSpeedStartup;
-		// Rampup vars
-		Frac16 f16OLSpeedRampDesiredValue;
-		Frac16 f16OLSpeedRampActualValue;	
-		
+
 		// Speed ramp
 		GFLIB_RAMP16_T Ramp16_Speed;
 		// Rampup vars

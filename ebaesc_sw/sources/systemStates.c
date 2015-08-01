@@ -221,16 +221,10 @@ Int16 checkSystemStates(void)
 						// Start open loop mode
 						SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_SENSORLESS_ALIGN;
 						SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_SENSORLESS_ALIGN;
-						// Set initial angle increase
-						SYSTEM.RAMPS.f16OLSpeedRampActualValue = SYSTEM.SENSORLESS.f16InitialAngleIncrease;
-						// Set desired angle increase
-						SYSTEM.RAMPS.f16OLSpeedRampDesiredValue = SYSTEM.SENSORLESS.f16MaxAngleIncrease;
 						// Set time for align
 						SYSTEM.SENSORLESS.i16Counter = SYSTEM.SENSORLESS.i16AlignTime;
 						// Mark no BEMF
 						SENSORLESS_BEMF_ON = 0;
-						// Reset merge count
-						SYSTEM.SENSORLESS.i16MergeDifferenceCount = 0;
 						// Go to run
 						SYSTEM.systemState = SYSTEM_RUN;
 						// Enable regulators
