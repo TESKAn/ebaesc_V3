@@ -8,8 +8,36 @@
 #ifndef MACRO_H_
 #define MACRO_H_
 
-// Time before jumping to bootloader code
-#define BOOTLOADER_TIMEOUT			4000
+// Calibration parameters
+#define M2
+
+#ifdef M1
+#define M_MAXSENSORINDEX	3731
+#define M_MINSENSORINDEX	423
+#define M_POLEPAIRS			7
+#define M_POLEARRAY_0		767
+#define M_POLEARRAY_1		1234
+#define M_POLEARRAY_2		1707
+#define M_POLEARRAY_3		2184
+#define M_POLEARRAY_4		2658
+#define M_POLEARRAY_5		3125
+#define M_POLEARRAY_6		3603
+#define M_POLEARRAY_7		768
+#endif
+
+#ifdef M2
+#define M_MAXSENSORINDEX	3740
+#define M_MINSENSORINDEX	430
+#define M_POLEPAIRS			7
+#define M_POLEARRAY_0		772
+#define M_POLEARRAY_1		1241
+#define M_POLEARRAY_2		1710
+#define M_POLEARRAY_3		2187
+#define M_POLEARRAY_4		2661
+#define M_POLEARRAY_5		3130
+#define M_POLEARRAY_6		3606
+#define M_POLEARRAY_7		771
+#endif
 
 // System macros
 #define MANUAL_ANGLE_INCREASE		FRAC16(0.0001)
