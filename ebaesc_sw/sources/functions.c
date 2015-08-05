@@ -7,6 +7,100 @@
 
 #include "allincludes.h"
 
+// Function that calculates SI values from frac values
+/*
+void CalculateSIValues(void)
+{
+	
+	float fTemp1 = 0;
+	float fTemp2 = 0;
+	float fTemp3 = 0;
+	float fTemp4 = 0;
+	int32_t i32Temp = 0;
+
+	// Motor speed
+	i32Temp = L_mult_ls(60000, systemVariables.MOTOR.mf16SpeedMAFilteredValue);
+	i32Temp = i32Temp / ui16MotorPolePairs;
+	i16MotorSpeed = (int16_t)i32Temp;
+	// Sensor motor speed	
+	i32Temp = L_mult_ls(60000, systemVariables.POSITION.f16MAFilteredSpeed);
+	i32Temp = i32Temp / ui16MotorPolePairs;
+	i16SensorMotorSpeed = (int16_t)i32Temp;	
+	
+	// DC link voltage
+	i16DCLinkVoltage = mult(systemVariables.MOTOR.f16DCBusVoltage, 363);
+	// DC link current
+	// Input power - Q
+	// U
+	fTemp1 = (float)systemVariables.MOTOR.m2UDQ.f16Q;
+	fTemp1 = fTemp1 * U_DCB_MAX;
+	fTemp1 = fTemp1 / 32768;
+	// I	
+	fTemp2 = (float)systemVariables.MOTOR.m2IDQ.f16Q;
+	fTemp2 = fTemp2 * I_MAX;
+	fTemp2 = fTemp2 / 32768;
+	// P = U * I	
+	fTemp3 = fTemp1 * fTemp2;
+	// Multiply with 100 to get A/100
+	fTemp3 = fTemp3 * 100;
+	// Input power - D
+	// U
+	fTemp1 = (float)systemVariables.MOTOR.m2UDQ.f16D;
+	fTemp1 = fTemp1 * U_DCB_MAX;
+	fTemp1 = fTemp1 / 32768;
+	// I	
+	fTemp2 = (float)systemVariables.MOTOR.m2IDQ.f16D;
+	fTemp2 = fTemp2 * I_MAX;
+	fTemp2 = fTemp2 / 32768;
+	// P = U * I	
+	fTemp4 = fTemp1 * fTemp2;
+	// Multiply with 100 to get A/100
+	fTemp4 = fTemp4 * 100;	
+	// Add 
+	fTemp3 = fTemp3 + fTemp4;	
+	
+	// Udc
+	fTemp1 = (float)systemVariables.MOTOR.f16DCBusVoltage;
+	fTemp1 = fTemp1 * U_DCB_MAX;
+	fTemp1 = fTemp1 / 32768;
+	// Idc = P / Udc
+	fTemp2 = fTemp3 / fTemp1;
+	i16DCLinkCurrent = (int16_t)fTemp2;
+}
+*/
+
+Int16 CalculateSIValues(void)
+{
+	float fTemp = 0.0;
+	float fTemp1 = 0.0;
+	
+	// UIn
+	fTemp = (float)SYSTEM.ADC.f16DCLinkVoltageFiltered;
+	fTemp = fTemp * SI_UIN_FACTOR;
+	SYSTEM.SIVALUES.fUIn = fTemp / 32768;
+	
+	// Pin
+	fTemp = (float)SYSTEM.MCTRL.m2IDQ.f16Q;		// Iq
+	fTemp = fTemp * SI_IIN_FACTOR;
+	fTemp = fTemp / 32768;
+	fTemp1 = (float)SYSTEM.MCTRL.m2UDQ.f16Q;	// Uq
+	fTemp1 = fTemp1 * SI_UIN_FACTOR;
+	fTemp1 = fTemp1 / 32768;
+	SYSTEM.SIVALUES.fPIn = fTemp * fTemp1 * 0.5f;						// P = Iq * Uq
+	
+
+	// IIn
+	SYSTEM.SIVALUES.fIIn = SYSTEM.SIVALUES.fPIn / SYSTEM.SIVALUES.fUIn;
+	
+	// RPM
+	fTemp = (float)SYSTEM.POSITION.f16SpeedFiltered;
+	fTemp = fTemp * SI_RPM_FACTOR;
+	SYSTEM.SIVALUES.fRPM = fTemp / 32768;
+	
+	
+	return 0;
+}
+
 Int16 CalculateCalibrationData(void)
 {
 	Int16 i16Temp0 = 0;
@@ -374,66 +468,6 @@ void StopMotor(void)
 		SYSTEM_SPINNING = 0;
 		systemVariables.ui16CalibrationState = CALIBRATE_INIT;
 	}*/
-}
-
-// Function that calculates SI values from frac values
-void CalculateSIValues(void)
-{
-	/*
-	float fTemp1 = 0;
-	float fTemp2 = 0;
-	float fTemp3 = 0;
-	float fTemp4 = 0;
-	int32_t i32Temp = 0;
-
-	// Motor speed
-	i32Temp = L_mult_ls(60000, systemVariables.MOTOR.mf16SpeedMAFilteredValue);
-	i32Temp = i32Temp / ui16MotorPolePairs;
-	i16MotorSpeed = (int16_t)i32Temp;
-	// Sensor motor speed	
-	i32Temp = L_mult_ls(60000, systemVariables.POSITION.f16MAFilteredSpeed);
-	i32Temp = i32Temp / ui16MotorPolePairs;
-	i16SensorMotorSpeed = (int16_t)i32Temp;	
-	
-	// DC link voltage
-	i16DCLinkVoltage = mult(systemVariables.MOTOR.f16DCBusVoltage, 363);
-	// DC link current
-	// Input power - Q
-	// U
-	fTemp1 = (float)systemVariables.MOTOR.m2UDQ.f16Q;
-	fTemp1 = fTemp1 * U_DCB_MAX;
-	fTemp1 = fTemp1 / 32768;
-	// I	
-	fTemp2 = (float)systemVariables.MOTOR.m2IDQ.f16Q;
-	fTemp2 = fTemp2 * I_MAX;
-	fTemp2 = fTemp2 / 32768;
-	// P = U * I	
-	fTemp3 = fTemp1 * fTemp2;
-	// Multiply with 100 to get A/100
-	fTemp3 = fTemp3 * 100;
-	// Input power - D
-	// U
-	fTemp1 = (float)systemVariables.MOTOR.m2UDQ.f16D;
-	fTemp1 = fTemp1 * U_DCB_MAX;
-	fTemp1 = fTemp1 / 32768;
-	// I	
-	fTemp2 = (float)systemVariables.MOTOR.m2IDQ.f16D;
-	fTemp2 = fTemp2 * I_MAX;
-	fTemp2 = fTemp2 / 32768;
-	// P = U * I	
-	fTemp4 = fTemp1 * fTemp2;
-	// Multiply with 100 to get A/100
-	fTemp4 = fTemp4 * 100;	
-	// Add 
-	fTemp3 = fTemp3 + fTemp4;	
-	
-	// Udc
-	fTemp1 = (float)systemVariables.MOTOR.f16DCBusVoltage;
-	fTemp1 = fTemp1 * U_DCB_MAX;
-	fTemp1 = fTemp1 / 32768;
-	// Idc = P / Udc
-	fTemp2 = fTemp3 / fTemp1;
-	i16DCLinkCurrent = (int16_t)fTemp2;*/
 }
 
 #pragma interrupt called

@@ -297,6 +297,14 @@ typedef struct tagSYSVARS
 		UInt32 ui32PWMSamplesReceived;
 	}PWMIN;
 	
+	struct tagSIVALUES
+	{
+		float fUIn;
+		float fIIn;
+		float fPIn;
+		float fRPM;
+	}SIVALUES;
+	
 
 	// Phase voltages
 	MCLIB_3_COOR_SYST_T m3UphUVW;
@@ -308,6 +316,9 @@ typedef struct tagSYSVARS
 	// System state machine
 	Int16 systemState;
 	Int16 i16StateTransition;
+	
+	// Motor ID
+	Int16 i16MotorID;
 	
 	
 }SYSTEMVARIABLES;

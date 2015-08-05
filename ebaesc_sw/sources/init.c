@@ -11,7 +11,11 @@
  * If initial != 0, init all variables. Else only reset.
  */
 void InitSysVars(Int16 initial)
-{
+{	
+	//******************************************
+	// Motor ID
+	//******************************************	
+	SYSTEM.i16MotorID = M_ID;
 	//******************************************
 	// Calibration
 	//******************************************

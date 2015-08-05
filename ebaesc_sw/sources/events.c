@@ -619,7 +619,10 @@ void PIT_0_ISR(void)
 	//RS485CommTest();
 	// Check RS485 master
 	RS485_States_Master();
+	// Check system states
 	checkSystemStates();
+	// Recalculate SI values
+	CalculateSIValues();
 	// Decrease counters
 	if(0 < SYSTEM.SENSORLESS.i16Counter)
 	{

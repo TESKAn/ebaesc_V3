@@ -12,6 +12,7 @@
 #define M2
 
 #ifdef M1
+#define M_ID				1
 #define M_MAXSENSORINDEX	3731
 #define M_MINSENSORINDEX	423
 #define M_POLEPAIRS			7
@@ -26,6 +27,7 @@
 #endif
 
 #ifdef M2
+#define M_ID				2
 #define M_MAXSENSORINDEX	3740
 #define M_MINSENSORINDEX	430
 #define M_POLEPAIRS			7
@@ -38,6 +40,11 @@
 #define M_POLEARRAY_6		3606
 #define M_POLEARRAY_7		771
 #endif
+
+// Macros for calculating SI values
+#define SI_UIN_FACTOR		60.87f		// 60.87V max
+#define SI_IIN_FACTOR		164.8f		// 164.8A max
+#define SI_RPM_FACTOR		17142.8571f	//120.000/n pole pairs
 
 // System macros
 #define MANUAL_ANGLE_INCREASE		FRAC16(0.0001)
@@ -109,6 +116,8 @@
 #define PWM_ENABLED					flag1.BIT2		// Only do regulation when PWMs are enabled
 #define SYSTEM_RECALCULATE_FACTORS	flag1.BIT3		// Recalculate gain, shift factors from float values
 #define SYSTEM_TEST_NEW_STARTUP		flag1.BIT4		// Flag to test new startup procedure
+#define DRV_READ_STATUS_REG			flag1.BIT5		// Mark read DRV8301 status reg
+#define DRV_READ_REG_2				flag1.BIT6		// 0 - read reg 1, 1 - read reg 2
 
 
 // Driver HW interface defs
