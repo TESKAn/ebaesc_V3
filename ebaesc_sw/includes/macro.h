@@ -46,6 +46,9 @@
 #define SI_IIN_FACTOR		164.8f		// 164.8A max
 #define SI_RPM_FACTOR		17142.8571f	//120.000/n pole pairs
 
+// Macros for correcting angle offset
+#define AOFFSET_FACTOR		0.7340032f	//(.000096*6*(32768/180))*7
+
 // System macros
 #define MANUAL_ANGLE_INCREASE		FRAC16(0.0001)
 #define MANUAL_SPEED				FRAC16(0.0)

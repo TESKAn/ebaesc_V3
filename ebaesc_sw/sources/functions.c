@@ -85,8 +85,8 @@ Int16 CalculateSIValues(void)
 	fTemp = fTemp / 32768;
 	fTemp1 = (float)SYSTEM.MCTRL.m2UDQ.f16Q;	// Uq
 	fTemp1 = fTemp1 * SI_UIN_FACTOR;
-	fTemp1 = fTemp1 / 32768;
-	SYSTEM.SIVALUES.fPIn = fTemp * fTemp1 * 0.5f;						// P = Iq * Uq
+	fTemp1 = fTemp1 / 65535;//32768;
+	SYSTEM.SIVALUES.fPIn = fTemp * fTemp1;						// P = Iq * Uq
 	
 
 	// IIn
@@ -96,6 +96,23 @@ Int16 CalculateSIValues(void)
 	fTemp = (float)SYSTEM.POSITION.f16SpeedFiltered;
 	fTemp = fTemp * SI_RPM_FACTOR;
 	SYSTEM.SIVALUES.fRPM = fTemp / 32768;
+	
+	// Calculate angle error in deg, scaled to frac16
+	fTemp = SYSTEM.SIVALUES.fRPM * SYSTEM.POSITION.fOffsetCalcFactor;
+	// Store 	
+	SYSTEM.POSITION.f16AngleOffset = (Frac16)fTemp;
+	
+	// Calculate how much voltage we can have for Q regulator and set limits
+	// Ud squared
+	fTemp = (float)SYSTEM.MCTRL.m2UDQ.f16D;
+	fTemp = fTemp / 32768;
+	fTemp = fTemp * fTemp;
+	fTemp = 0.9f - fTemp;
+	fTemp = sqrtf(fTemp);
+	fTemp = fTemp * 32768;
+	SYSTEM.REGULATORS.f16UqRemaining = (Frac16)fTemp;
+	
+	
 	
 	
 	return 0;

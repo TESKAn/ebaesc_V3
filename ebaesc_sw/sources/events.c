@@ -81,6 +81,9 @@ void ADC_1_EOS_ISR(void)
 	// Filter
 	SYSTEM.ADC.f16SensorValueAFiltered = GDFLIB_FilterMA32(SYSTEM.ADC.f16SensorValueA, &SYSTEM.ADC.FilterMA32SensorA);
 	SYSTEM.ADC.f16SensorValueBFiltered = GDFLIB_FilterMA32(SYSTEM.ADC.f16SensorValueB, &SYSTEM.ADC.FilterMA32SensorB);
+	
+	// Change phase current amplification if necessary
+	
 		
 	// Call freemaster recorder
 	FMSTR_Recorder();
@@ -111,21 +114,25 @@ void ADC_1_EOS_ISR(void)
 	// Get filtered current position
 	SYSTEM.POSITION.i16SensorIndexFiltered = (Int16)(SYSTEM.ADC.f16SensorValueBFiltered >> 3);
 	// Add offset to index
-	SYSTEM.POSITION.i16SensorIndex += SYSTEM.POSITION.i16SensorIndexOffset;
+	//SYSTEM.POSITION.i16SensorIndex += SYSTEM.POSITION.i16SensorIndexOffset;
 	// Add phase delay
-	i16Temp = mult(SYSTEM.POSITION.i16SensorIndexPhaseDelay, SYSTEM.POSITION.f16SpeedFiltered);
-	SYSTEM.POSITION.i16SensorIndex = i16Temp + SYSTEM.POSITION.i16SensorIndex;
+	//i16Temp = mult(SYSTEM.POSITION.i16SensorIndexPhaseDelay, SYSTEM.POSITION.f16SpeedFiltered);
+	//SYSTEM.POSITION.i16SensorIndex = i16Temp + SYSTEM.POSITION.i16SensorIndex;
 	// Wrap
     /*
      * TODO: Check wrap for negative speeds 
      *
-     */
+     */	
 	SYSTEM.POSITION.i16SensorIndex = SYSTEM.POSITION.i16SensorIndex & 4095;
 	// Get measured angle from previous iteration
 	SYSTEM.POSITION.f16MeasuredRotorAngle = SYSTEM.CALIBRATION.f16CalibrationArray[SYSTEM.POSITION.i16SensorIndex];
+	// Add position offset from sensor delay
+	SYSTEM.POSITION.f16MeasuredRotorAngle += SYSTEM.POSITION.f16AngleOffset;
+	// Add fixed position offset
+	SYSTEM.POSITION.f16MeasuredRotorAngle += SYSTEM.POSITION.f16AddedAngleOffset;
 	// Calculate phase error
 	// SYSTEM.POSITION.f16RotorAngle = calculated angle from previous iteration
-	// f16Temp = measured angle from previous iteration
+	// SYSTEM.POSITION.f16MeasuredRotorAngle = current measured angle
 	SYSTEM.POSITION.f16MeasuredAngleError = SYSTEM.POSITION.f16MeasuredRotorAngle - SYSTEM.POSITION.f16RotorAngle; 
 	// Store to previous angle
 	SYSTEM.POSITION.f16RotorAngle_m = SYSTEM.POSITION.f16RotorAngle;
@@ -384,13 +391,29 @@ void ADC_1_EOS_ISR(void)
 			// Torque control, set Iq for some torque
 			// Id = 0
 			SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.0);
-			// Torque ramp
-			if(SYSTEM.RAMPS.f16TorqueRampDesiredValue != SYSTEM.RAMPS.f16TorqueRampActualValue)
+			// Iq saturated?
+			if(0 != SYSTEM.REGULATORS.mudtControllerParamIq.i16LimitFlag)
 			{
-				SYSTEM.RAMPS.f16TorqueRampActualValue = GFLIB_Ramp16(SYSTEM.RAMPS.f16TorqueRampDesiredValue, SYSTEM.RAMPS.f16TorqueRampActualValue, &SYSTEM.RAMPS.Ramp16_Torque);
+				// Iq saturated, decrease it
+				if(FRAC16(0.0) < SYSTEM.REGULATORS.m2IDQReq.f16Q)
+				{
+					SYSTEM.REGULATORS.m2IDQReq.f16Q--;
+				}
+				else
+				{
+					SYSTEM.REGULATORS.m2IDQReq.f16Q++;
+				}
 			}
-			// Scale with some factor
-			SYSTEM.REGULATORS.m2IDQReq.f16Q = mult(SYSTEM.RAMPS.f16TorqueRampActualValue, SYSTEM.MCTRL.f16TorqueFactor); 
+			else
+			{
+				// Torque ramp
+				if(SYSTEM.RAMPS.f16TorqueRampDesiredValue != SYSTEM.RAMPS.f16TorqueRampActualValue)
+				{
+					SYSTEM.RAMPS.f16TorqueRampActualValue = GFLIB_Ramp16(SYSTEM.RAMPS.f16TorqueRampDesiredValue, SYSTEM.RAMPS.f16TorqueRampActualValue, &SYSTEM.RAMPS.Ramp16_Torque);
+				}
+				// Scale with some factor
+				SYSTEM.REGULATORS.m2IDQReq.f16Q = mult(SYSTEM.RAMPS.f16TorqueRampActualValue, SYSTEM.MCTRL.f16TorqueFactor);
+			}
 			break;
 		}
 		case CURRENT_SOURCE_CONTROL_SPEED:
@@ -416,18 +439,28 @@ void ADC_1_EOS_ISR(void)
 				// If Iq > Iqmax, check speed error
 				// If error leads to lower Iq, OK
 				// Else skip regulator
-				// mi16SatFlagQ -> Iq regulator is saturated
+				// SYSTEM.REGULATORS.mudtControllerParamIq.i16LimitFlag -> if 1, Iq regulator is saturated
 				
-				if(0 != SYSTEM.REGULATORS.i16SatFlagQ)
+				if(0 != SYSTEM.REGULATORS.mudtControllerParamIq.i16LimitFlag)
 				{
-					// Iq is saturated, decrease Iq
+					// If error will decrease required current, run regulation
+					// Else do nothing					
+					// Iq is saturated, run regulation, decrease Iq
+					SYSTEM.REGULATORS.i16SatFlagW = 1;
+					
 					if(FRAC16(0.0) < SYSTEM.REGULATORS.m2IDQReq.f16Q)
 					{
-						SYSTEM.REGULATORS.m2IDQReq.f16Q--;
+						if(f16SpeedErrorK <= FRAC16(0.0))
+						{
+							SYSTEM.REGULATORS.m2IDQReq.f16Q = GFLIB_ControllerPIp(f16SpeedErrorK, &SYSTEM.REGULATORS.mudtControllerParamW, &SYSTEM.REGULATORS.i16SatFlagW);
+						}
 					}
 					else
 					{
-						SYSTEM.REGULATORS.m2IDQReq.f16Q++;
+						if(f16SpeedErrorK >= FRAC16(0.0))
+						{
+							SYSTEM.REGULATORS.m2IDQReq.f16Q = GFLIB_ControllerPIp(f16SpeedErrorK, &SYSTEM.REGULATORS.mudtControllerParamW, &SYSTEM.REGULATORS.i16SatFlagW);
+						}
 					}
 				}
 				else
@@ -514,9 +547,11 @@ void ADC_1_EOS_ISR(void)
 		// Q
 		// Calculate error
 		mf16ErrorK = SYSTEM.REGULATORS.m2IDQReq.f16Q - SYSTEM.MCTRL.m2IDQ.f16Q;
-		/*
-		 * TODO: Limit voltages to available 
-		 */  
+
+		// Set Iq controller limits
+		SYSTEM.REGULATORS.mudtControllerParamIq.f16UpperLimit = SYSTEM.REGULATORS.f16UqRemaining;
+		SYSTEM.REGULATORS.mudtControllerParamIq.f16LowerLimit = -SYSTEM.REGULATORS.f16UqRemaining;
+		
 		// Controller calculation
 		SYSTEM.MCTRL.m2UDQ.f16Q = GFLIB_ControllerPIp(mf16ErrorK, &SYSTEM.REGULATORS.mudtControllerParamIq, &SYSTEM.REGULATORS.i16SatFlagQ);
 		

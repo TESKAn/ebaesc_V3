@@ -47,8 +47,8 @@ void InitSysVars(Int16 initial)
 		SYSTEM.REGULATORS.mudtControllerParamId.f16IntegGain = D_KI_GAIN;
 		SYSTEM.REGULATORS.mudtControllerParamId.i16PropGainShift = D_KP_SHIFT;
 		SYSTEM.REGULATORS.mudtControllerParamId.i16IntegGainShift = D_KI_SHIFT;
-		SYSTEM.REGULATORS.mudtControllerParamId.f16UpperLimit = FRAC16(0.5);
-		SYSTEM.REGULATORS.mudtControllerParamId.f16LowerLimit = FRAC16(-0.5);
+		SYSTEM.REGULATORS.mudtControllerParamId.f16UpperLimit = FRAC16(0.9);
+		SYSTEM.REGULATORS.mudtControllerParamId.f16LowerLimit = FRAC16(-0.9);
 		
 		// Q
 		SYSTEM.REGULATORS.mudtControllerParamIq.f16PropGain = Q_KP_GAIN;
@@ -120,7 +120,11 @@ void InitSysVars(Int16 initial)
 		SYSTEM.POSITION.acToPos.i16IntegGainShift= -10;
 		SYSTEM.POSITION.acToPos.f16ThGain= TO_THETA_GAIN;
 		SYSTEM.POSITION.acToPos.i16ThGainShift = TO_THETA_SHIFT;	
-				
+	}
+	
+	// Other init - once
+	if(0 != initial)
+	{
 		// Position offset
 		SYSTEM.POSITION.i16SensorIndexOffset = 0;
 		// Phase delay from speed
@@ -128,8 +132,11 @@ void InitSysVars(Int16 initial)
 		// Speed MA filter
 		SYSTEM.POSITION.FilterMA32Speed.w16N = 2;
 		GDFLIB_FilterMA32Init(&SYSTEM.POSITION.FilterMA32Speed);	
-		SYSTEM.POSITION.f16ManualAngleIncrease = MANUAL_ANGLE_INCREASE;	
+		SYSTEM.POSITION.f16ManualAngleIncrease = MANUAL_ANGLE_INCREASE;			
+		SYSTEM.POSITION.f16AddedAngleOffset = FRAC16(0.0);		
+		SYSTEM.POSITION.fOffsetCalcFactor = AOFFSET_FACTOR;
 	}
+	
 	SYSTEM.POSITION.acToPos.f32Theta = FRAC32(0.0);
 	SYSTEM.POSITION.acToPos.f32Speed = FRAC32(0.0);
 	SYSTEM.POSITION.acToPos.f32I_1 = FRAC32(0.0);
@@ -144,6 +151,8 @@ void InitSysVars(Int16 initial)
 	SYSTEM.POSITION.f16SpeedFiltered = FRAC16(0.0);
 	
 	SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_NONE;
+	
+	SYSTEM.POSITION.f16AngleOffset = FRAC16(0.0);
 	
 	//******************************************
 	// Sensorless

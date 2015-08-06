@@ -117,7 +117,12 @@ typedef struct tagSYSVARS
 		Frac16 f16ManualAngleIncrease;
 		// Position source
 		Int16 i16PositionSource;
-		
+		// Offset from sensor delay
+		Frac16 f16AngleOffset;
+		// Add additional angle offset
+		Frac16 f16AddedAngleOffset;
+		// Factor for calculating offset
+		float fOffsetCalcFactor;
 	}POSITION;
 	
 	struct tagSENSORLESS
@@ -247,6 +252,8 @@ typedef struct tagSYSVARS
 		
 		// Current reference source
 		Int16 i16CurrentSource;
+		// Voltage remaining for Uq
+		Frac16 f16UqRemaining;
 		
 	}REGULATORS;
 	
