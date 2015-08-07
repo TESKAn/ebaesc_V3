@@ -49,6 +49,14 @@
 // Macros for correcting angle offset
 #define AOFFSET_FACTOR		0.7340032f	//(.000096*6*(32768/180))*7
 
+// Limits to switch current amplification
+#define DRV_A10_MIN			FRAC16(0.21)
+#define DRV_A20_MIN			FRAC16(0.09)
+#define DRV_A20_MAX			FRAC16(0.22)
+#define DRV_A40_MIN			FRAC16(0.04)
+#define DRV_A40_MAX			FRAC16(0.1)
+#define DRV_A80_MAX			FRAC16(0.05)
+
 // System macros
 #define MANUAL_ANGLE_INCREASE		FRAC16(0.0001)
 #define MANUAL_SPEED				FRAC16(0.0)
@@ -120,8 +128,8 @@
 #define SYSTEM_RECALCULATE_FACTORS	flag1.BIT3		// Recalculate gain, shift factors from float values
 #define SYSTEM_TEST_NEW_STARTUP		flag1.BIT4		// Flag to test new startup procedure
 #define DRV_READ_STATUS_REG			flag1.BIT5		// Mark read DRV8301 status reg
-#define DRV_READ_REG_2				flag1.BIT6		// 0 - read reg 1, 1 - read reg 2
-
+#define DRV_DATA_READ				flag1.BIT6		// 0 - read reg 1, 1 - read reg 2
+#define DRV_WRITE_GAIN				flag1.BIT7
 
 // Driver HW interface defs
 #define EN_GATE_ON					ioctl(GPIO_C, GPIO_SET_PIN, BIT_13)

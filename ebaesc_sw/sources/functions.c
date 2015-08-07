@@ -8,67 +8,6 @@
 #include "allincludes.h"
 
 // Function that calculates SI values from frac values
-/*
-void CalculateSIValues(void)
-{
-	
-	float fTemp1 = 0;
-	float fTemp2 = 0;
-	float fTemp3 = 0;
-	float fTemp4 = 0;
-	int32_t i32Temp = 0;
-
-	// Motor speed
-	i32Temp = L_mult_ls(60000, systemVariables.MOTOR.mf16SpeedMAFilteredValue);
-	i32Temp = i32Temp / ui16MotorPolePairs;
-	i16MotorSpeed = (int16_t)i32Temp;
-	// Sensor motor speed	
-	i32Temp = L_mult_ls(60000, systemVariables.POSITION.f16MAFilteredSpeed);
-	i32Temp = i32Temp / ui16MotorPolePairs;
-	i16SensorMotorSpeed = (int16_t)i32Temp;	
-	
-	// DC link voltage
-	i16DCLinkVoltage = mult(systemVariables.MOTOR.f16DCBusVoltage, 363);
-	// DC link current
-	// Input power - Q
-	// U
-	fTemp1 = (float)systemVariables.MOTOR.m2UDQ.f16Q;
-	fTemp1 = fTemp1 * U_DCB_MAX;
-	fTemp1 = fTemp1 / 32768;
-	// I	
-	fTemp2 = (float)systemVariables.MOTOR.m2IDQ.f16Q;
-	fTemp2 = fTemp2 * I_MAX;
-	fTemp2 = fTemp2 / 32768;
-	// P = U * I	
-	fTemp3 = fTemp1 * fTemp2;
-	// Multiply with 100 to get A/100
-	fTemp3 = fTemp3 * 100;
-	// Input power - D
-	// U
-	fTemp1 = (float)systemVariables.MOTOR.m2UDQ.f16D;
-	fTemp1 = fTemp1 * U_DCB_MAX;
-	fTemp1 = fTemp1 / 32768;
-	// I	
-	fTemp2 = (float)systemVariables.MOTOR.m2IDQ.f16D;
-	fTemp2 = fTemp2 * I_MAX;
-	fTemp2 = fTemp2 / 32768;
-	// P = U * I	
-	fTemp4 = fTemp1 * fTemp2;
-	// Multiply with 100 to get A/100
-	fTemp4 = fTemp4 * 100;	
-	// Add 
-	fTemp3 = fTemp3 + fTemp4;	
-	
-	// Udc
-	fTemp1 = (float)systemVariables.MOTOR.f16DCBusVoltage;
-	fTemp1 = fTemp1 * U_DCB_MAX;
-	fTemp1 = fTemp1 / 32768;
-	// Idc = P / Udc
-	fTemp2 = fTemp3 / fTemp1;
-	i16DCLinkCurrent = (int16_t)fTemp2;
-}
-*/
-
 Int16 CalculateSIValues(void)
 {
 	float fTemp = 0.0;
@@ -112,8 +51,40 @@ Int16 CalculateSIValues(void)
 	fTemp = fTemp * 32768;
 	SYSTEM.REGULATORS.f16UqRemaining = (Frac16)fTemp;
 	
-	
-	
+	// Calculate phase current
+	// Id^2
+	fTemp = (float)SYSTEM.MCTRL.m2IDQ.f16D;
+	fTemp = fTemp / 32768;
+	fTemp = fTemp * fTemp;
+	// Iq^2
+	fTemp1 = (float)SYSTEM.MCTRL.m2IDQ.f16Q;
+	fTemp1 = fTemp1 / 32768;
+	fTemp1 = fTemp1 * fTemp1;
+	// Add
+	fTemp += fTemp1;
+	// Sqrt
+	fTemp = sqrtf(fTemp);
+	// Calculate FRAC16 value
+	fTemp = fTemp * 32768;
+	SYSTEM.MCTRL.f16IPh = (Frac16)fTemp;	
+	/*
+	// Check that DRV is alive
+	if(1 == DRV_DATA_READ)
+	{
+		// Data was read, all is OK
+		// Reset to 0
+		DRV_DATA_READ = 0;
+	}
+	else
+	{
+		// Data not read in 1 ms, initiate a read
+		// Read reg 1
+		DRV8301.RegReq.RW = 1;								//we are initiating a read
+		DRV8301.RegReq.ADDR = DRV8301_STAT_REG_1_ADDR;		//load the address
+		DRV8301.RegReq.DATA = 0;							//dummy data;
+		// Send data
+		ioctl(SPI_0, SPI_WRITE_DATA, DRV8301.RegReq.reg);
+	}*/
 	
 	return 0;
 }
@@ -570,7 +541,7 @@ UInt16 DRV8301_SPI_Write(UInt16 uiAddress, UInt16 uiData)
 {
 	volatile UInt16 stat_reg1,wDummyCnt;
 	
-	DRV8301.RegReq.RW = 0;					//we are initiating a read
+	DRV8301.RegReq.RW = 0;					//we are initiating a write
 	DRV8301.RegReq.ADDR = uiAddress;		//load the address
 	DRV8301.RegReq.DATA = uiData;			//data to be written;
 	

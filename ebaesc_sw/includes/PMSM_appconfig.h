@@ -76,8 +76,8 @@
 #define SPEED_PI_PROP_SHIFT             (0)
 #define SPEED_PI_INTEG_GAIN             FRAC16(0.762935023406)
 #define SPEED_PI_INTEG_SHIFT            (-7)
-#define SPEED_LOOP_HIGH_LIMIT           FRAC16(0.121359223301)
-#define SPEED_LOOP_LOW_LIMIT            FRAC16(-0.121359223301)
+#define SPEED_LOOP_HIGH_LIMIT           FRAC16(0.25)
+#define SPEED_LOOP_LOW_LIMIT            FRAC16(-0.25)
 
 
 #define SPEED_RAMP_UP                   FRAC16(0.0002)//FRAC16(0.000056818182)

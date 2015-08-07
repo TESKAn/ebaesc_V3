@@ -35,26 +35,26 @@ void ADC_1_EOS_ISR(void)
 	// Read data
 	//******************************************
 	// Phase currents
-	SYSTEM.ADC.m3IphUVW.f16A = ioctl(ADC_1, ADC_READ_SAMPLE, 0);
-	SYSTEM.ADC.m3IphUVW.f16C = ioctl(ADC_1, ADC_READ_SAMPLE, 8);
+	SYSTEM.ADC.m3IphUVWRaw.f16A = ioctl(ADC_1, ADC_READ_SAMPLE, 0);
+	SYSTEM.ADC.m3IphUVWRaw.f16C = ioctl(ADC_1, ADC_READ_SAMPLE, 8);
 	// Zero currents?
 	if(SYS_ZERO_CURRENT)
 	{
 		SYS_ZERO_CURRENT = 0;
-		SYSTEM.ADC.f16OffsetU = SYSTEM.ADC.m3IphUVW.f16A;
-		SYSTEM.ADC.f16OffsetW = SYSTEM.ADC.m3IphUVW.f16C;
+		SYSTEM.ADC.f16OffsetU = SYSTEM.ADC.m3IphUVWRaw.f16A;
+		SYSTEM.ADC.f16OffsetW = SYSTEM.ADC.m3IphUVWRaw.f16C;
 	}
 	
 	// Remove offsets
-	SYSTEM.ADC.m3IphUVW.f16A = SYSTEM.ADC.m3IphUVW.f16A - SYSTEM.ADC.f16OffsetU;
-	SYSTEM.ADC.m3IphUVW.f16C = SYSTEM.ADC.m3IphUVW.f16C - SYSTEM.ADC.f16OffsetW;
+	SYSTEM.ADC.m3IphUVW.f16A = SYSTEM.ADC.m3IphUVWRaw.f16A - SYSTEM.ADC.f16OffsetU;
+	SYSTEM.ADC.m3IphUVW.f16C = SYSTEM.ADC.m3IphUVWRaw.f16C - SYSTEM.ADC.f16OffsetW;
 	// Calculate third
 	SYSTEM.ADC.m3IphUVW.f16B = -SYSTEM.ADC.m3IphUVW.f16A - SYSTEM.ADC.m3IphUVW.f16C;
 	
 	// Multiply with gain
-	SYSTEM.ADC.m3IphUVW.f16A = mult(DRV8301_GAIN_FACTOR, SYSTEM.ADC.m3IphUVW.f16A);
-	SYSTEM.ADC.m3IphUVW.f16B = mult(DRV8301_GAIN_FACTOR, SYSTEM.ADC.m3IphUVW.f16B);
-	SYSTEM.ADC.m3IphUVW.f16C = mult(DRV8301_GAIN_FACTOR, SYSTEM.ADC.m3IphUVW.f16C);
+	SYSTEM.ADC.m3IphUVW.f16A = mult(SYSTEM.ADC.f16CurrentGainFactor, SYSTEM.ADC.m3IphUVW.f16A);
+	SYSTEM.ADC.m3IphUVW.f16B = mult(SYSTEM.ADC.f16CurrentGainFactor, SYSTEM.ADC.m3IphUVW.f16B);
+	SYSTEM.ADC.m3IphUVW.f16C = mult(SYSTEM.ADC.f16CurrentGainFactor, SYSTEM.ADC.m3IphUVW.f16C);
 	
 	// Measure phase voltages
 	// U
@@ -83,7 +83,120 @@ void ADC_1_EOS_ISR(void)
 	SYSTEM.ADC.f16SensorValueBFiltered = GDFLIB_FilterMA32(SYSTEM.ADC.f16SensorValueB, &SYSTEM.ADC.FilterMA32SensorB);
 	
 	// Change phase current amplification if necessary
-	
+	if(DRV8301_CONFIGURED)
+	{
+		switch(DRV8301.CtrlReg2.GAIN)
+		{
+			case DRV8301_GAIN_10:
+			{
+				// Check phase value
+				if(DRV_A10_MIN > SYSTEM.MCTRL.f16IPh)
+				{
+					// Switch to x20
+					DRV8301.CtrlReg2.GAIN = DRV8301_GAIN_20;
+					SYSTEM.ADC.f16CurrentGainFactor = FRAC16(0.5);
+					DRV_WRITE_GAIN = 1;
+				}
+				break;
+			}
+			case DRV8301_GAIN_20:
+			{
+				// Check phase value
+				if(DRV_A20_MIN > SYSTEM.MCTRL.f16IPh)
+				{
+					// Switch to x40
+					DRV8301.CtrlReg2.GAIN = DRV8301_GAIN_40;
+					SYSTEM.ADC.f16CurrentGainFactor = FRAC16(0.25);
+					DRV_WRITE_GAIN = 1;
+					
+				}
+				else if(DRV_A20_MAX < SYSTEM.MCTRL.f16IPh)
+				{
+					// Switch to x10
+					DRV8301.CtrlReg2.GAIN = DRV8301_GAIN_10;
+					SYSTEM.ADC.f16CurrentGainFactor = FRAC16(1.0);
+					DRV_WRITE_GAIN = 1;
+				}
+				break;
+			}
+			case DRV8301_GAIN_40:
+			{
+				// Check phase value
+				if(DRV_A40_MIN > SYSTEM.MCTRL.f16IPh)
+				{
+					// Switch to x80
+					DRV8301.CtrlReg2.GAIN = DRV8301_GAIN_80;
+					SYSTEM.ADC.f16CurrentGainFactor = FRAC16(0.125);
+					DRV_WRITE_GAIN = 1;
+				}
+				else if(DRV_A40_MAX < SYSTEM.MCTRL.f16IPh)
+				{
+					// Switch to x20
+					DRV8301.CtrlReg2.GAIN = DRV8301_GAIN_20;
+					SYSTEM.ADC.f16CurrentGainFactor = FRAC16(0.5);
+					DRV_WRITE_GAIN = 1;
+				}
+				break;
+			}
+			case DRV8301_GAIN_80:
+			{
+				if(DRV_A40_MAX < SYSTEM.MCTRL.f16IPh)
+				{
+					// Switch to x40
+					DRV8301.CtrlReg2.GAIN = DRV8301_GAIN_40;
+					SYSTEM.ADC.f16CurrentGainFactor = FRAC16(0.25);
+					DRV_WRITE_GAIN = 1;
+				}
+				break;
+			}
+		}
+		
+		if(DRV_WRITE_GAIN)
+		{
+			DRV_WRITE_GAIN = 0;
+			DRV8301.RegReq.RW = 0;								//we are initiating a write
+			DRV8301.RegReq.ADDR = DRV8301_CNTRL_REG_2_ADDR;		//load the address
+			DRV8301.RegReq.DATA = DRV8301.CtrlReg2.reg;			//data to be written;
+			
+			ioctl(SPI_0, SPI_WRITE_DATA, DRV8301.RegReq.reg);
+		}
+		else
+		{
+			DRV_DATA_READ = 1;
+			
+			// Result ready in SPI buffer?
+			if(ioctl(SPI_0, SPI_CAN_READ_DATA, null) == 0)
+			{
+				DRV_DATA_READ = 1;
+				// Read to req reg
+				DRV8301.RegReq.reg = ioctl(SPI_0, SPI_READ_DATA, null);
+				// What is it?
+				if(DRV8301_STAT_REG_1_ADDR == DRV8301.RegReq.ADDR)
+				{
+					// Store to stat reg 1
+					DRV8301.StatReg1.reg = DRV8301.RegReq.reg; 
+					// Read reg 2
+					DRV8301.RegReq.RW = 1;								//we are initiating a read
+					DRV8301.RegReq.ADDR = DRV8301_STAT_REG_2_ADDR;		//load the address
+					DRV8301.RegReq.DATA = 0;							//dummy data;
+					// Send data
+					ioctl(SPI_0, SPI_WRITE_DATA, DRV8301.RegReq.reg);
+					
+				}
+				else if(DRV8301_STAT_REG_2_ADDR == DRV8301.RegReq.ADDR)
+				{
+					// Store to stat reg 2
+					DRV8301.StatReg2.reg = DRV8301.RegReq.reg; 	
+					// Read reg 1
+					DRV8301.RegReq.RW = 1;								//we are initiating a read
+					DRV8301.RegReq.ADDR = DRV8301_STAT_REG_1_ADDR;		//load the address
+					DRV8301.RegReq.DATA = 0;							//dummy data;
+					// Send data
+					ioctl(SPI_0, SPI_WRITE_DATA, DRV8301.RegReq.reg);
+				}
+			}
+		}
+	}
 		
 	// Call freemaster recorder
 	FMSTR_Recorder();

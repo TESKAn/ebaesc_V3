@@ -70,6 +70,8 @@ typedef struct tagSYSVARS
 		UInt16 SVMVoltageSector;
 		// Torque -> Iq factor
 		Frac16 f16TorqueFactor;
+		// Total phase current 
+		Frac16 f16IPh;
 	}MCTRL;
 	
 	
@@ -179,6 +181,8 @@ typedef struct tagSYSVARS
 	{
 		// Phase currents
 		MCLIB_3_COOR_SYST_T m3IphUVW;	
+		// Raw phase currents
+		MCLIB_3_COOR_SYST_T m3IphUVWRaw;
 		// Offsets
 		Frac16 f16OffsetU;
 		Frac16 f16OffsetW;
@@ -199,6 +203,8 @@ typedef struct tagSYSVARS
 		Frac16 f16SensorValueB;
 		GDFLIB_FILTER_MA32_T FilterMA32SensorB;
 		Frac16 f16SensorValueBFiltered;
+		// Factor to account for different current amplifications
+		Frac16 f16CurrentGainFactor;
 	}ADC;
 	
 	// Input capture PWM values

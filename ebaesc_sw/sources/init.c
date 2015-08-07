@@ -223,6 +223,8 @@ void InitSysVars(Int16 initial)
 		
 		SYSTEM.ADC.f16OffsetU = FRAC16(0.0);
 		SYSTEM.ADC.f16OffsetW = FRAC16(0.0);
+		
+		SYSTEM.ADC.f16CurrentGainFactor = DRV8301_GAIN_FACTOR;
 
 	}
 
