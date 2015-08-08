@@ -9,7 +9,7 @@
 #define MACRO_H_
 
 // Calibration parameters
-#define M2
+#define M1
 
 #ifdef M1
 #define M_ID				1
@@ -129,7 +129,9 @@
 #define SYSTEM_TEST_NEW_STARTUP		flag1.BIT4		// Flag to test new startup procedure
 #define DRV_READ_STATUS_REG			flag1.BIT5		// Mark read DRV8301 status reg
 #define DRV_DATA_READ				flag1.BIT6		// 0 - read reg 1, 1 - read reg 2
-#define DRV_WRITE_GAIN				flag1.BIT7
+#define DRV_WRITE_GAIN				flag1.BIT7		// Mark write new gain to MOSFET driver
+
+
 
 // Driver HW interface defs
 #define EN_GATE_ON					ioctl(GPIO_C, GPIO_SET_PIN, BIT_13)
@@ -155,9 +157,9 @@
 #define SYSTEM_MEAS_LPHA					16
 
 // PWM input default values
-#define PWM_IN_MIDDLE_VALUE					2250	// 1.5 MHz, 0.6666 us/tick, ~1.5 ms
-#define PWM_IN_HIGH_VAL_REF					2850	// 1900 us
-#define PWM_IN_LOW_VAL_REF					1650	// 1100 us
+#define PWM_IN_MIDDLE_VALUE					2343	// 1.5625 MHz, 0.64 us/tick, ~1.5 ms
+#define PWM_IN_HIGH_VAL_REF					2967	// 1900 us
+#define PWM_IN_LOW_VAL_REF					1719	// 1100 us
 #define PWM_IN_MEASURE_TIME					1000	// Time (in ms) to measure throttle stick position
 #define PWM_IN_OFF_ZONE						15		// Deadzone from PWM in low to throttle OFF
 // Default PWM timeout

@@ -22,6 +22,7 @@ Int16 checkSystemStates(void)
 		case SYSTEM_WAKEUP:
 		{
 			// System has woken up
+			// Wait here until initialization is done, last is MOSFET driver init
 			// If not in debug
 			if(!SYS_DEBUG_MODE)
 			{
@@ -29,13 +30,21 @@ Int16 checkSystemStates(void)
 				//ui8PWMMeasureStates = PWM_MEAS_INIT;
 				//systemVariables.systemState = SYSTEM_INIT;
 			}
+			// Is MOSFET driver initialized?
+			if(DRV8301_CONFIGURED)
+			{
+				// If yes, go to init state
+				SYSTEM.systemState = SYSTEM_INIT;
+				
+			}
+			/*			
 			// Check state transition
 			if(SYSTEM_IDLE == SYSTEM.i16StateTransition)
 			{
 				// Transition to idle state through init state
 				SYSTEM.systemState = SYSTEM_INIT;				
 			}
-
+*/
 			
 			break;
 		}
@@ -59,18 +68,11 @@ Int16 checkSystemStates(void)
 					}
 					case PWM_MEAS_DECIDE:
 					{
+						// Is throttle in high position
 						if(SYSTEM.PWMIN.i16PWMInMiddleValue < SYSTEM.PWMIN.i16PWMFiltered)
 						{
 							// Throttle is over half value
 							SYSTEM.PWMIN.i16PWMMeasureStates = PWM_MEAS_HIGH;
-						}		
-						else
-						{
-							// Throttle is under half value
-							// Use default value for PWM in high
-							SYSTEM.PWMIN.i16PWMfullThrottle = SYSTEM.PWMIN.i16PWMInHighValRef;
-							// Go to measure low state
-							SYSTEM.PWMIN.i16PWMMeasureStates = PWM_MEAS_LOW;
 						}			
 						// Measure for x ms
 						// Throttle has to stay in this position for specified amount of time

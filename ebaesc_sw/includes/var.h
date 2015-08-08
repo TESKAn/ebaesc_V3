@@ -306,6 +306,13 @@ typedef struct tagSYSVARS
 		Int16 i16PWMInOffZone;
 		// Filtered PWM value
 		Int16 i16PWMFiltered;
+		// Storage for filter
+		Int16 i16PWMInFilterAcc;
+		// Filter size
+		Int16 i16PWMFilterSize;
+		// Raw PWM input value
+		Int16 i16PWMHigh;
+		Int16 i16PWMLow;
 		// PWM samples received
 		UInt32 ui32PWMSamplesReceived;
 	}PWMIN;
@@ -314,8 +321,11 @@ typedef struct tagSYSVARS
 	{
 		float fUIn;
 		float fIIn;
+		float fIInFilt;
 		float fPIn;
 		float fRPM;
+		float fIInAcc;
+		float fIInFiltDiv;
 	}SIVALUES;
 	
 

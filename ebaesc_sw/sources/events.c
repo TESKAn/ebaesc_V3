@@ -502,30 +502,36 @@ void ADC_1_EOS_ISR(void)
 		case CURRENT_SOURCE_CONTROL_TORQUE:
 		{
 			// Torque control, set Iq for some torque
-			// Id = 0
-			SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.0);
-			// Iq saturated?
-			if(0 != SYSTEM.REGULATORS.mudtControllerParamIq.i16LimitFlag)
+			// Use same counter as for speed control to slow down torque change
+			SYSTEM.REGULATORS.ui16SpeedRegCounter++;
+			if(SYSTEM.REGULATORS.ui16SpeedRegInterval < SYSTEM.REGULATORS.ui16SpeedRegCounter)
 			{
-				// Iq saturated, decrease it
-				if(FRAC16(0.0) < SYSTEM.REGULATORS.m2IDQReq.f16Q)
+				SYSTEM.REGULATORS.ui16SpeedRegCounter = 0;
+				// Id = 0
+				SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.0);
+				// Iq saturated?
+				if(0 != SYSTEM.REGULATORS.mudtControllerParamIq.i16LimitFlag)
 				{
-					SYSTEM.REGULATORS.m2IDQReq.f16Q--;
+					// Iq saturated, decrease it
+					if(FRAC16(0.0) < SYSTEM.REGULATORS.m2IDQReq.f16Q)
+					{
+						SYSTEM.REGULATORS.m2IDQReq.f16Q--;
+					}
+					else
+					{
+						SYSTEM.REGULATORS.m2IDQReq.f16Q++;
+					}
 				}
 				else
 				{
-					SYSTEM.REGULATORS.m2IDQReq.f16Q++;
+					// Torque ramp
+					if(SYSTEM.RAMPS.f16TorqueRampDesiredValue != SYSTEM.RAMPS.f16TorqueRampActualValue)
+					{
+						SYSTEM.RAMPS.f16TorqueRampActualValue = GFLIB_Ramp16(SYSTEM.RAMPS.f16TorqueRampDesiredValue, SYSTEM.RAMPS.f16TorqueRampActualValue, &SYSTEM.RAMPS.Ramp16_Torque);
+					}
+					// Scale with some factor
+					SYSTEM.REGULATORS.m2IDQReq.f16Q = mult(SYSTEM.RAMPS.f16TorqueRampActualValue, SYSTEM.MCTRL.f16TorqueFactor);
 				}
-			}
-			else
-			{
-				// Torque ramp
-				if(SYSTEM.RAMPS.f16TorqueRampDesiredValue != SYSTEM.RAMPS.f16TorqueRampActualValue)
-				{
-					SYSTEM.RAMPS.f16TorqueRampActualValue = GFLIB_Ramp16(SYSTEM.RAMPS.f16TorqueRampDesiredValue, SYSTEM.RAMPS.f16TorqueRampActualValue, &SYSTEM.RAMPS.Ramp16_Torque);
-				}
-				// Scale with some factor
-				SYSTEM.REGULATORS.m2IDQReq.f16Q = mult(SYSTEM.RAMPS.f16TorqueRampActualValue, SYSTEM.MCTRL.f16TorqueFactor);
 			}
 			break;
 		}
@@ -693,27 +699,59 @@ void ADC_1_EOS_ISR(void)
 void PWM_A0_Reload_ISR(void)
 {
 	// Get phase voltage values
-	
 	SYSTEM.INPUTCAPTURE.Val0 = ioctl(QTIMER_B0, QT_READ_COUNTER_REG, NULL);
 	SYSTEM.INPUTCAPTURE.Val1 = ioctl(QTIMER_B1, QT_READ_COUNTER_REG, NULL);
 	SYSTEM.INPUTCAPTURE.Val2 = ioctl(QTIMER_B2, QT_READ_COUNTER_REG, NULL);
-	
+	// Reset timers
 	ioctl(QTIMER_B0, QT_WRITE_COUNTER_REG, 0);
 	ioctl(QTIMER_B1, QT_WRITE_COUNTER_REG, 0);
 	ioctl(QTIMER_B2, QT_WRITE_COUNTER_REG, 0);
-	
-	// Read val registers from PWM
-	//SYSTEM.INPUTCAPTURE.w16PWM0VAL2 = ioctl(EFPWMA_SUB0, EFPWMS_READ_VALUE_REG_2, NULL);
-	//SYSTEM.INPUTCAPTURE.w16PWM0VAL3 = ioctl(EFPWMA_SUB0, EFPWMS_READ_VALUE_REG_3, NULL);
-	
+		
 	// Clear reload flag
 	ioctl(EFPWMA_SUB0, EFPWMS_CLEAR_SUBMODULE_FLAGS, EFPWM_RELOAD);
 }
 
 #pragma interrupt saveall
+void GPIO_F_ISR(void)
+{
+	UInt16 ui16Temp = 0;
+	// Read timer value
+	ui16Temp = ioctl(QTIMER_B3, QT_READ_COUNTER_REG, NULL);
+	// Clear counter
+	ioctl(QTIMER_B3, QT_WRITE_COUNTER_REG, 0);
+	// Check input value
+	if(0 != (ioctl(GPIO_F, GPIO_READ_DATA, NULL) & BIT_7))
+	{
+		// Input value is 1
+		// Read PWM high time
+		SYSTEM.PWMIN.i16PWMHigh = ui16Temp;
+		// Set detection polarity
+		ioctl(GPIO_F, GPIO_INT_DETECTION_ACTIVE_LOW, BIT_7);
+		
+		// Filter PWM
+		// Add to storage
+		SYSTEM.PWMIN.i16PWMInFilterAcc += SYSTEM.PWMIN.i16PWMHigh;
+		// Filter
+		SYSTEM.PWMIN.i16PWMFiltered = SYSTEM.PWMIN.i16PWMInFilterAcc >> SYSTEM.PWMIN.i16PWMFilterSize;
+		// Subtract from storage
+		SYSTEM.PWMIN.i16PWMInFilterAcc -= SYSTEM.PWMIN.i16PWMFiltered;		
+	}
+	else
+	{
+		// Read PWM low time
+		SYSTEM.PWMIN.i16PWMLow = ui16Temp;
+		// Set detection polarity
+		ioctl(GPIO_F, GPIO_INT_DETECTION_ACTIVE_HIGH, BIT_7);		
+	}
+	// Clear interrupt flag
+	ioctl(GPIO_F, GPIO_CLEAR_INT_PENDING, BIT_7);
+}
+
+#pragma interrupt saveall
 void QT_B3_ISR(void)
 {
-	ioctl(QTIMER_B3, QT_CLEAR_COMPARE_FLAG, QT_COMPARE1_FLAG|QT_COMPARE2_FLAG);
+	// Clear input edge flag
+	ioctl(QTIMER_B3, QT_CLEAR_FLAG, QT_INPUT_EDGE_FLAG);
 }
 
 #pragma interrupt saveall

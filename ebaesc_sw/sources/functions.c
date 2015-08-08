@@ -25,11 +25,22 @@ Int16 CalculateSIValues(void)
 	fTemp1 = (float)SYSTEM.MCTRL.m2UDQ.f16Q;	// Uq
 	fTemp1 = fTemp1 * SI_UIN_FACTOR;
 	fTemp1 = fTemp1 / 65535;//32768;
-	SYSTEM.SIVALUES.fPIn = fTemp * fTemp1;						// P = Iq * Uq
+	SYSTEM.SIVALUES.fPIn = fTemp * fTemp1;		// P = Iq * Uq
 	
+	fTemp = (float)SYSTEM.MCTRL.m2IDQ.f16D;		// Id
+	fTemp = fTemp * SI_IIN_FACTOR;
+	fTemp = fTemp / 32768;
+	fTemp1 = (float)SYSTEM.MCTRL.m2UDQ.f16D;	// Ud
+	fTemp1 = fTemp1 * SI_UIN_FACTOR;
+	fTemp1 = fTemp1 / 65535;//32768;
+	SYSTEM.SIVALUES.fPIn += fTemp * fTemp1;		// P = Iq * Uq
 
 	// IIn
 	SYSTEM.SIVALUES.fIIn = SYSTEM.SIVALUES.fPIn / SYSTEM.SIVALUES.fUIn;
+	// Filter I in
+	SYSTEM.SIVALUES.fIInAcc += SYSTEM.SIVALUES.fIIn;
+	SYSTEM.SIVALUES.fIInFilt = SYSTEM.SIVALUES.fIInAcc * SYSTEM.SIVALUES.fIInFiltDiv; 
+	SYSTEM.SIVALUES.fIInAcc -= SYSTEM.SIVALUES.fIInFilt; 
 	
 	// RPM
 	fTemp = (float)SYSTEM.POSITION.f16SpeedFiltered;

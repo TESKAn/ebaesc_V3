@@ -266,6 +266,8 @@ void InitSysVars(Int16 initial)
 		SYSTEM.PWMIN.i16PWMInMeasureTime = PWM_IN_MEASURE_TIME;
 		SYSTEM.PWMIN.i16PWMInOffZone = PWM_IN_OFF_ZONE;		
 		
+		SYSTEM.PWMIN.i16PWMFilterSize = PWM_MEAS_FILTER_SAMPLES;
+		
 	}
 
 	// States for measuring PWM input parameters
@@ -274,6 +276,16 @@ void InitSysVars(Int16 initial)
 	SYSTEM.PWMIN.i16PWMMeasureTimer = 0; 
 	// PWM timeout parameter
 	SYSTEM.PWMIN.i16PWMTimeout = 0;
+	
+	
+	//******************************************
+	// SI values
+	//******************************************	
+	if(0 != initial)
+	{
+		SYSTEM.SIVALUES.fIInFiltDiv = 0.25f;
+	}
+	SYSTEM.SIVALUES.fIInAcc = 0.0f;
 
 	
 	//******************************************
