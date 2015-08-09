@@ -343,6 +343,9 @@ typedef struct tagSYSVARS
 	// Motor ID
 	Int16 i16MotorID;
 	
+	Int8 i8ErrorLog[16];
+	Int16 i16ErrorIndex;
+	
 	
 }SYSTEMVARIABLES;
 

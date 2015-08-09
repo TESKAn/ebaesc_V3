@@ -7,7 +7,46 @@
 
 #include "allincludes.h"
 
+#pragma interrupt called
+Int16 LogError(UInt8 ui8Error)
+{
+	// Store error to log
+	SYSTEM.i8ErrorLog[SYSTEM.i16ErrorIndex] = ui8Error;
+	SYSTEM.i16ErrorIndex++;
+	SYSTEM.i16ErrorIndex = SYSTEM.i16ErrorIndex & 0x0F;
+	
+	return 0;
+}
+
+
+#pragma interrupt called
+Int16 OneMsEvent(void)
+{
+
+	// Check that DRV is alive
+	if(1 == DRV_DATA_READ)
+	{
+		// Reset to 0
+		DRV_DATA_READ = 0;
+		// Initiate new read
+		DRV_POLL = 1;
+		// Check and store if there are errors
+		if(DRV8301.StatReg1.FAULT)
+		{
+			LogError(ERROR_DRV8301_STAT1);
+		}
+	}
+	else
+	{
+		// Data not read in 1 ms, mark error
+		LogError(ERROR_DRV8301_READ);
+	}
+		
+	return 0;
+}
+
 // Function that calculates SI values from frac values
+#pragma interrupt called
 Int16 CalculateSIValues(void)
 {
 	float fTemp = 0.0;
@@ -78,27 +117,11 @@ Int16 CalculateSIValues(void)
 	// Calculate FRAC16 value
 	fTemp = fTemp * 32768;
 	SYSTEM.MCTRL.f16IPh = (Frac16)fTemp;	
-	/*
-	// Check that DRV is alive
-	if(1 == DRV_DATA_READ)
-	{
-		// Data was read, all is OK
-		// Reset to 0
-		DRV_DATA_READ = 0;
-	}
-	else
-	{
-		// Data not read in 1 ms, initiate a read
-		// Read reg 1
-		DRV8301.RegReq.RW = 1;								//we are initiating a read
-		DRV8301.RegReq.ADDR = DRV8301_STAT_REG_1_ADDR;		//load the address
-		DRV8301.RegReq.DATA = 0;							//dummy data;
-		// Send data
-		ioctl(SPI_0, SPI_WRITE_DATA, DRV8301.RegReq.reg);
-	}*/
+
 	
 	return 0;
 }
+
 
 Int16 CalculateCalibrationData(void)
 {

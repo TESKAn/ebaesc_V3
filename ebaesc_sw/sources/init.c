@@ -305,4 +305,10 @@ void InitSysVars(Int16 initial)
 			SYSTEM_CALIBRATED = 1;	
 		}
 	}	
+	// Error log init
+	for(SYSTEM.i16ErrorIndex = 0; SYSTEM.i16ErrorIndex < 16; SYSTEM.i16ErrorIndex++)
+	{
+		SYSTEM.i8ErrorLog[SYSTEM.i16ErrorIndex] = 0;
+	}
+	SYSTEM.i16ErrorIndex = 0;
 }

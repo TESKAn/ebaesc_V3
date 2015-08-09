@@ -89,6 +89,8 @@ typedef struct tagDRV8301
 			UInt16 Reserved:9;					// 15:7 
 		};	
 	}CtrlReg2;
+	UInt16 ui16LastRegRead;						// Which register was read last?
+	
 }DRV8301DATA;
 
 //DRV8301 Register Addresses

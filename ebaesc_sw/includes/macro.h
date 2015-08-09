@@ -41,6 +41,11 @@
 #define M_POLEARRAY_7		771
 #endif
 
+// Error definitions
+#define ERROR_DRV8301_READ		1
+#define ERROR_DRV8301_STAT1		2
+
+
 // Macros for calculating SI values
 #define SI_UIN_FACTOR		60.87f		// 60.87V max
 #define SI_IIN_FACTOR		164.8f		// 164.8A max
@@ -130,6 +135,10 @@
 #define DRV_READ_STATUS_REG			flag1.BIT5		// Mark read DRV8301 status reg
 #define DRV_DATA_READ				flag1.BIT6		// 0 - read reg 1, 1 - read reg 2
 #define DRV_WRITE_GAIN				flag1.BIT7		// Mark write new gain to MOSFET driver
+#define DRV_POLL					flag1.BIT8		// Mark poll DRV
+
+
+
 
 
 

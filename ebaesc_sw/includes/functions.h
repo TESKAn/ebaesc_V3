@@ -8,6 +8,8 @@
 #ifndef FUNCTIONS_H_
 #define FUNCTIONS_H_
 
+Int16 LogError(UInt8 ui8Error);
+Int16 OneMsEvent(void);
 Int16 CalculateSIValues(void);
 Int16 CalculateCalibrationData(void);
 Int16 CalculateFloat(void);

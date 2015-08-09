@@ -162,8 +162,6 @@ void ADC_1_EOS_ISR(void)
 		}
 		else
 		{
-			DRV_DATA_READ = 1;
-			
 			// Result ready in SPI buffer?
 			if(ioctl(SPI_0, SPI_CAN_READ_DATA, null) == 0)
 			{
@@ -175,24 +173,35 @@ void ADC_1_EOS_ISR(void)
 				{
 					// Store to stat reg 1
 					DRV8301.StatReg1.reg = DRV8301.RegReq.reg; 
-					// Read reg 2
-					DRV8301.RegReq.RW = 1;								//we are initiating a read
-					DRV8301.RegReq.ADDR = DRV8301_STAT_REG_2_ADDR;		//load the address
-					DRV8301.RegReq.DATA = 0;							//dummy data;
-					// Send data
-					ioctl(SPI_0, SPI_WRITE_DATA, DRV8301.RegReq.reg);
-					
+					DRV8301.ui16LastRegRead = DRV8301_STAT_REG_1_ADDR;
 				}
 				else if(DRV8301_STAT_REG_2_ADDR == DRV8301.RegReq.ADDR)
 				{
 					// Store to stat reg 2
 					DRV8301.StatReg2.reg = DRV8301.RegReq.reg; 	
+					DRV8301.ui16LastRegRead = DRV8301_STAT_REG_2_ADDR;
+				}
+			}
+			else if(DRV_POLL)
+			{
+				DRV_POLL = 0;
+				if(DRV8301_STAT_REG_1_ADDR == DRV8301.ui16LastRegRead)
+				{
+					// Read reg 2
+					DRV8301.RegReq.RW = 1;								//we are initiating a read
+					DRV8301.RegReq.ADDR = DRV8301_STAT_REG_2_ADDR;		//load the address
+					DRV8301.RegReq.DATA = 0;							//dummy data;
+					// Send data
+					ioctl(SPI_0, SPI_WRITE_DATA, DRV8301.RegReq.reg);					
+				}
+				else if(DRV8301_STAT_REG_2_ADDR == DRV8301.ui16LastRegRead)
+				{
 					// Read reg 1
 					DRV8301.RegReq.RW = 1;								//we are initiating a read
 					DRV8301.RegReq.ADDR = DRV8301_STAT_REG_1_ADDR;		//load the address
 					DRV8301.RegReq.DATA = 0;							//dummy data;
 					// Send data
-					ioctl(SPI_0, SPI_WRITE_DATA, DRV8301.RegReq.reg);
+					ioctl(SPI_0, SPI_WRITE_DATA, DRV8301.RegReq.reg);					
 				}
 			}
 		}
@@ -809,6 +818,8 @@ void PIT_0_ISR(void)
 	checkSystemStates();
 	// Recalculate SI values
 	CalculateSIValues();
+	// Call 1 ms event
+	OneMsEvent();
 	// Decrease counters
 	if(0 < SYSTEM.SENSORLESS.i16Counter)
 	{
