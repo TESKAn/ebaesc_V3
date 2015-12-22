@@ -24,6 +24,9 @@
 #define M_POLEARRAY_5		3125
 #define M_POLEARRAY_6		3603
 #define M_POLEARRAY_7		768
+// This unit ID
+#define RS485_ID			0x03
+
 #endif
 
 #ifdef M2
@@ -39,6 +42,9 @@
 #define M_POLEARRAY_5		3130
 #define M_POLEARRAY_6		3606
 #define M_POLEARRAY_7		771
+// This unit ID
+#define RS485_ID			0x04
+
 #endif
 
 // Error definitions

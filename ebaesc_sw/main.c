@@ -81,7 +81,6 @@ void main (void)
     
     // RS485 communication setup
     RS485_initData();
-    RS485_MasterInitData();
     
     // Set all flag values to initial value
     SYS_DEBUG_MODE = 1;
