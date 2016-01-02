@@ -9,41 +9,59 @@
 #define MACRO_H_
 
 // Calibration parameters
-#define M1
+#define M_FR
 
-#ifdef M1
-#define M_ID				1
-#define M_MAXSENSORINDEX	3731
-#define M_MINSENSORINDEX	423
+#ifdef M_FR
+#define M_ID				0x23
+#define M_MAXSENSORINDEX	3707
+#define M_MINSENSORINDEX	431
 #define M_POLEPAIRS			7
-#define M_POLEARRAY_0		767
-#define M_POLEARRAY_1		1234
-#define M_POLEARRAY_2		1707
-#define M_POLEARRAY_3		2184
-#define M_POLEARRAY_4		2658
-#define M_POLEARRAY_5		3125
-#define M_POLEARRAY_6		3603
-#define M_POLEARRAY_7		768
+#define M_POLEARRAY_0		432
+#define M_POLEARRAY_1		906
+#define M_POLEARRAY_2		1374
+#define M_POLEARRAY_3		1839
+#define M_POLEARRAY_4		2306
+#define M_POLEARRAY_5		2770
+#define M_POLEARRAY_6		3239
+#define M_POLEARRAY_7		433
 // This unit ID
-#define RS485_ID			0x03
+#define RS485_ID			0x23
 
 #endif
 
-#ifdef M2
-#define M_ID				2
-#define M_MAXSENSORINDEX	3740
-#define M_MINSENSORINDEX	430
+#ifdef M_FL
+#define M_ID				0x22
+#define M_MAXSENSORINDEX	3736
+#define M_MINSENSORINDEX	418
 #define M_POLEPAIRS			7
-#define M_POLEARRAY_0		772
-#define M_POLEARRAY_1		1241
-#define M_POLEARRAY_2		1710
-#define M_POLEARRAY_3		2187
-#define M_POLEARRAY_4		2661
-#define M_POLEARRAY_5		3130
-#define M_POLEARRAY_6		3606
-#define M_POLEARRAY_7		771
+#define M_POLEARRAY_0		819
+#define M_POLEARRAY_1		1287
+#define M_POLEARRAY_2		1764
+#define M_POLEARRAY_3		2248
+#define M_POLEARRAY_4		2702
+#define M_POLEARRAY_5		3167
+#define M_POLEARRAY_6		3652
+#define M_POLEARRAY_7		819
 // This unit ID
-#define RS485_ID			0x04
+#define RS485_ID			0x22
+
+#endif
+
+#ifdef M_R
+#define M_ID				0x21
+#define M_MAXSENSORINDEX	3714
+#define M_MINSENSORINDEX	416
+#define M_POLEPAIRS			7
+#define M_POLEARRAY_0		513
+#define M_POLEARRAY_1		980
+#define M_POLEARRAY_2		1450
+#define M_POLEARRAY_3		1922
+#define M_POLEARRAY_4		2394
+#define M_POLEARRAY_5		2860
+#define M_POLEARRAY_6		3335
+#define M_POLEARRAY_7		514
+// This unit ID
+#define RS485_ID			0x21
 
 #endif
 
