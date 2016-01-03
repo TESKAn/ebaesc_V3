@@ -11,11 +11,13 @@
 
 
 // Function declarations
-UInt16 RS485_initData();
+Int16 RS485_initData();
+Int16 RS485_SyncToSystem();
+Int16 RS485_SyncToComm();
 Int16 RS485_Timer();
-UInt16 RS485_writeByte(void);
-UInt16 RS485_States_slave(UInt8 data);
-UInt16 RS485_decodeMessage(void);
+Int16 RS485_writeByte(void);
+Int16 RS485_States_slave(UInt8 data);
+Int16 RS485_decodeMessage(void);
 
 // Hardware dependent macros
 #define RS485_ENABLE_RX						ioctl(GPIO_C, GPIO_CLEAR_PIN, BIT_3)
@@ -93,29 +95,34 @@ typedef struct
 			UInt8 ui8FirmwareVersion;
 			UInt8 ui8ID;
 			UInt8 ui8BaudRate;
-			// Motor control
-			// Motor state - idle, run, error
-			UInt16 ui16State;
-			// State transition command
-			UInt16 ui16Command;
-			// Motor min/max RPM
-			// 9
-			float f32MinRPM;
-			// 13
-			float f32MaxRPM;
-			// Enable PWMs
-			// 17
-			UInt8 ui8PWMEnabled;
+			UInt8 ui8Empty;
 			// Errors
 			UInt16 ui16Errors;
+			// Future expansion
+			UInt8 uiEmpty1[21];
 			// Status of the motor
 			float f32UIn;
 			float f32IIn;
 			float f32PIn;
 			float f32RPM;
 			float f32SetRPM;
+			// Motor control
+			// Motor state - idle, run, error
+			UInt16 ui16State;
+			// State transition command
+			UInt16 ui16Command;
+			// Arm
+			UInt8 ui8Armed;
+			// Park
+			UInt8 ui8Park;
+			// Park position
+			Int16 i16ParkPosition;
+			
+			// Motor min/max RPM
+			float f32MinRPM;
+			float f32MaxRPM;
 
-
+			UInt8 uiEmpty2[3];
 		}REGS;
 	};
 

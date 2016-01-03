@@ -14,9 +14,22 @@ UInt16 ui16RS485Timer = 5000;
 
 
 // Slave functions
-UInt16 RS485_initData()
+Int16 RS485_initData()
 {
+	// Unit registers
 	RS485Data.REGS.ui8ID = RS485_ID;
+	RS485Data.REGS.ui8BaudRate = 3;
+	RS485Data.REGS.ui16Errors = 0;
+	RS485Data.REGS.f32SetRPM = 0.0f;
+	RS485Data.REGS.ui16State = SYSTEM.systemState;
+	RS485Data.REGS.ui16Command = 0;
+	RS485Data.REGS.ui8Armed = 0;
+	RS485Data.REGS.ui8Park = 0;
+	// Park position
+	RS485Data.REGS.i16ParkPosition = M_PARK_POSITION;
+	RS485Data.REGS.f32MinRPM = 1000;
+	RS485Data.REGS.f32MaxRPM = 9000;	
+	
 	RS485Data.ui8TXState = RS485_TX_IDLE;
 	RS485Data.ui8RXState = RS485_TX_IDLE;
 	
@@ -36,6 +49,74 @@ UInt16 RS485_initData()
 	RS485_ENABLE_RX;
 	// Disable TX interrupt
 	RS485_DISABLE_TX_INT;
+}
+
+#pragma interrupt called
+Int16 RS485_SyncToSystem()
+{
+	// Sync com variables to system
+	SYSTEM.i16StateTransition = RS485Data.REGS.ui16Command;
+	SYSTEM.COMMVALUES.i16ParkPosition = RS485Data.REGS.i16ParkPosition;
+
+	if(0 != RS485Data.REGS.ui8Armed)
+	{
+		switch(SYSTEM.systemState)
+		{
+			case SYSTEM_IDLE:
+			{
+				// Park rotor?
+				if(0 != RS485Data.REGS.ui8Park)
+				{
+					SYSTEM.i16StateTransition = SYSTEM_PARKROTOR;
+				}
+				// Else run
+				else
+				{
+					// Control system speed
+					CONTROL_SPEED = 1;
+					SYSTEM.i16StateTransition = SYSTEM_RUN;
+				}
+				break;
+			}
+		}
+	}
+	else
+	{
+		switch(SYSTEM.systemState)
+		{
+			case SYSTEM_PARKROTOR:
+			{
+				SYSTEM.i16StateTransition = SYSTEM_RESET;
+				break;
+			}
+			case SYSTEM_RUN:
+			{
+				SYSTEM.i16StateTransition = SYSTEM_RESET;
+				break;
+			}
+		}
+	}
+	return 0;
+}
+
+#pragma interrupt called
+Int16 RS485_SyncToComm()
+{
+	RS485Data.REGS.f32IIn = SYSTEM.SIVALUES.fIInFilt;
+	RS485Data.REGS.f32PIn = SYSTEM.SIVALUES.fPIn;
+	RS485Data.REGS.f32RPM = SYSTEM.SIVALUES.fRPM;
+	RS485Data.REGS.f32UIn = SYSTEM.SIVALUES.fUIn;
+	RS485Data.REGS.ui16Command = SYSTEM.i16StateTransition; 
+	RS485Data.REGS.i16ParkPosition = SYSTEM.COMMVALUES.i16ParkPosition;
+	
+	if(SYSTEM_IDLE != SYSTEM.systemState)
+	{
+		RS485Data.REGS.ui8Armed = 1;
+	}
+	else
+	{
+		RS485Data.REGS.ui8Armed = 0;
+	}	
 }
 
 #pragma interrupt called
@@ -76,7 +157,7 @@ Int16 RS485_Timer()
 }
 
 #pragma interrupt called
-UInt16 RS485_writeByte(void)
+Int16 RS485_writeByte(void)
 {
 	RS485Data.ui16TXTimeoutCounter = 0;
 	switch(RS485Data.ui8TXState)
@@ -159,7 +240,7 @@ UInt16 RS485_writeByte(void)
 }
 
 #pragma interrupt called
-UInt16 RS485_States_slave(UInt8 data)
+Int16 RS485_States_slave(UInt8 data)
 {
 	RS485Data.ui16RXTimeoutCounter = 0;
 	switch(RS485Data.ui8RXState)
@@ -278,7 +359,7 @@ UInt16 RS485_States_slave(UInt8 data)
 }
 
 #pragma interrupt called
-UInt16 RS485_decodeMessage(void)
+Int16 RS485_decodeMessage(void)
 {
 	UInt8 ui8Temp = 0;
 	
@@ -309,6 +390,8 @@ UInt16 RS485_decodeMessage(void)
 		case RS485_INSTR_READ_DATA:
 		{
 			// Setup data to be transmitted
+			// Sync
+			RS485_SyncToComm();
 			// Signal
 			RB_push(&RS485Data.RS485TXBuff, 0xff);
 			RB_push(&RS485Data.RS485TXBuff, 0xff);
@@ -337,6 +420,8 @@ UInt16 RS485_decodeMessage(void)
 		}
 		case RS485_INSTR_WRITE_DATA:
 		{
+			// Sync status to comm
+			RS485_SyncToComm();
 			// Write data to regs and update
 			for(ui8Temp = 0; ui8Temp < RS485Data.ui8RS485RXBytes - 1; ui8Temp++)
 			{				
@@ -359,7 +444,9 @@ UInt16 RS485_decodeMessage(void)
 			// Calculate checksum
 			RS485Data.ui8TXChecksum &= 0xff;
 			RS485Data.ui8TXChecksum = ~RS485Data.ui8TXChecksum;
-			RB_push(&RS485Data.RS485TXBuff, RS485Data.ui8TXChecksum);			
+			RB_push(&RS485Data.RS485TXBuff, RS485Data.ui8TXChecksum);		
+			// Sync back to system variables
+			RS485_SyncToSystem();
 
 			break;
 		}		

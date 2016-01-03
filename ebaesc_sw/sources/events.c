@@ -246,6 +246,17 @@ void ADC_1_EOS_ISR(void)
      *
      */	
 	SYSTEM.POSITION.i16SensorIndex = SYSTEM.POSITION.i16SensorIndex & 4095;
+	// Check if sensor readings are OK
+	if((POS_SENS_LOW > SYSTEM.POSITION.i16SensorIndexFiltered)||(POS_SENS_HIGH < SYSTEM.POSITION.i16SensorIndexFiltered))
+	{
+		// Sensor fault
+		SYSTEM_RUN_SENSORED = 0;
+	}
+	else
+	{
+		// Sensor is OK
+		SYSTEM_RUN_SENSORED = 1;
+	}	
 	// Get measured angle from previous iteration
 	SYSTEM.POSITION.f16MeasuredRotorAngle = SYSTEM.CALIBRATION.f16CalibrationArray[SYSTEM.POSITION.i16SensorIndex];
 	// Add position offset from sensor delay
@@ -356,6 +367,19 @@ void ADC_1_EOS_ISR(void)
 				{
 					SYS_CAL_GOTO_NEXT_POLE = 0;
 					SYSTEM.POSITION.f16RotorAngle = FRAC16(1.0);
+				}
+			}
+			else if(SYSTEM_PARK_ROTOR)
+			{
+				i16Temp = SYSTEM.COMMVALUES.i16ParkPosition - SYSTEM.POSITION.i16SensorIndex;
+				
+				if(20 < i16Temp)
+				{
+					SYSTEM.POSITION.f16RotorAngle += SYSTEM.POSITION.f16ManualAngleIncrease;
+				}
+				else if(-20 > i16Temp)
+				{
+					SYSTEM.POSITION.f16RotorAngle -= SYSTEM.POSITION.f16ManualAngleIncrease;
 				}
 			}
 			break;

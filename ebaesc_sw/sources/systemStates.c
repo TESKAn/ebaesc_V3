@@ -21,8 +21,8 @@ Int16 checkSystemStates(void)
 	{
 		case SYSTEM_WAKEUP:
 		{
-			// System has woken up
-			// Wait here until initialization is done, last is MOSFET driver init
+			// System has waken up
+			// Wait here until initialisation is done, last is MOSFET driver init
 			// If not in debug
 			if(!SYS_DEBUG_MODE)
 			{
@@ -30,27 +30,18 @@ Int16 checkSystemStates(void)
 				//ui8PWMMeasureStates = PWM_MEAS_INIT;
 				//systemVariables.systemState = SYSTEM_INIT;
 			}
-			// Is MOSFET driver initialized?
+			// Is MOSFET driver initialised?
 			if(DRV8301_CONFIGURED)
 			{
 				// If yes, go to init state
-				SYSTEM.systemState = SYSTEM_INIT;
-				
-			}
-			/*			
-			// Check state transition
-			if(SYSTEM_IDLE == SYSTEM.i16StateTransition)
-			{
-				// Transition to idle state through init state
-				SYSTEM.systemState = SYSTEM_INIT;				
-			}
-*/
-			
+				SYSTEM.systemState = SYSTEM_INIT;		
+				SYSTEM.i16StateTransition = SYSTEM_IDLE;
+			}			
 			break;
 		}
 		case SYSTEM_INIT:
 		{
-			// Do initialization here - wait for input signal, measure input throttle value
+			// Do initialisation here - wait for input signal, measure input throttle value
 			// If not in debug
 			if(!SYS_DEBUG_MODE)
 			{
@@ -294,7 +285,7 @@ Int16 checkSystemStates(void)
 					break;
 				}
 				case SYSTEM_PARKROTOR:
-				{						
+				{			
 					// Set PWM values
 					SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = FRAC16(0.5);
 					SYSTEM.PWMValues.pwmSub_1_Channel_23_Value = FRAC16(0.5);
@@ -302,10 +293,24 @@ Int16 checkSystemStates(void)
 					ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);
 					// Enable PWM outputs
 					ioctl(EFPWMA, EFPWM_SET_OUTPUTS_ENABLE, EFPWM_SUB0_PWM_A|EFPWM_SUB0_PWM_B|EFPWM_SUB1_PWM_A|EFPWM_SUB1_PWM_B|EFPWM_SUB2_PWM_A|EFPWM_SUB2_PWM_B);
+
+					// Manual control
+					SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_MANUAL;
+					SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_CONTROL_MANUAL;
+					// Set D, Q currents to 0
+					SYSTEM.RAMPS.f16AlignCurrentActualValue = FRAC16(0.0);
+					SYSTEM.RAMPS.f16AlignCurrentDesiredValue = FRAC16(0.01);
+					// Set Id, Iq to 0
+					SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.01);
+					SYSTEM.REGULATORS.m2IDQReq.f16Q = FRAC16(0.0);
+					SYSTEM_RUN_MANUAL = 1;
+					SYSTEM_RUN_MANUAL_CW = 0;
+					SYSTEM_RUN_MANUAL_CCW = 0;
+					// Go to run
+					SYSTEM.systemState = SYSTEM_RUN;
 					// Enable regulators
 					PWM_ENABLED = 1;
-					//systemVariables.ui16CalibrationState = CALIBRATE_INIT;
-					//ui16ParkState = PARK_INIT;
+
 					SYSTEM.systemState = SYSTEM_PARKROTOR;
 					break;
 				}
@@ -319,13 +324,8 @@ Int16 checkSystemStates(void)
 					// Enable PWM outputs
 					ioctl(EFPWMA, EFPWM_SET_OUTPUTS_ENABLE, EFPWM_SUB0_PWM_A|EFPWM_SUB0_PWM_B|EFPWM_SUB1_PWM_A|EFPWM_SUB1_PWM_B|EFPWM_SUB2_PWM_A|EFPWM_SUB2_PWM_B);		
 					
-					
 					SYSTEM.systemState = SYSTEM_SPINNINGROTOR;
 					
-					//SYSTEM_MAN_ROTATE = 1;
-	
-					//systemVariables.f16IdReq = FRAC16(0.05);
-					//systemVariables.f16IqReq = FRAC16(0.0);
 					break;
 				}
 				case SYSTEM_RESET:
@@ -642,6 +642,24 @@ Int16 checkSystemStates(void)
 				}
 			}
 
+			break;
+		}
+		case SYSTEM_PARKROTOR:
+		{
+			// Get how far away are we from final position
+			
+			SYSTEM_PARK_ROTOR = 1;
+			SYSTEM_RUN_MANUAL_CW = 0;
+			SYSTEM_RUN_MANUAL_CCW = 0;
+
+			switch(SYSTEM.i16StateTransition)
+			{
+				case SYSTEM_RESET:
+				{
+					SYSTEM.systemState = SYSTEM_RESET;
+					break;
+				}
+			}
 			break;
 		}
 		case SYSTEM_FAULT:

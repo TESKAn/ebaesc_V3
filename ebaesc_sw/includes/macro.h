@@ -26,6 +26,8 @@
 #define M_POLEARRAY_7		433
 // This unit ID
 #define RS485_ID			0x23
+// Unit park position
+#define M_PARK_POSITION		2048
 
 #endif
 
@@ -44,6 +46,8 @@
 #define M_POLEARRAY_7		819
 // This unit ID
 #define RS485_ID			0x22
+// Unit park position
+#define M_PARK_POSITION		2048
 
 #endif
 
@@ -62,6 +66,8 @@
 #define M_POLEARRAY_7		514
 // This unit ID
 #define RS485_ID			0x21
+// Unit park position
+#define M_PARK_POSITION		2048
 
 #endif
 
@@ -160,7 +166,7 @@
 #define DRV_DATA_READ				flag1.BIT6		// 0 - read reg 1, 1 - read reg 2
 #define DRV_WRITE_GAIN				flag1.BIT7		// Mark write new gain to MOSFET driver
 #define DRV_POLL					flag1.BIT8		// Mark poll DRV
-
+#define SYSTEM_PARK_ROTOR			flag1.BIT9		// Mark park rotor
 
 
 
@@ -206,6 +212,10 @@
 #define PWM_MEAS_FILTER_SAMPLES				2
 // Wait for this much samples on power up
 #define PWM_MEAS_INITIAL_SAMPLES			100	
+
+// Position sensor err values
+#define POS_SENS_LOW						200
+#define POS_SENS_HIGH						3900
 
 
 

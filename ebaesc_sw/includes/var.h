@@ -328,6 +328,15 @@ typedef struct tagSYSVARS
 		float fIInFiltDiv;
 	}SIVALUES;
 	
+	struct tagCOMMVALUES
+	{
+		// Park position
+		Int16 i16ParkPosition;
+		
+		
+		
+	}COMMVALUES;
+	
 
 	// Phase voltages
 	MCLIB_3_COOR_SYST_T m3UphUVW;
