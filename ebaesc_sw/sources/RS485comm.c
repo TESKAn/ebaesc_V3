@@ -125,6 +125,7 @@ Int16 RS485_Timer()
 	// Call each ms	
 	if(RS485_RX_IDLE != RS485Data.ui8RXState)
 	{
+		/*
 		RS485Data.ui16RXTimeoutCounter++;
 		if(RS485Data.ui16RXTimeoutCounter > RS485Data.ui16RXCommTimeout)
 		{
@@ -133,6 +134,7 @@ Int16 RS485_Timer()
 			RS485Data.ui8RXState = RS485_RX_IDLE;
 			RS485Data.ui8RS485RXBufferIndex = 0;			
 		}
+		*/
 	}
 	if(RS485_TX_IDLE != RS485Data.ui8TXState)
 	{		
@@ -231,6 +233,9 @@ Int16 RS485_writeByte(void)
 		}
 		default:
 		{
+			RS485_ENABLE_RX;
+			RS485_DISABLE_TX_INT;
+			RS485_DISABLE_TX_IDLE_INT;
 			RS485Data.ui8TXState = RS485_TX_IDLE;
 			break;			
 		}
@@ -343,7 +348,11 @@ Int16 RS485_States_slave(UInt8 data)
 			if(RS485Data.ui8RS485RXChecksum == data)
 			{
 				// Decode received message
-				RS485_decodeMessage();				
+				RS485_decodeMessage();
+			}
+			else
+			{
+				ui8RS485RXVal = 0;
 			}
 			// Go to idle state
 			RS485Data.ui8RXState = RS485_RX_IDLE;
@@ -430,6 +439,7 @@ Int16 RS485_decodeMessage(void)
 			// Return status packet
 			// Setup data to be transmitted
 			// Signal
+			
 			RB_push(&RS485Data.RS485TXBuff, 0xff);
 			RB_push(&RS485Data.RS485TXBuff, 0xff);
 			// ID
@@ -444,7 +454,8 @@ Int16 RS485_decodeMessage(void)
 			// Calculate checksum
 			RS485Data.ui8TXChecksum &= 0xff;
 			RS485Data.ui8TXChecksum = ~RS485Data.ui8TXChecksum;
-			RB_push(&RS485Data.RS485TXBuff, RS485Data.ui8TXChecksum);		
+			RB_push(&RS485Data.RS485TXBuff, RS485Data.ui8TXChecksum);	
+			
 			// Sync back to system variables
 			RS485_SyncToSystem();
 

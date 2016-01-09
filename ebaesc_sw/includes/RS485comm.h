@@ -84,45 +84,40 @@ typedef struct
 	
 	union
 	{
-		struct
-		{
-			UInt8 ui8Data[39];				// Main data structure
-		};
+		UInt8 ui8Data[68];				// Main data structure
 		struct
 		{
 			// Some params
-			UInt16 ui16ModelNumber;
-			UInt8 ui8FirmwareVersion;
-			UInt8 ui8ID;
-			UInt8 ui8BaudRate;
-			UInt8 ui8Empty;
+			UInt16 ui16ModelNumber;		// 0
+			UInt8 ui8FirmwareVersion;	// 2
+			UInt8 ui8ID;				// 3
+			UInt8 ui8BaudRate;			// 4
+			UInt8 ui8Empty;				// 5
 			// Errors
-			UInt16 ui16Errors;
+			UInt16 ui16Errors;			// 6
 			// Future expansion
-			UInt8 uiEmpty1[21];
+			UInt8 uiEmpty1[24];	// 32 bytes total
 			// Status of the motor
-			float f32UIn;
-			float f32IIn;
-			float f32PIn;
-			float f32RPM;
-			float f32SetRPM;
+			float f32UIn;				// 33
+			float f32IIn;				// 37
+			float f32PIn;				// 41
+			float f32RPM;				// 45
+			float f32SetRPM;			// 49
 			// Motor control
 			// Motor state - idle, run, error
-			UInt16 ui16State;
+			UInt16 ui16State;			// 53
 			// State transition command
-			UInt16 ui16Command;
+			UInt16 ui16Command;			// 55
 			// Arm
-			UInt8 ui8Armed;
+			UInt8 ui8Armed;				// 57
 			// Park
-			UInt8 ui8Park;
+			UInt8 ui8Park;				// 58
 			// Park position
-			Int16 i16ParkPosition;
+			Int16 i16ParkPosition;		// 59
 			
 			// Motor min/max RPM
-			float f32MinRPM;
-			float f32MaxRPM;
-
-			UInt8 uiEmpty2[3];
+			float f32MinRPM;			// 61
+			float f32MaxRPM;			// 65	// 36 bytes + 32 bytes = 68 bytes total total
 		}REGS;
 	};
 

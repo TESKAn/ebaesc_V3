@@ -365,6 +365,9 @@ extern FLAGBITS flag1;
 extern Int16 i16CurrentCalArrayIndex;
 extern Frac16 f16CurrentCalArrayData;
 
+// RS485 temporary vars
+extern UInt8 ui8RS485RXVal;
+
 // Variable that holds all system data
 extern SYSTEMVARIABLES SYSTEM;
 

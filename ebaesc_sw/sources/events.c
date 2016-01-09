@@ -817,6 +817,7 @@ void RX0_Full_ISR(void)
 
 	data = ioctl(SCI_0, SCI_GET_STATUS_REG, NULL);		// Clear RDRF flag
 	data = ioctl(SCI_0, SCI_READ_DATA, NULL);			// Read data
+
 	// Call RS485 state machine
 	RS485_States_slave((UInt8)data);
 }
@@ -824,6 +825,9 @@ void RX0_Full_ISR(void)
 #pragma interrupt saveall
 void TX0_Empty_ISR(void)
 {
+	unsigned int data;
+	data = ioctl(SCI_0, SCI_GET_STATUS_REG, NULL);		// Clear flag
+	ui8RS485RXVal = 1;
 	RS485_writeByte();
 }
 

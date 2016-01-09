@@ -27,7 +27,7 @@
 // This unit ID
 #define RS485_ID			0x23
 // Unit park position
-#define M_PARK_POSITION		2048
+#define M_PARK_POSITION		1000
 
 #endif
 
@@ -47,7 +47,7 @@
 // This unit ID
 #define RS485_ID			0x22
 // Unit park position
-#define M_PARK_POSITION		2048
+#define M_PARK_POSITION		1000
 
 #endif
 
@@ -67,7 +67,7 @@
 // This unit ID
 #define RS485_ID			0x21
 // Unit park position
-#define M_PARK_POSITION		2048
+#define M_PARK_POSITION		1000
 
 #endif
 

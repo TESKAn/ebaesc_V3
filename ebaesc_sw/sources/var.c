@@ -14,6 +14,9 @@ FLAGBITS flag1;
 Int16 i16CurrentCalArrayIndex = 4096;
 Frac16 f16CurrentCalArrayData = FRAC16(0.0);
 
+// RS485 temporary vars
+UInt8 ui8RS485RXVal = 0;
+
 // Variable that holds all system data
 SYSTEMVARIABLES SYSTEM;
 
