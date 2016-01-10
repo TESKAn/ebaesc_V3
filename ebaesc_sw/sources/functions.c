@@ -684,40 +684,47 @@ Int16 RB_Init(RING_BUFFER* rb, UInt8 *buf, Int16 size)
 
 Int16 RB_push(RING_BUFFER* rb, UInt8 data)
 {
-    *rb->data_end = data;
-    rb->data_end++;
-    if (rb->data_end == rb->buffer_end)
-        rb->data_end = rb->buffer;
+	if(rb->count < rb->size)
+	{
+		*rb->data_end = data;
+		rb->data_end++;
+		if (rb->data_end == rb->buffer_end)
+			rb->data_end = rb->buffer;
 
-    if (0 == RB_full(rb))
-    {
-        if ((rb->data_start + 1) == rb->buffer_end)
-        {
-            rb->data_start = rb->buffer;
-        }
-        else
-        {
-            rb->data_start++;
-        }
-    }
-    else
-    {
-        rb->count++;
-    }
+		if (0 == RB_full(rb))
+		{
+			if ((rb->data_start + 1) == rb->buffer_end)
+			{
+				rb->data_start = rb->buffer;
+			}
+			else
+			{
+				rb->data_start++;
+			}
+		}
+		else
+		{
+			rb->count++;
+		}
+	}
 	return 0;
 }
 
 UInt8 RB_pop(RING_BUFFER* rb)
 {
-    UInt8 data = *rb->data_start;
-    rb->data_start++;
-    if (rb->data_start == rb->buffer_end)
-    {
-        rb->data_start = rb->buffer;
-    }
-    rb->count--;
+	if(0 < rb->count)
+	{
+		UInt8 data = *rb->data_start;
+		rb->data_start++;
+		if (rb->data_start == rb->buffer_end)
+		{
+			rb->data_start = rb->buffer;
+		}
+		rb->count--;
 
-    return data;
+		return data;
+	}
+	return 0;
 }
 
 Int16 RB_flush(RING_BUFFER* rb)

@@ -29,5 +29,10 @@ UInt8 ui8SerialBuffer[16];
 UInt8 RS485Address = 1;
 UInt8 ui8RS485RcvdByte = 0;
 
+// Transmit ring buffer
+RING_BUFFER SCI0RXBuff;
+UInt8 SCI0RXBuffer[128];
+
+
 PARAMCONVERSION pConv;
 

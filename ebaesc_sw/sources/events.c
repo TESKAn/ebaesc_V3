@@ -814,12 +814,34 @@ void SPI_0_RX_FULL_ISR(void)
 void RX0_Full_ISR(void)
 {
 	unsigned int data;
-
-	data = ioctl(SCI_0, SCI_GET_STATUS_REG, NULL);		// Clear RDRF flag
-	data = ioctl(SCI_0, SCI_READ_DATA, NULL);			// Read data
-
-	// Call RS485 state machine
-	RS485_States_slave((UInt8)data);
+	
+	// Check for errors
+	// Check overrun flag
+	if(0 != ioctl(SCI_0, SCI_GET_RX_OVERRUN, NULL))
+	{
+		data = ioctl(SCI_0, SCI_GET_STATUS_REG, NULL);
+		ioctl(SCI_0, SCI_CLEAR_STATUS_REG, NULL);		
+	}
+	else if(0 != ioctl(SCI_0, SCI_GET_RX_NOISE_ERROR, NULL))
+	{
+		data = ioctl(SCI_0, SCI_GET_STATUS_REG, NULL);
+		ioctl(SCI_0, SCI_CLEAR_STATUS_REG, NULL);	
+	}
+	else if(0 != ioctl(SCI_0, SCI_GET_ERROR, NULL))
+	{
+		data = ioctl(SCI_0, SCI_GET_STATUS_REG, NULL);
+		ioctl(SCI_0, SCI_CLEAR_STATUS_REG, NULL);	
+	}
+	else
+	{
+		while(0 != ioctl(SCI_0, SCI_GET_RX_FULL, NULL))
+		{
+			data = ioctl(SCI_0, SCI_GET_STATUS_REG, NULL);		// Clear RDRF flag
+			data = ioctl(SCI_0, SCI_READ_DATA, NULL);			// Read data
+			// Store data in ring buffer
+			RB_push(&SCI0RXBuff, (UInt8)data);	
+		}		
+	}	
 }
 
 #pragma interrupt saveall

@@ -160,7 +160,7 @@
 					</folderInfo>
 					<fileInfo id="com.freescale.dsc.cdt.toolchain.config.debug.1782738274.Project_Settings/Linker_Files/MC56F84763_Internal_PFlash_LDM.cmd" name="MC56F84763_Internal_PFlash_LDM.cmd" rcbsApplicability="disable" resourcePath="Project_Settings/Linker_Files/MC56F84763_Internal_PFlash_LDM.cmd" toolsToInvoke=""/>
 					<sourceEntries>
-						<entry excluding="sources|Project_Settings/Linker_Files/MC56F84763_Internal_PFlash_LDM.cmd" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="Project_Settings/Linker_Files/MC56F84763_Internal_PFlash_LDM.cmd" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

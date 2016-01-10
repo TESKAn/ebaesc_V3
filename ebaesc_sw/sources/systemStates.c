@@ -306,8 +306,6 @@ Int16 checkSystemStates(void)
 					SYSTEM_RUN_MANUAL = 1;
 					SYSTEM_RUN_MANUAL_CW = 0;
 					SYSTEM_RUN_MANUAL_CCW = 0;
-					// Go to run
-					SYSTEM.systemState = SYSTEM_RUN;
 					// Enable regulators
 					PWM_ENABLED = 1;
 
@@ -343,6 +341,36 @@ Int16 checkSystemStates(void)
 				case SYSTEM_RESET:
 				{
 					SYSTEM.systemState = SYSTEM_RESET;
+					break;
+				}
+				case SYSTEM_PARKROTOR:
+				{			
+					// Stop if spinning
+					if((FRAC16(0.01) < SYSTEM.POSITION.f16SpeedFiltered)||(FRAC16(-0.01) > SYSTEM.POSITION.f16SpeedFiltered))
+					{
+						SYSTEM.RAMPS.f16SpeedRampDesiredValue = FRAC16(0.0);
+						SYSTEM.RAMPS.f16TorqueRampDesiredValue = FRAC16(0.0);						
+					}
+					else
+					{
+						// Manual control
+						SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_MANUAL;
+						SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_CONTROL_MANUAL;
+						// Set D, Q currents to 0
+						SYSTEM.RAMPS.f16AlignCurrentActualValue = FRAC16(0.0);
+						SYSTEM.RAMPS.f16AlignCurrentDesiredValue = FRAC16(0.01);
+						// Set Id, Iq to 0
+						SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.01);
+						SYSTEM.REGULATORS.m2IDQReq.f16Q = FRAC16(0.0);
+						SYSTEM_RUN_MANUAL = 1;
+						SYSTEM_RUN_MANUAL_CW = 0;
+						SYSTEM_RUN_MANUAL_CCW = 0;
+						
+						// Enable regulators
+						PWM_ENABLED = 1;
+						SYSTEM.systemState = SYSTEM_PARKROTOR;					
+					}
+
 					break;
 				}
 			}
@@ -657,6 +685,62 @@ Int16 checkSystemStates(void)
 				case SYSTEM_RESET:
 				{
 					SYSTEM.systemState = SYSTEM_RESET;
+					break;
+				}
+				case SYSTEM_RUN:
+				{	
+					// Check - run from sensor or sensorless?
+					if(SYSTEM_CALIBRATED && SYSTEM_RUN_SENSORED)
+					{
+						// Run from sensor
+						SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_MULTIPLE;
+						if(CONTROL_SPEED)
+						{
+							SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_CONTROL_SPEED;
+							// Set default values
+							SYSTEM.RAMPS.f16SpeedRampDesiredValue = FRAC16(0.0);
+							SYSTEM.RAMPS.f16SpeedRampActualValue = FRAC16(0.0);
+						}
+						else if(CONTROL_TORQUE)
+						{
+							SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_CONTROL_TORQUE;
+							// Set default values
+							SYSTEM.RAMPS.f16TorqueRampActualValue = FRAC16(0.0);
+							SYSTEM.RAMPS.f16TorqueRampDesiredValue = FRAC16(0.0);
+						}
+						else
+						{
+							// No source, manual
+							SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_MANUAL;
+							SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_CONTROL_MANUAL;
+							// Make sure that we will not rotate
+							SYSTEM_RUN_MANUAL_CW = 0;
+							SYSTEM_RUN_MANUAL_CCW = 0;
+						}
+						SYSTEM.systemState = SYSTEM_RUN;	
+						// Enable regulators
+						PWM_ENABLED = 1;
+					}
+					else if(CONTROL_SPEED || CONTROL_TORQUE)
+					{
+						// Run sensorless only for speed or torque modes
+						// Start open loop mode
+						SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_SENSORLESS_ALIGN;
+						SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_SENSORLESS_ALIGN;
+						// Set time for align
+						SYSTEM.SENSORLESS.i16Counter = SYSTEM.SENSORLESS.i16AlignTime;
+						// Mark no BEMF
+						SENSORLESS_BEMF_ON = 0;
+						// Go to run
+						SYSTEM.systemState = SYSTEM_RUN;
+						// Enable regulators
+						PWM_ENABLED = 1;
+					}
+
+					else
+					{
+						SYSTEM.i16StateTransition = SYSTEM_PARKROTOR;
+					}
 					break;
 				}
 			}

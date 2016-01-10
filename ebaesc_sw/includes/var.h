@@ -10,6 +10,16 @@
 
 #include "allincludes.h"
 
+typedef struct
+{
+	UInt8* buffer;
+	UInt8* buffer_end;
+	UInt8* data_start;
+	UInt8* data_end;
+     volatile Int32 count;
+     Int32 size;
+ }RING_BUFFER;
+
 typedef struct tagFLAGBITS 
 {
   union 
@@ -381,5 +391,9 @@ extern PARAMCONVERSION pConv;
 extern UInt8 ui8SerialBuffer[16];
 extern UInt8 RS485Address;
 extern UInt8 ui8RS485RcvdByte;
+
+// Transmit ring buffer
+extern RING_BUFFER SCI0RXBuff;
+extern UInt8 SCI0RXBuffer[128];
 
 #endif /* VAR_H_ */

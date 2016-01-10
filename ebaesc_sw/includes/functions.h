@@ -8,16 +8,6 @@
 #ifndef FUNCTIONS_H_
 #define FUNCTIONS_H_
 
-typedef struct
-{
-	UInt8* buffer;
-	UInt8* buffer_end;
-	UInt8* data_start;
-	UInt8* data_end;
-     volatile Int32 count;
-     Int32 size;
- }RING_BUFFER;
-
 Int16 LogError(UInt8 ui8Error);
 Int16 OneMsEvent(void);
 Int16 CalculateSIValues(void);

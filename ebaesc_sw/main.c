@@ -69,6 +69,9 @@ void main (void)
     
     FMSTR_Init();    
     
+    // Init SCI0 ring buffer
+    RB_Init(&SCI0RXBuff, SCI0RXBuffer, 128);
+    
     /* initialise interrupt controller and enable interrupts */
     ioctl(INTC, INTC_INIT, NULL);
     archEnableInt();
@@ -120,6 +123,13 @@ void main (void)
     	// Check freemaster
     	FMSTR_Poll();
     	
+    	// Check RS485 comm
+    	if(0 != SCI0RXBuff.count)
+    	{
+			// Call RS485 state machine
+			RS485_States_slave(RB_pop(&SCI0RXBuff));    		
+    	}
+
     	// Check test bit - for testing code
     	if(SYSTEM_TEST_BIT)
     	{

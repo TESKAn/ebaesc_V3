@@ -54,6 +54,8 @@ Int16 RS485_initData()
 #pragma interrupt called
 Int16 RS485_SyncToSystem()
 {
+	float fTemp = 0;
+	Int16 i16Temp = 0;
 	// Sync com variables to system
 	SYSTEM.i16StateTransition = RS485Data.REGS.ui16Command;
 	SYSTEM.COMMVALUES.i16ParkPosition = RS485Data.REGS.i16ParkPosition;
@@ -78,7 +80,50 @@ Int16 RS485_SyncToSystem()
 				}
 				break;
 			}
+			case SYSTEM_RUN:
+			{
+				// Park rotor?
+				if(0 != RS485Data.REGS.ui8Park)
+				{
+					SYSTEM.i16StateTransition = SYSTEM_PARKROTOR;
+				}
+				break;
+			}
+			case SYSTEM_PARKROTOR:
+			{
+				if(0 == RS485Data.REGS.ui8Park)
+				{
+					// Control system speed
+					CONTROL_SPEED = 1;
+					SYSTEM.i16StateTransition = SYSTEM_RUN;
+				}
+				break;
+			}
 		}
+		// Set speed
+		// Limit
+		if(RS485Data.REGS.f32SetRPM > RS485Data.REGS.f32MaxRPM)
+		{
+			RS485Data.REGS.f32SetRPM = RS485Data.REGS.f32MaxRPM;
+		}
+		else if(RS485Data.REGS.f32SetRPM < RS485Data.REGS.f32MinRPM)
+		{
+			RS485Data.REGS.f32SetRPM = RS485Data.REGS.f32MinRPM;
+		}
+		// Convert to frac16
+		fTemp = RS485Data.REGS.f32SetRPM * 32768 * (float)SYSTEM.CALIBRATION.i16MotorPolePairs;
+		fTemp = fTemp / 60000;
+		i16Temp = (Int16)fTemp;		
+		// Check sign
+		if(0 == RS485Data.REGS.ui8ReverseRotation)
+		{
+			SYSTEM.RAMPS.f16SpeedRampDesiredValue = i16Temp;
+		}
+		else
+		{
+			SYSTEM.RAMPS.f16SpeedRampDesiredValue = -i16Temp;
+		}
+		
 	}
 	else
 	{
@@ -87,11 +132,13 @@ Int16 RS485_SyncToSystem()
 			case SYSTEM_PARKROTOR:
 			{
 				SYSTEM.i16StateTransition = SYSTEM_RESET;
+				SYSTEM.RAMPS.f16SpeedRampDesiredValue = FRAC16(0.0);
 				break;
 			}
 			case SYSTEM_RUN:
 			{
 				SYSTEM.i16StateTransition = SYSTEM_RESET;
+				SYSTEM.RAMPS.f16SpeedRampDesiredValue = FRAC16(0.0);
 				break;
 			}
 		}
@@ -102,12 +149,20 @@ Int16 RS485_SyncToSystem()
 #pragma interrupt called
 Int16 RS485_SyncToComm()
 {
+	float fTemp;
 	RS485Data.REGS.f32IIn = SYSTEM.SIVALUES.fIInFilt;
 	RS485Data.REGS.f32PIn = SYSTEM.SIVALUES.fPIn;
 	RS485Data.REGS.f32RPM = SYSTEM.SIVALUES.fRPM;
 	RS485Data.REGS.f32UIn = SYSTEM.SIVALUES.fUIn;
 	RS485Data.REGS.ui16Command = SYSTEM.i16StateTransition; 
 	RS485Data.REGS.i16ParkPosition = SYSTEM.COMMVALUES.i16ParkPosition;
+	
+	
+	// Set speed
+	fTemp = (float)SYSTEM.RAMPS.f16SpeedRampDesiredValue;
+	fTemp = fTemp * 60000;
+	fTemp = fTemp / (32768 * (float)SYSTEM.CALIBRATION.i16MotorPolePairs);
+	RS485Data.REGS.f32SetRPM = fTemp;
 	
 	if(SYSTEM_IDLE != SYSTEM.systemState)
 	{
@@ -125,7 +180,6 @@ Int16 RS485_Timer()
 	// Call each ms	
 	if(RS485_RX_IDLE != RS485Data.ui8RXState)
 	{
-		/*
 		RS485Data.ui16RXTimeoutCounter++;
 		if(RS485Data.ui16RXTimeoutCounter > RS485Data.ui16RXCommTimeout)
 		{
@@ -134,7 +188,6 @@ Int16 RS485_Timer()
 			RS485Data.ui8RXState = RS485_RX_IDLE;
 			RS485Data.ui8RS485RXBufferIndex = 0;			
 		}
-		*/
 	}
 	if(RS485_TX_IDLE != RS485Data.ui8TXState)
 	{		
@@ -171,8 +224,6 @@ Int16 RS485_writeByte(void)
 			{
 				// Init transmission
 				RS485_ENABLE_TX;
-				// Enable TX empty interrupt
-				RS485_ENABLE_TX_INT;
 				// Go to next state
 				RS485Data.ui8TXState = RS485_TX_DELAY;
 			}
@@ -196,8 +247,21 @@ Int16 RS485_writeByte(void)
 				// Room in buffer?
 				if(RS485_TEST_TX_EMPTY)
 				{
+					// Enable TX empty interrupt
+					RS485_ENABLE_TX_INT;
 					// Write one byte
 					RS485_WRITE(RB_pop(&RS485Data.RS485TXBuff));
+				}
+				// Check if buffer is empty
+				if(0 == RS485Data.RS485TXBuff.count)
+				{
+					// Last byte in buffer
+					// Wait for end of transmission
+					RS485Data.ui8TXState = RS485_TX_FINISHED;
+					// Disable interrupt
+					RS485_DISABLE_TX_INT;
+					// Enable idle interrupt
+					RS485_ENABLE_TX_IDLE_INT;
 				}
 			}
 			else

@@ -34,12 +34,12 @@ Int16 RS485_decodeMessage(void);
 
 // Receiver states
 #define RS485_RX_IDLE					0
-#define RS485_RX_WAIT_FOR_SIGNAL		2
-#define RS485_RX_WAIT_FOR_ID			4
-#define RS485_RX_WAIT_FOR_LENGTH		8
-#define RS485_RX_WAIT_FOR_INSTR_ERR		16
-#define RS485_RX_WAIT_FOR_PARAMETERS	32
-#define RS485_RX_WAIT_FOR_CHECKSUM		64
+#define RS485_RX_WAIT_FOR_SIGNAL		1
+#define RS485_RX_WAIT_FOR_ID			2
+#define RS485_RX_WAIT_FOR_LENGTH		3
+#define RS485_RX_WAIT_FOR_INSTR_ERR		4
+#define RS485_RX_WAIT_FOR_PARAMETERS	5
+#define RS485_RX_WAIT_FOR_CHECKSUM		6
 
 // Transmitter states
 #define RS485_TX_IDLE				0
@@ -84,7 +84,7 @@ typedef struct
 	
 	union
 	{
-		UInt8 ui8Data[68];				// Main data structure
+		UInt8 ui8Data[69];				// Main data structure
 		struct
 		{
 			// Some params
@@ -96,28 +96,30 @@ typedef struct
 			// Errors
 			UInt16 ui16Errors;			// 6
 			// Future expansion
-			UInt8 uiEmpty1[24];	// 32 bytes total
+			UInt8 uiEmpty1[24];			// 32 bytes total
 			// Status of the motor
-			float f32UIn;				// 33
-			float f32IIn;				// 37
-			float f32PIn;				// 41
-			float f32RPM;				// 45
-			float f32SetRPM;			// 49
+			float f32UIn;				// 32
+			float f32IIn;				// 36
+			float f32PIn;				// 40
+			float f32RPM;				// 44
+			float f32SetRPM;			// 48
 			// Motor control
 			// Motor state - idle, run, error
-			UInt16 ui16State;			// 53
+			UInt16 ui16State;			// 52
 			// State transition command
-			UInt16 ui16Command;			// 55
+			UInt16 ui16Command;			// 54
 			// Arm
-			UInt8 ui8Armed;				// 57
+			UInt8 ui8Armed;				// 56
 			// Park
-			UInt8 ui8Park;				// 58
+			UInt8 ui8Park;				// 57
+			// Reverse rotation
+			UInt8 ui8ReverseRotation;	// 58
 			// Park position
 			Int16 i16ParkPosition;		// 59
 			
 			// Motor min/max RPM
 			float f32MinRPM;			// 61
-			float f32MaxRPM;			// 65	// 36 bytes + 32 bytes = 68 bytes total total
+			float f32MaxRPM;			// 65	// +4 = total
 		}REGS;
 	};
 
