@@ -689,23 +689,15 @@ Int16 RB_push(RING_BUFFER* rb, UInt8 data)
 		*rb->data_end = data;
 		rb->data_end++;
 		if (rb->data_end == rb->buffer_end)
+		{
 			rb->data_end = rb->buffer;
-
-		if (0 == RB_full(rb))
-		{
-			if ((rb->data_start + 1) == rb->buffer_end)
-			{
-				rb->data_start = rb->buffer;
-			}
-			else
-			{
-				rb->data_start++;
-			}
 		}
-		else
-		{
-			rb->count++;
-		}
+		rb->count++;
+	}
+	else
+	{
+		// Return error
+		return -1;
 	}
 	return 0;
 }
@@ -724,7 +716,7 @@ UInt8 RB_pop(RING_BUFFER* rb)
 
 		return data;
 	}
-	return 0;
+	return -1;
 }
 
 Int16 RB_flush(RING_BUFFER* rb)

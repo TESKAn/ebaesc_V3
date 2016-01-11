@@ -69,7 +69,7 @@ void main (void)
     
     FMSTR_Init();    
     
-    // Init SCI0 ring buffer
+    // Initialise SCI0 ring buffer
     RB_Init(&SCI0RXBuff, SCI0RXBuffer, 128);
     
     /* initialise interrupt controller and enable interrupts */
@@ -96,7 +96,7 @@ void main (void)
     EN_GATE_ON;
     delay(30000);
     
-    // Initialize system variables
+    // Initialise system variables
     InitSysVars(1);
     
     // Calculate float values from parameters 
@@ -106,10 +106,10 @@ void main (void)
     SYS_ZERO_CURRENT = 1;
     
     
-    // Initialize MOSFET driver
+    // Initialise MOSFET driver
 	if(0 != InitDRV8301(0,31,1))
 	{
-		// Driver did not initialize properly
+		// Driver did not initialise properly
 		DRV8301_CONFIGURED = 0;
 		SYSTEM.systemState = SYSTEM_FAULT;
 	}

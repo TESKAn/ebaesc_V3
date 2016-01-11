@@ -838,6 +838,7 @@ void RX0_Full_ISR(void)
 		{
 			data = ioctl(SCI_0, SCI_GET_STATUS_REG, NULL);		// Clear RDRF flag
 			data = ioctl(SCI_0, SCI_READ_DATA, NULL);			// Read data
+			//RS485_States_slave((UInt8)data);  
 			// Store data in ring buffer
 			RB_push(&SCI0RXBuff, (UInt8)data);	
 		}		

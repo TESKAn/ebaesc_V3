@@ -108,7 +108,7 @@ Int16 RS485_SyncToSystem()
 		}
 		else if(RS485Data.REGS.f32SetRPM < RS485Data.REGS.f32MinRPM)
 		{
-			RS485Data.REGS.f32SetRPM = RS485Data.REGS.f32MinRPM;
+			RS485Data.REGS.f32SetRPM = 0.0f;
 		}
 		// Convert to frac16
 		fTemp = RS485Data.REGS.f32SetRPM * 32768 * (float)SYSTEM.CALIBRATION.i16MotorPolePairs;
