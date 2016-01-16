@@ -54,12 +54,16 @@
 
 #include "macro.h"
 
+#include "RS485comm.h"
+
+
+
 #include "var.h"
 
 #include "functions.h"
 #include "events.h"
 #include "init.h"
 #include "systemStates.h"
-#include "RS485comm.h"
+
 
 #endif /* ALLINCLUDES_H_ */

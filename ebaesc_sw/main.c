@@ -82,7 +82,7 @@ void main (void)
      */
     
     // RS485 communication setup
-    RS485_initData();
+    RS485_initData(&RS485DataStruct);
     
     // Set all flag values to initial value
     SYS_DEBUG_MODE = 1;
@@ -124,12 +124,13 @@ void main (void)
     	FMSTR_Poll();
     	
     	// Check RS485 comm
+    	/*
     	if(0 != SCI0RXBuff.count)
     	{
 			// Call RS485 state machine
 			RS485_States_slave(RB_pop(&SCI0RXBuff));    		
     	}
-
+*/
     	// Check test bit - for testing code
     	if(SYSTEM_TEST_BIT)
     	{

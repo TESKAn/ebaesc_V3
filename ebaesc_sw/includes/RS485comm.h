@@ -14,10 +14,11 @@
 Int16 RS485_initData();
 Int16 RS485_SyncToSystem();
 Int16 RS485_SyncToComm();
-Int16 RS485_Timer();
-Int16 RS485_writeByte(void);
-Int16 RS485_States_slave(UInt8 data);
-Int16 RS485_decodeMessage(void);
+void RS485_Timer();
+void RS485_writeByte();
+void RS485_States_slave(UInt8 data);
+void RS485_decodeMessage();
+UInt16 update_crc(UInt16 crc_accum, UInt8 *data_blk_ptr, UInt16 data_blk_size);
 
 // Hardware dependent macros
 #define RS485_ENABLE_RX						ioctl(GPIO_C, GPIO_CLEAR_PIN, BIT_3)
@@ -63,17 +64,18 @@ typedef struct
 	UInt8 ui8TXState;
 	UInt8 ui8RXState;
 	
-	// Transmit ring buffer
-	RING_BUFFER RS485TXBuff;
-	UInt8 RS485TXBuffer[128];
+	// How many bytes in our structure
+	UInt16 ui16RegsBytes;
+	// Readonly limits
+	UInt16 ui16ReadOnlyLow;
+	UInt16 ui16ReadOnlyHigh;
 	
-	// Receive buffer
-	UInt8 RS485RXBuffer[128];
-	UInt8 ui8RS485RXBufferIndex;
-	UInt8 ui8RS485RXChecksum;
-	UInt8 ui8RS485RXBytes;
-	UInt8 ui8RS485RXInstrErr;
-	UInt8 ui8TXChecksum;
+	// Transmit buffer
+	UInt8 RS485TXBuffer[128];	// Buffer
+	UInt8 ui8TXBytesLeft;		// How many bytes in buffer
+	UInt8 ui8TXIndex;			// Next byte to be transmitted
+	
+	UInt8 ui8RXCounter;			// Count bytes for RX
 	
 	// Timeouts
 	UInt16 ui16RXTimeoutCounter;
@@ -82,9 +84,37 @@ typedef struct
 	UInt16 ui16TXTimeoutCounter;
 	UInt16 ui16TXCommTimeout;
 	
+	struct
+	{
+		UInt8 ui8Parameters[128];	
+		UInt8 ui8RS485RXIndex;			// Index of next place to write to
+		UInt8 ui8ParamByteCount;		// How many bytes are in parameters		
+		struct
+		{
+			union
+			{
+				UInt32 ui32Header;
+				UInt8 ui8Bytes[4];
+			}HEADER;
+			UInt8 ui8ID;
+			union
+			{
+				UInt16 ui16PacketLength;
+				UInt8 ui8Bytes[2];
+			}LENGTH;
+			UInt8 ui8Instruction;	
+
+			union
+			{
+				UInt16 ui16CRC;
+				UInt8 ui8Bytes[2];
+			}CRCDATA;	
+		};
+	}RXDATA;
+	
 	union
 	{
-		UInt8 ui8Data[69];				// Main data structure
+		UInt8 ui8REGSData[69];				// Main data structure
 		struct
 		{
 			// Some params

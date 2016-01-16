@@ -45,7 +45,7 @@ typedef struct tagFLAGBITS
       unsigned BIT15:1;
     };
   };
-} FLAGBITS ;
+}FLAGBITS;
 
 typedef struct tagPARAMCONVERSION
 {
@@ -395,5 +395,7 @@ extern UInt8 ui8RS485RcvdByte;
 // Transmit ring buffer
 extern RING_BUFFER SCI0RXBuff;
 extern UInt8 SCI0RXBuffer[128];
+
+extern RS485MOTOR RS485DataStruct;
 
 #endif /* VAR_H_ */
