@@ -22,6 +22,8 @@ Int16 RS485_initData(RS485MOTOR* dataStruct)
 	RS485Data = dataStruct;
 	// Unit registers
 	RS485Data->REGS.ui8ID = RS485_ID;
+	RS485Data->REGS.ui16ModelNumber = 0x001c;
+	RS485Data->REGS.ui8FirmwareVersion = 1;
 	RS485Data->REGS.ui8BaudRate = 3;
 	RS485Data->REGS.ui16Errors = 0;
 	RS485Data->REGS.f32SetRPM = 0.0f;
@@ -372,7 +374,7 @@ void RS485_States_slave(UInt8 data)
 		case RS485_RX_WAIT_FOR_ID:
 		{
 			// Data == ID?
-			if(data == RS485Data->REGS.ui8ID)
+			if((data == RS485Data->REGS.ui8ID)||(0xfe == data))
 			{
 				// ID match, wait for data length
 				RS485Data->ui8RXState = RS485_RX_WAIT_FOR_LENGTH;
@@ -406,18 +408,18 @@ void RS485_States_slave(UInt8 data)
 		{
 			// Store instruction
 			RS485Data->RXDATA.ui8Instruction = data;
-			// Go to wait for parameters, if RS485Data.ui8RS485RXBytes > 0
-			if(0 < RS485Data->RXDATA.ui8ParamByteCount)
+			if(3 == RS485Data->RXDATA.LENGTH.ui16PacketLength)
 			{
-				// Waiting for parameters
-				RS485Data->ui8RXState = RS485_RX_WAIT_FOR_PARAMETERS;
-			}
-			else
-			{
+				// No parameters, only instruction + CRC
 				// Wait for checksum
 				RS485Data->ui8RXState = RS485_RX_WAIT_FOR_CHECKSUM;
 				RS485Data->ui8RXCounter = 0;
-			}		
+			}
+			else
+			{
+				// Waiting for parameters
+				RS485Data->ui8RXState = RS485_RX_WAIT_FOR_PARAMETERS;				
+			}	
 			break;
 		}
 		case RS485_RX_WAIT_FOR_PARAMETERS:
@@ -490,7 +492,7 @@ void RS485_decodeMessage()
 			// Instruction
 			RS485Data->RS485TXBuffer[7] = 0x55;
 			// Error
-			RS485Data->RS485TXBuffer[8] = RS485Data->errStatus;
+			RS485Data->RS485TXBuffer[8] = 0;
 			// Parameters
 			RS485Data->RS485TXBuffer[9] = RS485Data->errStatus;
 			RS485Data->RS485TXBuffer[10] = RS485Data->ui8REGSData[0];
