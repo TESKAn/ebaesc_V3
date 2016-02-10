@@ -373,8 +373,8 @@ void RS485_States_slave(UInt8 data)
 		}
 		case RS485_RX_WAIT_FOR_ID:
 		{
-			// Data == ID?
-			if((data == RS485Data->REGS.ui8ID)||(0xfe == data))
+			// Data == ID or broadcast ID?
+			if((data == RS485Data->REGS.ui8ID)||(RS485BROADCAST_ID == data))
 			{
 				// ID match, wait for data length
 				RS485Data->ui8RXState = RS485_RX_WAIT_FOR_LENGTH;
@@ -419,7 +419,7 @@ void RS485_States_slave(UInt8 data)
 			{
 				// Waiting for parameters
 				RS485Data->ui8RXState = RS485_RX_WAIT_FOR_PARAMETERS;				
-			}	
+			}
 			break;
 		}
 		case RS485_RX_WAIT_FOR_PARAMETERS:
