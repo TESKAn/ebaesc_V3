@@ -296,8 +296,6 @@ void InitSysVars(Int16 initial)
 		// Mark transition to idle state
 		SYSTEM.i16StateTransition = SYSTEM_IDLE;
 		
-		SYSTEM.COMMVALUES.i16ParkPosition = 2048;
-		
 		// If there is calibration data
 		if(0 != SYSTEM.CALIBRATION.i16PolePairArray[0])
 		{

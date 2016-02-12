@@ -338,15 +338,6 @@ typedef struct tagSYSVARS
 		float fIInFiltDiv;
 	}SIVALUES;
 	
-	struct tagCOMMVALUES
-	{
-		// Park position
-		Int16 i16ParkPosition;
-		
-		
-		
-	}COMMVALUES;
-	
 
 	// Phase voltages
 	MCLIB_3_COOR_SYST_T m3UphUVW;
@@ -397,5 +388,7 @@ extern RING_BUFFER SCI0RXBuff;
 extern UInt8 SCI0RXBuffer[128];
 
 extern RS485MOTOR RS485DataStruct;
+
+extern Int32 i32Var;
 
 #endif /* VAR_H_ */

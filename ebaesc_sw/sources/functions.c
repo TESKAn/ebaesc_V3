@@ -51,6 +51,11 @@ Int16 CalculateSIValues(void)
 {
 	float fTemp = 0.0;
 	float fTemp1 = 0.0;
+	Frac32 f32Temp;
+	Frac16 f16Temp;
+	Frac16 f16Temp1;
+	Int32 i32Temp = 0;
+	Int32 i32Temp1 = 0;
 	
 	// UIn
 	fTemp = (float)SYSTEM.ADC.f16DCLinkVoltageFiltered;
@@ -73,6 +78,30 @@ Int16 CalculateSIValues(void)
 	fTemp1 = fTemp1 * SI_UIN_FACTOR;
 	fTemp1 = fTemp1 / 65535;//32768;
 	SYSTEM.SIVALUES.fPIn += fTemp * fTemp1;		// P = Iq * Uq
+	
+	// Frac calc
+	i32Temp = 0;
+	
+	f16Temp = mult(SYSTEM.MCTRL.m2IDQ.f16D, 1648);	// 0,1
+	f16Temp1 = mult(SYSTEM.MCTRL.m2UDQ.f16D, 6087);	// 0,001
+	
+	L_mac(f16Temp, f16Temp1, i32Temp);	
+	
+	f16Temp = mult(SYSTEM.MCTRL.m2IDQ.f16Q, 1648);
+	f16Temp1 = mult(SYSTEM.MCTRL.m2UDQ.f16Q, 6087);
+	
+	L_mac(f16Temp, f16Temp1, i32Temp); 
+	
+	// Calculate I
+	// P is in 0,001 W scale
+	// U voltage in 0,01 V scale
+	// I is in 0,1 A scale
+	i32Temp1 = i32Temp / (Int32)RS485DataStruct.REGS.i16UIn;
+	RS485DataStruct.REGS.i16IIn = (Int16)i32Temp1;	
+	// Scale is 1 mW, decrease to 1W
+	i32Temp /= 1000;
+	// Store to RS485 reg
+	RS485DataStruct.REGS.i16PIn = (Int16)i32Temp;
 
 	// IIn
 	SYSTEM.SIVALUES.fIIn = SYSTEM.SIVALUES.fPIn / SYSTEM.SIVALUES.fUIn;
@@ -117,7 +146,6 @@ Int16 CalculateSIValues(void)
 	// Calculate FRAC16 value
 	fTemp = fTemp * 32768;
 	SYSTEM.MCTRL.f16IPh = (Frac16)fTemp;	
-
 	
 	return 0;
 }
@@ -432,7 +460,7 @@ void StopMotor(void)
 {
 	// Turn OFF PWM
 	ioctl(EFPWMA, EFPWM_SET_OUTPUTS_DISABLE, EFPWM_SUB0_PWM_A|EFPWM_SUB0_PWM_B|EFPWM_SUB1_PWM_A|EFPWM_SUB1_PWM_B|EFPWM_SUB2_PWM_A|EFPWM_SUB2_PWM_B);
-	// Reinitialize variables
+	// Reinitialise variables
 	InitSysVars(0);
 	
 	// Disable regulators

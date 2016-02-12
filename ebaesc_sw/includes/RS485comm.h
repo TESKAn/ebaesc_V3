@@ -114,7 +114,7 @@ typedef struct
 	
 	union
 	{
-		UInt8 ui8REGSData[69];				// Main data structure
+		UInt8 ui8REGSData[64];				// Main data structure
 		struct
 		{
 			// Some params
@@ -125,31 +125,46 @@ typedef struct
 			UInt8 ui8Empty;				// 5
 			// Errors
 			UInt16 ui16Errors;			// 6
-			// Future expansion
-			UInt8 uiEmpty1[24];			// 32 bytes total
-			// Status of the motor
-			float f32UIn;				// 32
-			float f32IIn;				// 36
-			float f32PIn;				// 40
-			float f32RPM;				// 44
-			float f32SetRPM;			// 48
-			// Motor control
-			// Motor state - idle, run, error
-			UInt16 ui16State;			// 52
-			// State transition command
-			UInt16 ui16Command;			// 54
-			// Arm
-			UInt8 ui8Armed;				// 56
-			// Park
-			UInt8 ui8Park;				// 57
-			// Reverse rotation
-			UInt8 ui8ReverseRotation;	// 58
-			// Park position
-			Int16 i16ParkPosition;		// 59
 			
-			// Motor min/max RPM
-			float f32MinRPM;			// 61
-			float f32MaxRPM;			// 65	// +4 = total
+			// Motor state - idle, run, error
+			UInt16 ui16State;			// 8
+						
+			// Status of the motor
+			Int16 i16UIn;				// 10
+			Int16 i16IIn;				// 12
+			Int16 i16PIn;				// 14
+			Int16 i16RPM;				// 16
+
+			// Future expansion
+			UInt8 uiEmpty1[14];			// 32 bytes total
+
+			// Motor control
+			// Arm
+			UInt8 ui8Armed;				// 32
+			// Park
+			UInt8 ui8Park;				// 33
+			// Reverse rotation
+			UInt8 ui8ReverseRotation;	// 34
+			UInt8 uiEmpty2;
+			// Park position
+			Int16 i16ParkPosition;		// 36
+			
+			Int16 i16SetRPM;			// 38
+			Int16 i16MaxRPM;			// 40
+			Int16 i16MinRPM;			// 42
+			
+			// PWM input
+			UInt8 ui8MeasurePWMMin;		// 44
+			UInt8 ui8MeasurePWMMax;		// 45
+			UInt8 ui8UsePWMIN;			// 46
+			UInt8 uiEmpty3;				// 47
+			Int16 i16PWMMin;			// 48
+			Int16 i16PWMMax;			// 50
+			Int16 i16ZeroSpeedPWM;		// 52		
+			Int16 i16CurrentPWM;		// 54	//55 bytes total	
+			
+			UInt8 uiEmpty4[9];					// 64 bytes total
+
 		}REGS;
 	};
 

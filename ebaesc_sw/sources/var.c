@@ -35,5 +35,7 @@ UInt8 SCI0RXBuffer[128];
 
 RS485MOTOR RS485DataStruct;
 
+Int32 i32Var = 0;
+
 PARAMCONVERSION pConv;
 

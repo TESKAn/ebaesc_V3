@@ -82,6 +82,11 @@ void ADC_1_EOS_ISR(void)
 	SYSTEM.ADC.f16SensorValueAFiltered = GDFLIB_FilterMA32(SYSTEM.ADC.f16SensorValueA, &SYSTEM.ADC.FilterMA32SensorA);
 	SYSTEM.ADC.f16SensorValueBFiltered = GDFLIB_FilterMA32(SYSTEM.ADC.f16SensorValueB, &SYSTEM.ADC.FilterMA32SensorB);
 	
+	// Calculate values
+	RS485DataStruct.REGS.i16UIn = mult(SYSTEM.ADC.f16DCLinkVoltage, 6087);
+	
+	RS485DataStruct.REGS.i16RPM = mult(SYSTEM.POSITION.f16SpeedFiltered, 17142);
+	
 	// Change phase current amplification if necessary
 	if(DRV8301_CONFIGURED)
 	{
@@ -212,6 +217,7 @@ void ADC_1_EOS_ISR(void)
 	
 	// Recalculate input capture values
 	// Values are read from timer modules in PWM reload interrupt
+	/*
 	SYSTEM.INPUTCAPTURE.m3UphUVW.f16A = (Frac16)(SYSTEM.INPUTCAPTURE.Val0 * 5);
 	mac_r(SYSTEM.INPUTCAPTURE.m3UphUVW.f16A, SYSTEM.INPUTCAPTURE.Val0, FRAC16(0.24288));
 	
@@ -220,6 +226,7 @@ void ADC_1_EOS_ISR(void)
 	
 	SYSTEM.INPUTCAPTURE.m3UphUVW.f16C = (Frac16)(SYSTEM.INPUTCAPTURE.Val2 * 5);
 	mac_r(SYSTEM.INPUTCAPTURE.m3UphUVW.f16C, SYSTEM.INPUTCAPTURE.Val2, FRAC16(0.24288));
+	*/
 	
 	/*
 	// Calculate clark park transform for voltages
@@ -371,7 +378,7 @@ void ADC_1_EOS_ISR(void)
 			}
 			else if(SYSTEM_PARK_ROTOR)
 			{
-				i16Temp = SYSTEM.COMMVALUES.i16ParkPosition - SYSTEM.POSITION.i16SensorIndex;
+				i16Temp = RS485DataStruct.REGS.i16ParkPosition - SYSTEM.POSITION.i16SensorIndex;
 				
 				if(20 < i16Temp)
 				{
@@ -767,7 +774,18 @@ void GPIO_F_ISR(void)
 		// Filter
 		SYSTEM.PWMIN.i16PWMFiltered = SYSTEM.PWMIN.i16PWMInFilterAcc >> SYSTEM.PWMIN.i16PWMFilterSize;
 		// Subtract from storage
-		SYSTEM.PWMIN.i16PWMInFilterAcc -= SYSTEM.PWMIN.i16PWMFiltered;		
+		SYSTEM.PWMIN.i16PWMInFilterAcc -= SYSTEM.PWMIN.i16PWMFiltered;	
+		// Store to comm reg
+		RS485DataStruct.REGS.i16CurrentPWM = SYSTEM.PWMIN.i16PWMFiltered;
+		// Measuring min/max value?
+		if(1 == RS485DataStruct.REGS.ui8MeasurePWMMax)
+		{
+			RS485DataStruct.REGS.i16PWMMax = SYSTEM.PWMIN.i16PWMFiltered;
+		}
+		else if(1 == RS485DataStruct.REGS.ui8MeasurePWMMin)
+		{
+			RS485DataStruct.REGS.i16PWMMin = SYSTEM.PWMIN.i16PWMFiltered;
+		}
 	}
 	else
 	{

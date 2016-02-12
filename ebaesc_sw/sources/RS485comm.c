@@ -8,7 +8,7 @@
 #include "Allincludes.h"
 
 // Disable timeouts
-#define RS485_NOTIMEOUT
+//#define RS485_NOTIMEOUT
 
 RS485MOTOR* RS485Data;
 
@@ -26,15 +26,14 @@ Int16 RS485_initData(RS485MOTOR* dataStruct)
 	RS485Data->REGS.ui8FirmwareVersion = 1;
 	RS485Data->REGS.ui8BaudRate = 3;
 	RS485Data->REGS.ui16Errors = 0;
-	RS485Data->REGS.f32SetRPM = 0.0f;
+	//RS485Data->REGS.f32SetRPM = 0.0f;
 	RS485Data->REGS.ui16State = SYSTEM.systemState;
-	RS485Data->REGS.ui16Command = 0;
 	RS485Data->REGS.ui8Armed = 0;
 	RS485Data->REGS.ui8Park = 0;
 	// Park position
 	RS485Data->REGS.i16ParkPosition = M_PARK_POSITION;
-	RS485Data->REGS.f32MinRPM = 1000;
-	RS485Data->REGS.f32MaxRPM = 9000;	
+	//RS485Data->REGS.f32MinRPM = 1000;
+	//RS485Data->REGS.f32MaxRPM = 9000;	
 	
 	RS485Data->ui16RegsBytes = 74;
 	RS485Data->errStatus = 0;
@@ -44,6 +43,14 @@ Int16 RS485_initData(RS485MOTOR* dataStruct)
 	RS485Data->ui16TXTimeoutCounter = 0;	
 	RS485Data->ui16ReadOnlyLow = 0;
 	RS485Data->ui16ReadOnlyHigh = 2;
+	
+	RS485Data->REGS.i16PWMMax = 2000;
+	RS485Data->REGS.i16PWMMin = 1000;
+	
+	RS485Data->REGS.i16MaxRPM = 9000;
+	RS485Data->REGS.i16MinRPM = 1000;
+	RS485Data->REGS.i16CurrentPWM = 1000;
+	RS485Data->REGS.i16ParkPosition = 2048;
 	
 	
 	RS485Data->ui8TXState = RS485_TX_IDLE;
@@ -59,95 +66,6 @@ Int16 RS485_initData(RS485MOTOR* dataStruct)
 #pragma interrupt called
 Int16 RS485_SyncToSystem()
 {
-	float fTemp = 0;
-	Int16 i16Temp = 0;
-	// Sync com variables to system
-	SYSTEM.i16StateTransition = RS485Data->REGS.ui16Command;
-	SYSTEM.COMMVALUES.i16ParkPosition = RS485Data->REGS.i16ParkPosition;
-
-	if(0 != RS485Data->REGS.ui8Armed)
-	{
-		switch(SYSTEM.systemState)
-		{
-			case SYSTEM_IDLE:
-			{
-				// Park rotor?
-				if(0 != RS485Data->REGS.ui8Park)
-				{
-					SYSTEM.i16StateTransition = SYSTEM_PARKROTOR;
-				}
-				// Else run
-				else
-				{
-					// Control system speed
-					CONTROL_SPEED = 1;
-					SYSTEM.i16StateTransition = SYSTEM_RUN;
-				}
-				break;
-			}
-			case SYSTEM_RUN:
-			{
-				// Park rotor?
-				if(0 != RS485Data->REGS.ui8Park)
-				{
-					SYSTEM.i16StateTransition = SYSTEM_PARKROTOR;
-				}
-				break;
-			}
-			case SYSTEM_PARKROTOR:
-			{
-				if(0 == RS485Data->REGS.ui8Park)
-				{
-					// Control system speed
-					CONTROL_SPEED = 1;
-					SYSTEM.i16StateTransition = SYSTEM_RUN;
-				}
-				break;
-			}
-		}
-		// Set speed
-		// Limit
-		if(RS485Data->REGS.f32SetRPM > RS485Data->REGS.f32MaxRPM)
-		{
-			RS485Data->REGS.f32SetRPM = RS485Data->REGS.f32MaxRPM;
-		}
-		else if(RS485Data->REGS.f32SetRPM < RS485Data->REGS.f32MinRPM)
-		{
-			RS485Data->REGS.f32SetRPM = 0.0f;
-		}
-		// Convert to frac16
-		fTemp = RS485Data->REGS.f32SetRPM * 32768 * (float)SYSTEM.CALIBRATION.i16MotorPolePairs;
-		fTemp = fTemp / 60000;
-		i16Temp = (Int16)fTemp;		
-		// Check sign
-		if(0 == RS485Data->REGS.ui8ReverseRotation)
-		{
-			SYSTEM.RAMPS.f16SpeedRampDesiredValue = i16Temp;
-		}
-		else
-		{
-			SYSTEM.RAMPS.f16SpeedRampDesiredValue = -i16Temp;
-		}
-		
-	}
-	else
-	{
-		switch(SYSTEM.systemState)
-		{
-			case SYSTEM_PARKROTOR:
-			{
-				SYSTEM.i16StateTransition = SYSTEM_RESET;
-				SYSTEM.RAMPS.f16SpeedRampDesiredValue = FRAC16(0.0);
-				break;
-			}
-			case SYSTEM_RUN:
-			{
-				SYSTEM.i16StateTransition = SYSTEM_RESET;
-				SYSTEM.RAMPS.f16SpeedRampDesiredValue = FRAC16(0.0);
-				break;
-			}
-		}
-	}
 	return 0;
 }
 
@@ -155,19 +73,13 @@ Int16 RS485_SyncToSystem()
 Int16 RS485_SyncToComm()
 {
 	float fTemp;
-	RS485Data->REGS.f32IIn = SYSTEM.SIVALUES.fIInFilt;
-	RS485Data->REGS.f32PIn = SYSTEM.SIVALUES.fPIn;
-	RS485Data->REGS.f32RPM = SYSTEM.SIVALUES.fRPM;
-	RS485Data->REGS.f32UIn = SYSTEM.SIVALUES.fUIn;
-	RS485Data->REGS.ui16Command = SYSTEM.i16StateTransition; 
-	RS485Data->REGS.i16ParkPosition = SYSTEM.COMMVALUES.i16ParkPosition;
-	
+
 	
 	// Set speed
 	fTemp = (float)SYSTEM.RAMPS.f16SpeedRampDesiredValue;
 	fTemp = fTemp * 60000;
 	fTemp = fTemp / (32768 * (float)SYSTEM.CALIBRATION.i16MotorPolePairs);
-	RS485Data->REGS.f32SetRPM = fTemp;
+	RS485Data->REGS.i16RPM = (Int16)fTemp;
 	
 	if(SYSTEM_IDLE != SYSTEM.systemState)
 	{
@@ -211,6 +123,7 @@ void RS485_Timer()
 			// Reset TX process.
 			RS485Data->ui8TXState = RS485_TX_IDLE;
 			RS485_ENABLE_RX;
+			RS485_DISABLE_TX_INT;
 			RS485_DISABLE_TX_IDLE_INT;
 			// Reset TX buffer
 			RS485Data->ui8TXIndex = 0;
@@ -595,7 +508,7 @@ void RS485_decodeMessage()
 				RS485_SyncToSystem();
 				// Setup data
 				// Len_l, len_h
-				ui16Val.data = ui16NumRegBytes + 5;
+				ui16Val.data = 5;
 						
 				RS485Data->RS485TXBuffer[5] = ui16Val.bytes[0]; 
 				RS485Data->RS485TXBuffer[6] = ui16Val.bytes[1];

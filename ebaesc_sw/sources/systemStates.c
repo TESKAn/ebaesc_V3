@@ -164,6 +164,16 @@ Int16 checkSystemStates(void)
 					//SYSTEM_GOTO_ACTIVE = 0;
 				}
 			}
+			// Check comm regs
+			if(1 == RS485DataStruct.REGS.ui8Armed)
+			{
+				// Control system speed
+				CONTROL_SPEED = 1;
+				SYSTEM.i16StateTransition = SYSTEM_RUN;
+			}
+			
+			
+			
 			switch(SYSTEM.i16StateTransition)
 			{
 				case SYSTEM_RUN:
@@ -336,6 +346,108 @@ Int16 checkSystemStates(void)
 		}
 		case SYSTEM_RUN:
 		{
+			// Running?
+			if(1 == RS485DataStruct.REGS.ui8Armed)
+			{
+				// Use PWM for speed?
+				if(1 == RS485DataStruct.REGS.ui8UsePWMIN)
+				{
+					// Calculate speed based on input PWM value
+					// Current value
+					i16Temp0 = RS485DataStruct.REGS.i16CurrentPWM - RS485DataStruct.REGS.i16PWMMin;
+					// Limit
+					if(0 > i16Temp0) i16Temp0 = 0;
+					// Full scale value
+					i16Temp1 = RS485DataStruct.REGS.i16PWMMax - RS485DataStruct.REGS.i16PWMMin;
+					if(0 > i16Temp1) i16Temp1 = 1;
+					if(i16Temp0 > RS485DataStruct.REGS.i16ZeroSpeedPWM)
+					{
+						// Calculate speed
+						i32Temp0 = i16Temp0 * RS485DataStruct.REGS.i16MaxRPM;
+						i32Temp0 /= i16Temp1;
+						i16Temp0 = (Int16)i32Temp0;
+						// Limit to min
+						if(i16Temp0 < RS485DataStruct.REGS.i16MinRPM)
+						{
+							i16Temp0 = 0;
+						}
+						else
+						{
+							// Calculate frac value
+							i32Temp0 = (Frac32)i16Temp0 * 32768 * (Frac32)SYSTEM.CALIBRATION.i16MotorPolePairs;
+							i32Temp0 /= 60000;
+							// Check sign
+							if(0 == RS485DataStruct.REGS.ui8ReverseRotation)
+							{
+								SYSTEM.RAMPS.f16SpeedRampDesiredValue = (Frac16)i32Temp0;
+							}
+							else
+							{
+								SYSTEM.RAMPS.f16SpeedRampDesiredValue = -(Frac16)i32Temp0;
+							}		
+						}
+					}
+					else
+					{
+						SYSTEM.RAMPS.f16SpeedRampDesiredValue = FRAC16(0.0);
+					}
+				}
+				else
+				{
+					// Limit
+					if(RS485DataStruct.REGS.i16SetRPM > RS485DataStruct.REGS.i16MaxRPM)
+					{
+						RS485DataStruct.REGS.i16SetRPM = RS485DataStruct.REGS.i16MaxRPM;
+					}
+					else if(RS485DataStruct.REGS.i16SetRPM < RS485DataStruct.REGS.i16MinRPM)
+					{
+						RS485DataStruct.REGS.i16SetRPM = 0;
+					}
+					// Convert to frac16
+					i32Var = RS485DataStruct.REGS.i16SetRPM * 229376;// 32768 * (Frac32)SYSTEM.CALIBRATION.i16MotorPolePairs;
+					i32Var /= 60000;
+					// Check sign
+					if(0 == RS485DataStruct.REGS.ui8ReverseRotation)
+					{
+						SYSTEM.RAMPS.f16SpeedRampDesiredValue = (Frac16)i32Var;
+					}
+					else
+					{
+						SYSTEM.RAMPS.f16SpeedRampDesiredValue = -(Frac16)i32Var;
+					}		
+				}
+			
+				// Park rotor?
+				if(1 == RS485DataStruct.REGS.ui8Park)
+				{
+					if(FRAC16(0.0) > SYSTEM.POSITION.f16SpeedFiltered)
+					{
+						f16Temp0 = -SYSTEM.POSITION.f16SpeedFiltered;
+					}
+					else
+					{
+						f16Temp0 = SYSTEM.POSITION.f16SpeedFiltered;
+					}
+					// If speed below limit, park
+					if(FRAC16(0.01) > f16Temp0)
+					{
+						SYSTEM.i16StateTransition = SYSTEM_PARKROTOR;
+					}
+					// Else slow down
+					else
+					{
+						SYSTEM.RAMPS.f16SpeedRampDesiredValue = FRAC16(0.0);
+					}
+				}
+			}
+			else
+			{
+				// Go out of run mode
+				SYSTEM.i16StateTransition = SYSTEM_RESET;
+				SYSTEM.RAMPS.f16SpeedRampDesiredValue = FRAC16(0.0);
+			}
+
+			
 			switch(SYSTEM.i16StateTransition)
 			{
 				case SYSTEM_RESET:
@@ -370,7 +482,6 @@ Int16 checkSystemStates(void)
 						PWM_ENABLED = 1;
 						SYSTEM.systemState = SYSTEM_PARKROTOR;					
 					}
-
 					break;
 				}
 			}
@@ -679,6 +790,22 @@ Int16 checkSystemStates(void)
 			SYSTEM_PARK_ROTOR = 1;
 			SYSTEM_RUN_MANUAL_CW = 0;
 			SYSTEM_RUN_MANUAL_CCW = 0;
+
+			// Go out of park?
+			if(0 == RS485DataStruct.REGS.ui8Park)
+			{
+				// Control system speed
+				CONTROL_SPEED = 1;
+				SYSTEM.i16StateTransition = SYSTEM_RUN;
+			}
+			
+			// Stop motor?
+			if(0 == RS485DataStruct.REGS.ui8Armed)
+			{
+				// Go out of run mode
+				SYSTEM.i16StateTransition = SYSTEM_RESET;
+				SYSTEM.RAMPS.f16SpeedRampDesiredValue = FRAC16(0.0);
+			}
 
 			switch(SYSTEM.i16StateTransition)
 			{
