@@ -35,7 +35,7 @@ Int16 RS485_initData(RS485MOTOR* dataStruct)
 	//RS485Data->REGS.f32MinRPM = 1000;
 	//RS485Data->REGS.f32MaxRPM = 9000;	
 	
-	RS485Data->ui16RegsBytes = 74;
+	RS485Data->ui16RegsBytes = 64;
 	RS485Data->errStatus = 0;
 	RS485Data->ui16RXCommTimeout = 100;
 	RS485Data->ui16RXTimeoutCounter = 0;
@@ -447,7 +447,7 @@ void RS485_decodeMessage()
 				ui16Temp = 10;
 				for(i = 0; i < ui16NumRegBytes; i++)
 				{
-					RS485Data->RS485TXBuffer[ui16Temp] = RS485Data->ui8REGSData[ui16RegAddress + ui16NumRegBytes];
+					RS485Data->RS485TXBuffer[ui16Temp] = RS485Data->ui8REGSData[ui16RegAddress + i];
 					ui16Temp++;
 				}				
 			}

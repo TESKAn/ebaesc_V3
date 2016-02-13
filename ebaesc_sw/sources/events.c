@@ -755,44 +755,56 @@ void PWM_A0_Reload_ISR(void)
 void GPIO_F_ISR(void)
 {
 	UInt16 ui16Temp = 0;
+
 	// Read timer value
 	ui16Temp = ioctl(QTIMER_B3, QT_READ_COUNTER_REG, NULL);
-	// Clear counter
-	ioctl(QTIMER_B3, QT_WRITE_COUNTER_REG, 0);
+	
 	// Check input value
 	if(0 != (ioctl(GPIO_F, GPIO_READ_DATA, NULL) & BIT_7))
 	{
-		// Input value is 1
-		// Read PWM high time
-		SYSTEM.PWMIN.i16PWMHigh = ui16Temp;
-		// Set detection polarity
-		ioctl(GPIO_F, GPIO_INT_DETECTION_ACTIVE_LOW, BIT_7);
-		
-		// Filter PWM
-		// Add to storage
-		SYSTEM.PWMIN.i16PWMInFilterAcc += SYSTEM.PWMIN.i16PWMHigh;
-		// Filter
-		SYSTEM.PWMIN.i16PWMFiltered = SYSTEM.PWMIN.i16PWMInFilterAcc >> SYSTEM.PWMIN.i16PWMFilterSize;
-		// Subtract from storage
-		SYSTEM.PWMIN.i16PWMInFilterAcc -= SYSTEM.PWMIN.i16PWMFiltered;	
-		// Store to comm reg
-		RS485DataStruct.REGS.i16CurrentPWM = SYSTEM.PWMIN.i16PWMFiltered;
-		// Measuring min/max value?
-		if(1 == RS485DataStruct.REGS.ui8MeasurePWMMax)
+		// Check PWM width
+		if(ui16Temp > 1000)
 		{
-			RS485DataStruct.REGS.i16PWMMax = SYSTEM.PWMIN.i16PWMFiltered;
-		}
-		else if(1 == RS485DataStruct.REGS.ui8MeasurePWMMin)
-		{
-			RS485DataStruct.REGS.i16PWMMin = SYSTEM.PWMIN.i16PWMFiltered;
+			// Clear counter
+			ioctl(QTIMER_B3, QT_WRITE_COUNTER_REG, 0);	
+			// Input value is 1
+			// Read PWM high time
+			SYSTEM.PWMIN.i16PWMHigh = ui16Temp;
+			// Set detection polarity
+			ioctl(GPIO_F, GPIO_INT_DETECTION_ACTIVE_LOW, BIT_7);
+			
+			// Filter PWM
+			// Add to storage
+			SYSTEM.PWMIN.i16PWMInFilterAcc += SYSTEM.PWMIN.i16PWMHigh;
+			// Filter
+			SYSTEM.PWMIN.i16PWMFiltered = SYSTEM.PWMIN.i16PWMInFilterAcc >> SYSTEM.PWMIN.i16PWMFilterSize;
+			// Subtract from storage
+			SYSTEM.PWMIN.i16PWMInFilterAcc -= SYSTEM.PWMIN.i16PWMFiltered;	
+			// Store to comm reg
+			RS485DataStruct.REGS.i16CurrentPWM = SYSTEM.PWMIN.i16PWMFiltered;
+			// Measuring min/max value?
+			if(1 == RS485DataStruct.REGS.ui8MeasurePWMMax)
+			{
+				RS485DataStruct.REGS.i16PWMMax = SYSTEM.PWMIN.i16PWMFiltered;
+			}
+			else if(1 == RS485DataStruct.REGS.ui8MeasurePWMMin)
+			{
+				RS485DataStruct.REGS.i16PWMMin = SYSTEM.PWMIN.i16PWMFiltered;
+			}			
 		}
 	}
 	else
 	{
-		// Read PWM low time
-		SYSTEM.PWMIN.i16PWMLow = ui16Temp;
-		// Set detection polarity
-		ioctl(GPIO_F, GPIO_INT_DETECTION_ACTIVE_HIGH, BIT_7);		
+		// Check PWM width
+		if(ui16Temp > 1000)
+		{
+			// Clear counter
+			ioctl(QTIMER_B3, QT_WRITE_COUNTER_REG, 0);	
+			// Read PWM low time
+			SYSTEM.PWMIN.i16PWMLow = ui16Temp;
+			// Set detection polarity
+			ioctl(GPIO_F, GPIO_INT_DETECTION_ACTIVE_HIGH, BIT_7);				
+		}	
 	}
 	// Clear interrupt flag
 	ioctl(GPIO_F, GPIO_CLEAR_INT_PENDING, BIT_7);

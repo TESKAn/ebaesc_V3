@@ -15,8 +15,8 @@ Int16 checkSystemStates(void)
 	Int16 i16Temp1 = 0;
 	Int16 i16Temp2 = 0;
 	Int16 i16Temp3 = 0;
-	Int16 i32Temp0 = 0;
 	Frac16 f16Temp0 = 0;
+	Int32 i32Temp0 = 0;
 	switch(SYSTEM.systemState)
 	{
 		case SYSTEM_WAKEUP:
@@ -363,9 +363,10 @@ Int16 checkSystemStates(void)
 					if(i16Temp0 > RS485DataStruct.REGS.i16ZeroSpeedPWM)
 					{
 						// Calculate speed
-						i32Temp0 = i16Temp0 * RS485DataStruct.REGS.i16MaxRPM;
+						i32Temp0 = (Int32)RS485DataStruct.REGS.i16MaxRPM * (Int32)i16Temp0;
 						i32Temp0 /= i16Temp1;
 						i16Temp0 = (Int16)i32Temp0;
+						
 						// Limit to min
 						if(i16Temp0 < RS485DataStruct.REGS.i16MinRPM)
 						{
