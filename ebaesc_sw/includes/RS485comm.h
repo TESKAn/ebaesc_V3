@@ -118,25 +118,27 @@ typedef struct
 		struct
 		{
 			// Some params
-			UInt16 ui16ModelNumber;		// 0
-			UInt8 ui8FirmwareVersion;	// 2
-			UInt8 ui8ID;				// 3
-			UInt8 ui8BaudRate;			// 4
-			UInt8 ui8Empty;				// 5
 			// Errors
-			UInt16 ui16Errors;			// 6
-			
+			UInt16 ui16Errors;			// 0
+			UInt16 ui16ModelNumber;		// 2
+			UInt8 ui8FirmwareVersion;	// 4
+			UInt8 ui8ID;				// 5
+			UInt8 ui8BaudRate;			// 6
+			UInt8 ui8Empty;				// 7
+
+
 			// Motor state - idle, run, error
 			UInt16 ui16State;			// 8
-						
+
 			// Status of the motor
 			Int16 i16UIn;				// 10
 			Int16 i16IIn;				// 12
 			Int16 i16PIn;				// 14
 			Int16 i16RPM;				// 16
 
+			Int16 i16Empty;
 			// Future expansion
-			UInt8 uiEmpty1[14];			// 32 bytes total
+			UInt8 uiEmpty1[12];			// 32 bytes total
 
 			// Motor control
 			// Arm
@@ -148,11 +150,11 @@ typedef struct
 			UInt8 uiEmpty2;
 			// Park position
 			Int16 i16ParkPosition;		// 36
-			
+
 			Int16 i16SetRPM;			// 38
 			Int16 i16MaxRPM;			// 40
 			Int16 i16MinRPM;			// 42
-			
+
 			// PWM input
 			UInt8 ui8MeasurePWMMin;		// 44
 			UInt8 ui8MeasurePWMMax;		// 45
@@ -160,10 +162,10 @@ typedef struct
 			UInt8 uiEmpty3;				// 47
 			Int16 i16PWMMin;			// 48
 			Int16 i16PWMMax;			// 50
-			Int16 i16ZeroSpeedPWM;		// 52		
-			Int16 i16CurrentPWM;		// 54	//55 bytes total	
-			
-			UInt8 uiEmpty4[9];					// 64 bytes total
+			Int16 i16ZeroSpeedPWM;		// 52
+			Int16 i16CurrentPWM;		// 54	//55 bytes total
+
+			UInt8 uiEmpty4[8];					// 64 bytes total
 
 		}REGS;
 	};
