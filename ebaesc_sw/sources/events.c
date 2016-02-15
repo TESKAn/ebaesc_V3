@@ -734,7 +734,7 @@ void ADC_1_EOS_ISR(void)
 		ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);		
 	}
 }
-
+/*
 #pragma interrupt saveall
 void PWM_A0_Reload_ISR(void)
 {
@@ -750,7 +750,7 @@ void PWM_A0_Reload_ISR(void)
 	// Clear reload flag
 	ioctl(EFPWMA_SUB0, EFPWMS_CLEAR_SUBMODULE_FLAGS, EFPWM_RELOAD);
 }
-
+*/
 #pragma interrupt saveall
 void GPIO_F_ISR(void)
 {
@@ -817,12 +817,6 @@ void QT_B3_ISR(void)
 	ioctl(QTIMER_B3, QT_CLEAR_FLAG, QT_INPUT_EDGE_FLAG);
 }
 
-#pragma interrupt saveall
-void PWM_A0_CompareISR(void)
-{
-	int i = 0;
-	i++;
-}
 
 #pragma interrupt saveall
 void RX1_Full_ISR(void)
@@ -844,7 +838,6 @@ void SPI_0_RX_FULL_ISR(void)
 void RX0_Full_ISR(void)
 {
 	unsigned int data;
-	
 	// Check for errors
 	// Check overrun flag
 	if(0 != ioctl(SCI_0, SCI_GET_RX_OVERRUN, NULL))
@@ -864,13 +857,14 @@ void RX0_Full_ISR(void)
 	}
 	else
 	{
-		while(0 != ioctl(SCI_0, SCI_GET_RX_FULL, NULL))
+		//while(0 != ioctl(SCI_0, SCI_GET_RX_FULL, NULL))
+		while(0 != ioctl(SCI_0, SCI_CAN_READ_DATA, NULL))
 		{
 			data = ioctl(SCI_0, SCI_GET_STATUS_REG, NULL);		// Clear RDRF flag
 			data = ioctl(SCI_0, SCI_READ_DATA, NULL);			// Read data
-			RS485_States_slave((UInt8)data);  
+			//RS485_States_slave((UInt8)data);  
 			// Store data in ring buffer
-			//RB_push(&SCI0RXBuff, (UInt8)data);	
+			RB_push(&SCI0RXBuff, (UInt8)data);	
 		}		
 	}	
 }

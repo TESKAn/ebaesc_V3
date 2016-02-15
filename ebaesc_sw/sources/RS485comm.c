@@ -30,6 +30,7 @@ Int16 RS485_initData(RS485MOTOR* dataStruct)
 	RS485Data->REGS.ui16State = SYSTEM.systemState;
 	RS485Data->REGS.ui8Armed = 0;
 	RS485Data->REGS.ui8Park = 0;
+	RS485Data->REGS.ui8ReturnDelayTime = 1;
 	// Park position
 	RS485Data->REGS.i16ParkPosition = M_PARK_POSITION;
 	//RS485Data->REGS.f32MinRPM = 1000;
@@ -131,6 +132,15 @@ void RS485_Timer()
 		}	
 #endif
 	}
+	// Check return delay time
+	if(0 != RS485Data->ui8ReturnDelay)
+	{
+		RS485Data->ui8ReturnDelay--;
+		if(0 == RS485Data->ui8ReturnDelay)
+		{
+			RS485_writeByte();
+		}
+	}
 }
 
 #pragma interrupt called
@@ -167,26 +177,30 @@ void RS485_writeByte()
 			// Data to send?
 			if(0 != RS485Data->ui8TXBytesLeft)
 			{
-				// Room in buffer?
-				if(RS485_TEST_TX_EMPTY)
+				while(4 != RS485_GET_TX_FIFO_CNT)
 				{
-					// Enable TX empty interrupt
-					RS485_ENABLE_TX_INT;
-					// Write one byte
-					RS485_WRITE(RS485Data->RS485TXBuffer[RS485Data->ui8TXIndex]);
-					RS485Data->ui8TXIndex++;
-					RS485Data->ui8TXBytesLeft--;
-				}
-				// Check if buffer is empty
-				if(0 == RS485Data->ui8TXBytesLeft)
-				{
-					// Last byte in buffer
-					// Wait for end of transmission
-					RS485Data->ui8TXState = RS485_TX_FINISHED;
-					// Disable interrupt
-					RS485_DISABLE_TX_INT;
-					// Enable idle interrupt
-					RS485_ENABLE_TX_IDLE_INT;
+					// Room in buffer?
+					if(RS485_TEST_TX_EMPTY)
+					{
+						// Enable TX empty interrupt
+						RS485_ENABLE_TX_INT;
+						// Write one byte
+						RS485_WRITE(RS485Data->RS485TXBuffer[RS485Data->ui8TXIndex]);
+						RS485Data->ui8TXIndex++;
+						RS485Data->ui8TXBytesLeft--;
+					}
+					// Check if buffer is empty
+					if(0 == RS485Data->ui8TXBytesLeft)
+					{
+						// Last byte in buffer
+						// Wait for end of transmission
+						RS485Data->ui8TXState = RS485_TX_FINISHED;
+						// Disable interrupt
+						RS485_DISABLE_TX_INT;
+						// Enable idle interrupt
+						RS485_ENABLE_TX_IDLE_INT;
+						break;
+					}					
 				}
 			}
 			else
@@ -206,12 +220,16 @@ void RS485_writeByte()
 			// Done with sending?
 			if(RS485_TEST_TX_IDLE)
 			{
-				// Yes, enable receive
-				RS485_ENABLE_RX;
-				// Disable interrupt
-				RS485_DISABLE_TX_IDLE_INT;
-				// Go to idle state
-				RS485Data->ui8TXState = RS485_TX_IDLE;
+				// No more TX bytes?
+				if(0 == RS485_GET_TX_FIFO_CNT)
+				{
+					// Yes, enable receive
+					RS485_ENABLE_RX;
+					// Disable interrupt
+					RS485_DISABLE_TX_IDLE_INT;
+					// Go to idle state
+					RS485Data->ui8TXState = RS485_TX_IDLE;
+				}
 			}
 			else if(RS485_TEST_TX_EMPTY)
 			{
@@ -546,8 +564,12 @@ void RS485_decodeMessage()
 	RS485Data->ui8TXBytesLeft = ui16Temp;
 	RS485Data->ui8TXIndex = 0;		
 	
-	// Send data
-	RS485_writeByte();
+	// If ID is unit ID, send data. Else no response.
+	if(RS485Data->REGS.ui8ID == RS485Data->RXDATA.ui8ID)
+	{
+		// Load delay time for TX
+		RS485Data->ui8ReturnDelay = RS485Data->REGS.ui8ReturnDelayTime;
+	}	
 }
 
 UInt16 update_crc(UInt16 crc_accum, UInt8 *data_blk_ptr, UInt16 data_blk_size)

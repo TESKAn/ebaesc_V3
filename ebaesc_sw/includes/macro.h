@@ -9,7 +9,7 @@
 #define MACRO_H_
 
 // Calibration parameters
-#define M_R
+#define M_FR
 
 #ifdef M_FR
 #define M_ID				0x23

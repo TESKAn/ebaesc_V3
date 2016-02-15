@@ -29,6 +29,8 @@ UInt16 update_crc(UInt16 crc_accum, UInt8 *data_blk_ptr, UInt16 data_blk_size);
 #define RS485_DISABLE_TX_IDLE_INT			ioctl(SCI_0, SCI_TX_IDLE_INT, SCI_DISABLE)
 #define RS485_WRITE(X)						ioctl(SCI_0, SCI_WRITE_DATA, X)
 #define RS485_READ							ioctl(SCI_0, SCI_READ_DATA, NULL)
+#define RS485_GET_TX_FIFO_CNT				(ioctl(SCI_0, SCI_CAN_WRITE_DATA, NULL) >> 13)
+#define RS485_GET_RX_FIFO_CNT				(ioctl(SCI_0, SCI_CAN_READ_DATA, NULL) >> 8)
 #define RS485_TEST_TX_EMPTY					ioctl(SCI_0, SCI_GET_TX_EMPTY, NULL)
 #define RS485_TEST_TX_IDLE					ioctl(SCI_0, SCI_GET_TX_IDLE, NULL)
 #define RS485_TEST_RX_FULL					ioctl(SCI_0, SCI_GET_RX_FULL, NULL)
@@ -63,6 +65,7 @@ typedef struct
 	UInt8 errStatus;
 	UInt8 ui8TXState;
 	UInt8 ui8RXState;
+	UInt8 ui8ReturnDelay;
 	
 	// How many bytes in our structure
 	UInt16 ui16RegsBytes;
@@ -124,7 +127,7 @@ typedef struct
 			UInt8 ui8FirmwareVersion;	// 4
 			UInt8 ui8ID;				// 5
 			UInt8 ui8BaudRate;			// 6
-			UInt8 ui8Empty;				// 7
+			UInt8 ui8ReturnDelayTime;	// 7
 
 
 			// Motor state - idle, run, error

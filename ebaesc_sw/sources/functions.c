@@ -7,7 +7,7 @@
 
 #include "allincludes.h"
 
-#pragma interrupt called
+//#pragma interrupt called
 Int16 LogError(UInt8 ui8Error)
 {
 	// Store error to log
@@ -19,7 +19,7 @@ Int16 LogError(UInt8 ui8Error)
 }
 
 
-#pragma interrupt called
+//#pragma interrupt called
 Int16 OneMsEvent(void)
 {
 
@@ -46,7 +46,7 @@ Int16 OneMsEvent(void)
 }
 
 // Function that calculates SI values from frac values
-#pragma interrupt called
+//#pragma interrupt called
 Int16 CalculateSIValues(void)
 {
 	float fTemp = 0.0;
@@ -455,7 +455,7 @@ void calculateFloats(void)
 }
 
 // Stop motor - set all variables to required value
-#pragma interrupt called
+//#pragma interrupt called
 void StopMotor(void)
 {
 	// Turn OFF PWM
@@ -520,7 +520,7 @@ void StopMotor(void)
 	}*/
 }
 
-#pragma interrupt called
+//#pragma interrupt called
 void interruptDelay(unsigned int count)
 {
 	//delay approx. count * 1 uSec
