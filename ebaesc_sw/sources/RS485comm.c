@@ -64,13 +64,13 @@ Int16 RS485_initData(RS485MOTOR* dataStruct)
 	RS485_DISABLE_TX_INT;
 }
 
-#pragma interrupt called
+//#pragma interrupt called
 Int16 RS485_SyncToSystem()
 {
 	return 0;
 }
 
-#pragma interrupt called
+//#pragma interrupt called
 Int16 RS485_SyncToComm()
 {
 	float fTemp;
@@ -92,7 +92,7 @@ Int16 RS485_SyncToComm()
 	}	
 }
 
-#pragma interrupt called
+//#pragma interrupt called
 void RS485_Timer()
 {
 #ifndef RS485_NOTIMEOUT
@@ -143,7 +143,7 @@ void RS485_Timer()
 	}
 }
 
-#pragma interrupt called
+//#pragma interrupt called
 void RS485_writeByte()
 {	
 	RS485Data->ui16TXTimeoutCounter = 0;
@@ -251,7 +251,7 @@ void RS485_writeByte()
 	}
 }
 
-#pragma interrupt called
+//#pragma interrupt called
 void RS485_States_slave(UInt8 data)
 {
 	UInt16 ui16Temp = 0;
@@ -390,7 +390,7 @@ void RS485_States_slave(UInt8 data)
 	}
 }
 
-#pragma interrupt called
+//#pragma interrupt called
 void RS485_decodeMessage()
 {
 	Int16 i = 0;
@@ -561,6 +561,9 @@ void RS485_decodeMessage()
 	ui16Temp++;
 	RS485Data->RS485TXBuffer[ui16Temp] = ui16Val.bytes[1];
 	ui16Temp++;
+	// Add one extra byte
+	RS485Data->RS485TXBuffer[ui16Temp] = 0;
+	ui16Temp++;	
 	RS485Data->ui8TXBytesLeft = ui16Temp;
 	RS485Data->ui8TXIndex = 0;		
 	
