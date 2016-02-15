@@ -376,6 +376,8 @@ void RS485_States_slave(UInt8 data)
 				if(ui16Temp == RS485Data->RXDATA.CRCDATA.ui16CRC)
 				{
 					RS485_decodeMessage();
+					// Reset RX buffer
+					RB_flush(&SCI0RXBuff);
 				}
 				RS485Data->ui8RXState = RS485_RX_IDLE;
 				RS485Data->ui8RXCounter = 0;				

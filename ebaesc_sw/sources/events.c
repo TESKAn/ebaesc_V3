@@ -857,8 +857,8 @@ void RX0_Full_ISR(void)
 	}
 	else
 	{
-		//while(0 != ioctl(SCI_0, SCI_GET_RX_FULL, NULL))
-		while(0 != ioctl(SCI_0, SCI_CAN_READ_DATA, NULL))
+		while(0 != ioctl(SCI_0, SCI_GET_RX_FULL, NULL))
+		//while(0 != ioctl(SCI_0, SCI_CAN_READ_DATA, NULL))
 		{
 			data = ioctl(SCI_0, SCI_GET_STATUS_REG, NULL);		// Clear RDRF flag
 			data = ioctl(SCI_0, SCI_READ_DATA, NULL);			// Read data
