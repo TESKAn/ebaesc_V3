@@ -7,6 +7,47 @@
 
 #include "allincludes.h"
 
+// Calculate NTC temperature
+Int16 CalculateTemperature(Int16 valIndex)
+{
+	Int16 tempOut;
+	Int16 i16Index_0;
+	Int16 i16Index_1;
+	Int16 i16Val0;
+	Int16 i16Val1;
+	
+	i16Index_1 = valIndex  >> 10;
+	i16Index_1 = i16Index_1 & 0x001F;
+	tempOut = valIndex & 0x03FF;
+	
+	
+	if(32 <= i16Index_1)
+	{
+		i16Index_1 = 31;
+	}
+	else if(0 >= i16Index_1)
+	{
+		i16Index_1 = 1;
+	}
+	i16Index_0 = i16Index_1 - 1;
+	
+	// i16Index_0 = 0...30
+	// i16Index_1 = 1...31
+	i16Val0 = i16TemperatureTable[i16Index_0];
+	i16Val1 = i16TemperatureTable[i16Index_1];
+	// dX = 1024
+	// dY
+	i16Val1 = i16Val1 - i16Val0;
+	// dY * X
+	tempOut = tempOut * i16Val1;
+	// (dY*X)/dX
+	tempOut = tempOut >> 10;
+	// + Y0
+	tempOut += i16Val0;
+	
+	return tempOut;
+}
+
 //#pragma interrupt called
 Int16 LogError(UInt8 ui8Error)
 {

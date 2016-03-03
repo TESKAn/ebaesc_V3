@@ -277,6 +277,12 @@ void RS485_States_slave(UInt8 data)
 				RS485Data->RXDATA.ui8Parameters[0] = data;
 				RS485Data->RXDATA.ui8RS485RXIndex = 1;
 			}
+			/*
+			else
+			{
+
+			}
+			*/
 			break;
 		}
 		case RS485_RX_WAIT_FOR_SIGNAL:
@@ -317,6 +323,8 @@ void RS485_States_slave(UInt8 data)
 			{
 				// Id not matched, go to idle
 				RS485Data->ui8RXState = RS485_RX_IDLE;
+				// Reset RX buffer
+				RB_flush(&SCI0RXBuff);
 			}
 			break;
 		}
@@ -563,9 +571,6 @@ void RS485_decodeMessage()
 	ui16Temp++;
 	RS485Data->RS485TXBuffer[ui16Temp] = ui16Val.bytes[1];
 	ui16Temp++;
-	// Add one extra byte
-	RS485Data->RS485TXBuffer[ui16Temp] = 0;
-	ui16Temp++;	
 	RS485Data->ui8TXBytesLeft = ui16Temp;
 	RS485Data->ui8TXIndex = 0;		
 	

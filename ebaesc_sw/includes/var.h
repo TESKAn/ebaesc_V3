@@ -363,6 +363,9 @@ typedef struct tagSYSVARS
 extern FLAGBITS flag0;
 extern FLAGBITS flag1;
 
+// NTC temperature
+extern Int16 i16TemperatureTable[32];
+
 extern Int16 i16CurrentCalArrayIndex;
 extern Frac16 f16CurrentCalArrayData;
 
@@ -385,7 +388,7 @@ extern UInt8 ui8RS485RcvdByte;
 
 // Transmit ring buffer
 extern RING_BUFFER SCI0RXBuff;
-extern UInt8 SCI0RXBuffer[128];
+extern UInt8 SCI0RXBuffer[256];
 
 extern RS485MOTOR RS485DataStruct;
 

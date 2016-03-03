@@ -242,6 +242,8 @@ void ADC_1_EOS_ISR(void)
 	SYSTEM.POSITION.i16SensorIndex = (Int16)(SYSTEM.ADC.f16SensorValueB >> 3);
 	// Get filtered current position
 	SYSTEM.POSITION.i16SensorIndexFiltered = (Int16)(SYSTEM.ADC.f16SensorValueBFiltered >> 3);
+	// Store position
+	RS485DataStruct.REGS.i16Position = SYSTEM.POSITION.i16SensorIndexFiltered;
 	// Add offset to index
 	//SYSTEM.POSITION.i16SensorIndex += SYSTEM.POSITION.i16SensorIndexOffset;
 	// Add phase delay
@@ -863,6 +865,13 @@ void RX0_Full_ISR(void)
 			data = ioctl(SCI_0, SCI_GET_STATUS_REG, NULL);		// Clear RDRF flag
 			data = ioctl(SCI_0, SCI_READ_DATA, NULL);			// Read data
 			//RS485_States_slave((UInt8)data);  
+			// Buffer empty?
+			if(0 == SCI0RXBuff.count)
+			{
+				// Reset RX buffer
+				SCI0RXBuff.data_start = SCI0RXBuff.buffer;
+				SCI0RXBuff.data_end = SCI0RXBuff.buffer;
+			}
 			// Store data in ring buffer
 			RB_push(&SCI0RXBuff, (UInt8)data);	
 		}		
@@ -890,6 +899,8 @@ void PIT_0_ISR(void)
 	CalculateSIValues();
 	// Call 1 ms event
 	OneMsEvent();
+	// Calculate output temperature
+	RS485DataStruct.REGS.ui8PresentTemperature = (UInt8)CalculateTemperature(SYSTEM.ADC.f16TemperatureFiltered);
 	// Decrease counters
 	if(0 < SYSTEM.SENSORLESS.i16Counter)
 	{

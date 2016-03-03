@@ -70,7 +70,7 @@ void main (void)
     FMSTR_Init();    
     
     // Initialise SCI0 ring buffer
-    RB_Init(&SCI0RXBuff, SCI0RXBuffer, 128);
+    RB_Init(&SCI0RXBuff, SCI0RXBuffer, 256);
     
     /* initialise interrupt controller and enable interrupts */
     ioctl(INTC, INTC_INIT, NULL);
