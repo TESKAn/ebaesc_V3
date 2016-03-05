@@ -376,7 +376,7 @@ Int16 checkSystemStates(void)
 						{
 							// Calculate frac value
 							i32Temp0 = (Frac32)i16Temp0 * 32768 * (Frac32)SYSTEM.CALIBRATION.i16MotorPolePairs;
-							i32Temp0 /= 60000;
+							i32Temp0 /= 120000;
 							// Check sign
 							if(0 == RS485DataStruct.REGS.ui8ReverseRotation)
 							{
@@ -406,7 +406,7 @@ Int16 checkSystemStates(void)
 					}
 					// Convert to frac16
 					i32Var = RS485DataStruct.REGS.i16SetRPM * 229376;// 32768 * (Frac32)SYSTEM.CALIBRATION.i16MotorPolePairs;
-					i32Var /= 60000;
+					i32Var /= 120000;
 					// Check sign
 					if(0 == RS485DataStruct.REGS.ui8ReverseRotation)
 					{

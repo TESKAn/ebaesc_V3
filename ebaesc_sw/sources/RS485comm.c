@@ -77,10 +77,10 @@ Int16 RS485_SyncToComm()
 
 	
 	// Set speed
-	fTemp = (float)SYSTEM.RAMPS.f16SpeedRampDesiredValue;
-	fTemp = fTemp * 60000;
-	fTemp = fTemp / (32768 * (float)SYSTEM.CALIBRATION.i16MotorPolePairs);
-	RS485Data->REGS.i16RPM = (Int16)fTemp;
+	//fTemp = (float)SYSTEM.RAMPS.f16SpeedRampDesiredValue;
+	//fTemp = fTemp * 60000;
+	//fTemp = fTemp / (32768 * (float)SYSTEM.CALIBRATION.i16MotorPolePairs);
+	//RS485Data->REGS.i16RPM = (Int16)fTemp;
 	
 	if(SYSTEM_IDLE != SYSTEM.systemState)
 	{
