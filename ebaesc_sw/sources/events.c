@@ -860,12 +860,12 @@ void RX0_Full_ISR(void)
 	else
 	{
 		while(0 != ioctl(SCI_0, SCI_GET_RX_FULL, NULL))
-		//while(0 != ioctl(SCI_0, SCI_CAN_READ_DATA, NULL))
 		{
 			data = ioctl(SCI_0, SCI_GET_STATUS_REG, NULL);		// Clear RDRF flag
 			data = ioctl(SCI_0, SCI_READ_DATA, NULL);			// Read data
-			//RS485_States_slave((UInt8)data);  
+			RS485_States_slave((UInt8)data);  
 			// Buffer empty?
+			/*
 			if(0 == SCI0RXBuff.count)
 			{
 				// Reset RX buffer
@@ -873,7 +873,7 @@ void RX0_Full_ISR(void)
 				SCI0RXBuff.data_end = SCI0RXBuff.buffer;
 			}
 			// Store data in ring buffer
-			RB_push(&SCI0RXBuff, (UInt8)data);	
+			RB_push(&SCI0RXBuff, (UInt8)data);	*/
 		}		
 	}	
 }

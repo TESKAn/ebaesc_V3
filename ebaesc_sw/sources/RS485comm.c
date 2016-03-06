@@ -324,7 +324,7 @@ void RS485_States_slave(UInt8 data)
 				// Id not matched, go to idle
 				RS485Data->ui8RXState = RS485_RX_IDLE;
 				// Reset RX buffer
-				RB_flush(&SCI0RXBuff);
+				//RB_flush(&SCI0RXBuff);
 			}
 			break;
 		}
@@ -385,7 +385,7 @@ void RS485_States_slave(UInt8 data)
 				{
 					RS485_decodeMessage();
 					// Reset RX buffer
-					RB_flush(&SCI0RXBuff);
+					//RB_flush(&SCI0RXBuff);
 				}
 				RS485Data->ui8RXState = RS485_RX_IDLE;
 				RS485Data->ui8RXCounter = 0;				

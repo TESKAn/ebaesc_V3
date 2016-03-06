@@ -12,8 +12,8 @@ FLAGBITS flag0;
 FLAGBITS flag1;
 
 // NTC temperature
-Int16 i16TemperatureTable[32] = {-38,-26,-19,-13,-8,-3, 1, 4, 8, 11, 14,18,21,24,27,
-		30,33,37,40,44,47,52,56,61,66,73,80,89,102,120,153,305};
+Int16 i16TemperatureTable[32] = {-37,-26,-18,-12,-6,0,4,7,12,16,19,23,26,29,33,36,39,42,46,50,54,59,64,67,72,80,86,97,109,125,150,254};
+
 
 Int16 i16CurrentCalArrayIndex = 4096;
 Frac16 f16CurrentCalArrayData = FRAC16(0.0);
