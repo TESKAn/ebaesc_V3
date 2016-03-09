@@ -788,10 +788,14 @@ void GPIO_F_ISR(void)
 			if(1 == RS485DataStruct.REGS.ui8MeasurePWMMax)
 			{
 				RS485DataStruct.REGS.i16PWMMax = SYSTEM.PWMIN.i16PWMFiltered;
+				// Do not use PWM for input
+				 RS485DataStruct.REGS.ui8UsePWMIN = 0;
 			}
 			else if(1 == RS485DataStruct.REGS.ui8MeasurePWMMin)
 			{
 				RS485DataStruct.REGS.i16PWMMin = SYSTEM.PWMIN.i16PWMFiltered;
+				// Do not use PWM for input
+				 RS485DataStruct.REGS.ui8UsePWMIN = 0;
 			}			
 		}
 	}

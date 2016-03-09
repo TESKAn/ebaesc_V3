@@ -53,6 +53,8 @@ Int16 RS485_initData(RS485MOTOR* dataStruct)
 	RS485Data->REGS.i16CurrentPWM = 1000;
 	RS485Data->REGS.i16ParkPosition = 2048;
 	
+	RS485Data->REGS.i16ZeroSpeedPWM = 50;
+	
 	
 	RS485Data->ui8TXState = RS485_TX_IDLE;
 	RS485Data->ui8RXState = RS485_TX_IDLE;

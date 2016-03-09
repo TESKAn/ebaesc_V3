@@ -164,6 +164,20 @@ Int16 checkSystemStates(void)
 					//SYSTEM_GOTO_ACTIVE = 0;
 				}
 			}
+			
+			// Use PWM?
+			if(1 == RS485DataStruct.REGS.ui8UsePWMIN)
+			{
+				// If PWM over zero speed, go to run mode.
+				i16Temp0 = RS485DataStruct.REGS.i16CurrentPWM - RS485DataStruct.REGS.i16PWMMin;
+
+				if(i16Temp0 > RS485DataStruct.REGS.i16ZeroSpeedPWM)
+				{
+					RS485DataStruct.REGS.ui8Armed = 1;
+				}
+			}
+			
+			
 			// Check comm regs
 			if(1 == RS485DataStruct.REGS.ui8Armed)
 			{
@@ -390,7 +404,9 @@ Int16 checkSystemStates(void)
 					}
 					else
 					{
+						// Go out of run mode
 						SYSTEM.RAMPS.f16SpeedRampDesiredValue = FRAC16(0.0);
+						RS485DataStruct.REGS.ui8Armed = 0;
 					}
 				}
 				else
@@ -791,6 +807,18 @@ Int16 checkSystemStates(void)
 			SYSTEM_PARK_ROTOR = 1;
 			SYSTEM_RUN_MANUAL_CW = 0;
 			SYSTEM_RUN_MANUAL_CCW = 0;
+			
+			// Use PWM?
+			if(1 == RS485DataStruct.REGS.ui8UsePWMIN)
+			{
+				// If PWM under zero speed, go to idle mode
+				i16Temp0 = RS485DataStruct.REGS.i16CurrentPWM - RS485DataStruct.REGS.i16PWMMin;
+
+				if(i16Temp0 < RS485DataStruct.REGS.i16ZeroSpeedPWM)
+				{
+					RS485DataStruct.REGS.ui8Armed = 0;
+				}
+			}
 
 			// Go out of park?
 			if(0 == RS485DataStruct.REGS.ui8Park)
