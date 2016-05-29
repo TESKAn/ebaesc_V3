@@ -9,7 +9,10 @@
 #define MACRO_H_
 
 // Calibration parameters
-#define M_FR
+//#define M_FR
+//#define M_FL
+//#define M_R
+#define M_V
 
 #ifdef M_FR
 #define M_ID				0x23
@@ -68,6 +71,32 @@
 #define RS485_ID			0x21
 // Unit park position
 #define M_PARK_POSITION		1000
+
+#endif
+
+#ifdef M_V
+#define M_ID				0x24
+#define M_MAXSENSORINDEX	3718
+#define M_MINSENSORINDEX	426
+#define M_POLEPAIRS			2
+#define M_POLEARRAY_0		0
+#define M_POLEARRAY_1		0
+#define M_POLEARRAY_2		0
+#define M_POLEARRAY_3		0
+#define M_POLEARRAY_4		0
+#define M_POLEARRAY_5		0
+#define M_POLEARRAY_6		0
+#define M_POLEARRAY_7		0
+// This unit ID
+#define RS485_ID			0x24
+// Unit park position
+#define M_PARK_POSITION		1000
+// Use sensor?
+#define M_USESENSOR			1
+
+
+
+
 
 #endif
 

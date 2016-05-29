@@ -182,7 +182,10 @@ Int16 checkSystemStates(void)
 			if(1 == RS485DataStruct.REGS.ui8Armed)
 			{
 				// Control system speed
-				CONTROL_SPEED = 1;
+				if(0 == CONTROL_MANUAL)
+				{
+					CONTROL_SPEED = 1;
+				}
 				SYSTEM.i16StateTransition = SYSTEM_RUN;
 			}
 			
@@ -242,6 +245,8 @@ Int16 checkSystemStates(void)
 						SYSTEM.SENSORLESS.i16Counter = SYSTEM.SENSORLESS.i16AlignTime;
 						// Mark no BEMF
 						SENSORLESS_BEMF_ON = 0;
+						// Set initial system speed
+						
 						// Go to run
 						SYSTEM.systemState = SYSTEM_RUN;
 						// Enable regulators
