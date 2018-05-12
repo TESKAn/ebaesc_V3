@@ -9,7 +9,6 @@
 #ifndef __M1_PMSMFOC_CONFIG_SETUP_H
 #define __M1_PMSMFOC_CONFIG_SETUP_H
 
-//#include "macro.h"
 
 //Motor Parameters                      
 //----------------------------------------------------------------------
@@ -55,9 +54,6 @@
 //----------------------------------------------------------------------
 //Current Controller Output Limit       
 #define CLOOP_LIMIT                     FRAC16(0.9)
-
-#ifndef M_V
-
 //D-axis Controller - Parallel type     
 #define D_KP_GAIN                       FRAC16(0.625)
 #define D_KP_SHIFT                      (1)
@@ -69,21 +65,6 @@
 #define Q_KI_GAIN                       FRAC16(0.999969482421875)
 #define Q_KI_SHIFT                      (-2)
 
-#else
-// D - axis parameters 
-#define D_KP_GAIN FRAC16(0.801461572367)  
-#define D_KP_SHIFT (-5)  
-#define D_KI_GAIN FRAC16(0.765389513237)  
-#define D_KI_SHIFT (-5)  
-  
-// Q - axis parameters 
-#define Q_KP_GAIN FRAC16(0.801461572367)  
-#define Q_KP_SHIFT (-5)  
-#define Q_KI_GAIN FRAC16(0.765389513237)  
-#define Q_KI_SHIFT (-5) 
-#endif
-
-
 //Speed Loop Control                    
 //----------------------------------------------------------------------
 //Loop Bandwidth                        = 12 [Hz]
@@ -91,7 +72,6 @@
 //Loop sample time                      = 0.000125 [sec]
 //----------------------------------------------------------------------
 //Speed Controller - Parallel type      
-#ifndef M_V
 #define SPEED_PI_PROP_GAIN              FRAC16(0.3285)
 #define SPEED_PI_PROP_SHIFT             (0)
 #define SPEED_PI_INTEG_GAIN             FRAC16(0.762935023406)
@@ -110,26 +90,6 @@
 #define SPEED_IIR_B1                    FRAC16(0.00698853)
 #define SPEED_IIR_A1                    FRAC16(-0.486023)
 
-#else
-#define SPEED_PI_PROP_GAIN FRAC16(0.812948774147)  
-#define SPEED_PI_PROP_SHIFT (1)  
-#define SPEED_PI_INTEG_GAIN FRAC16(0.693577298886)  
-#define SPEED_PI_INTEG_SHIFT (-7)  
-#define SPEED_LOOP_HIGH_LIMIT FRAC16(0.25)  
-#define SPEED_LOOP_LOW_LIMIT FRAC16(-0.25)  
-  
-#define SPEED_RAMP_UP FRAC16(0.0000625)  
-#define SPEED_RAMP_DOWN FRAC16(0.0000625)  
-  
-#define SPEED_LOOP_CNTR (16)  
-#define SPEED_LOOP_FREQ (1000)  
-  
-#define SPEED_IIR_B0 FRAC16(0.004723256666)  
-#define SPEED_IIR_B1 FRAC16(0.004723256666)  
-#define SPEED_IIR_A1 FRAC16(-0.115553486669) 
-
-#endif
-
 //Sensorless BEMF DQ nad Tracking Observer
 //----------------------------------------------------------------------
 //Loop Bandwidth                        = 280 [Hz]
@@ -137,7 +97,6 @@
 //Loop sample time                      = 0.000125 [sec]
 //----------------------------------------------------------------------
 //Bemf DQ Observer                      
-#ifndef M_V
 #define I_SCALE 						FRAC16(0.785829307569)  
 #define U_SCALE 						FRAC16(0.512991885935)  
 #define E_SCALE 						FRAC16(0.886743117115)  
@@ -165,29 +124,6 @@
 #define OL_START_I 						FRAC16(0.015169902913)  
 #define MERG_SPEED_TRH 					FRAC16(0.008333333333)  
 #define MERG_COEFF 						FRAC16(0.007324218750)  
-#else
-#define I_SCALE FRAC16(0.789644012945)  
-#define U_SCALE FRAC16(0.515482137808)  
-#define E_SCALE FRAC16(0.891047695354)  
-#define WI_SCALE FRAC16(0.620184957505)  
-#define I_SCALE_SHIFT (0)  
-#define BEMF_DQ_KP_GAIN FRAC16(-0.659074914083)  
-#define BEMF_DQ_KP_SHIFT (-4)  
-#define BEMF_DQ_KI_GAIN FRAC16(0.68571903253)  
-#define BEMF_DQ_KI_SHIFT (-6)  
-#define TO_KP_GAIN FRAC16(0.768000000000)  
-#define TO_KP_SHIFT (-6)  
-#define TO_KI_GAIN FRAC16(0.926493372655)  
-#define TO_KI_SHIFT (-15)  
-#define TO_THETA_GAIN FRAC16(0.5)  
-#define TO_THETA_SHIFT (-1)  
-#define TO_SPEED_IIR_B0 FRAC16(0.069607840518)  
-#define TO_SPEED_IIR_B1 FRAC16(0.069607840518)  
-#define TO_SPEED_IIR_A1 FRAC16(0.014215681036)  
-#define OL_START_RAMP_INC FRAC32(0.000004166667)  
-#define OL_START_I FRAC16(0.030339805825)  
-
-#endif
 
 
 //Control Structure Module - Scalar Control

@@ -894,6 +894,9 @@ void TX0_Empty_ISR(void)
 #pragma interrupt saveall
 void PIT_0_ISR(void)
 {
+	FCAN_MB *MB;
+	int i = 0;
+	int code = 0;
 	ioctl(PIT_0, PIT_CLEAR_ROLLOVER_INT, NULL);
 	// Check RS485
 	RS485_Timer();
@@ -910,4 +913,32 @@ void PIT_0_ISR(void)
 	{
 		SYSTEM.SENSORLESS.i16Counter --;
 	}
+	/*
+	// Test CAN
+	ui16CANTestCounter++;
+	if(1000 < ui16CANTestCounter)
+	{
+		ui16CANTestCounter = 0;
+		if(ioctl(FCAN, FCAN_TEST_READY, null))
+		{
+			// Get free MB
+			for(i=0;i<14;i++)
+			{
+				MB = ioctl(FCAN, FCAN_GET_MB_MODULE, 0);
+				// Get code
+				code = ioctl(MB, FCANMB_GET_CODE, null);
+				if(code == 0b1000)
+				{
+					// Write ID
+					MB->id = 0xff4e2123;
+					// Write message
+					MB->data[0] = 0xaaaa;
+					MB->data[1] = 0x5555;
+					ioctl(MB, FCANMB_SET_LEN, 8);
+					ioctl(MB, FCANMB_SET_CODE, FCAN_MB_CODE_TXONCE);		
+					i = 15;
+				}
+			}			
+		}
+	}*/
 }

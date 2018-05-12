@@ -20,6 +20,21 @@ void RS485_States_slave(UInt8 data);
 void RS485_decodeMessage();
 UInt16 update_crc(UInt16 crc_accum, UInt8 *data_blk_ptr, UInt16 data_blk_size);
 
+#define RS485ERROR_FAULT					0x0001
+#define RS485ERROR_FETHA					0x0002
+#define RS485ERROR_FETLA					0x0004
+#define RS485ERROR_FETHB					0x0008
+#define RS485ERROR_FETLB					0x0010
+#define RS485ERROR_FETHC					0x0020
+#define RS485ERROR_FETLC					0x0040
+#define RS485ERROR_
+#define RS485ERROR_
+#define RS485ERROR_
+#define RS485ERROR_
+#define RS485ERROR_
+#define RS485ERROR_
+
+
 // Hardware dependent macros
 #define RS485_ENABLE_RX						ioctl(GPIO_C, GPIO_CLEAR_PIN, BIT_3)
 #define RS485_ENABLE_TX						ioctl(GPIO_C, GPIO_SET_PIN, BIT_3)

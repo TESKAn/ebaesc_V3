@@ -143,6 +143,23 @@ void main (void)
     		SYSTEM_RECALCULATE_FACTORS = 0;
     		calculateFactors();
     	}    	
+    	
+    	// Reinitialize driver?
+    	if(REINIT_DRV8301)
+    	{
+			// Initialise MOSFET driver
+			if(0 != InitDRV8301(0,31,1))
+			{
+				// Driver did not initialise properly
+				DRV8301_CONFIGURED = 0;
+				SYSTEM.systemState = SYSTEM_FAULT;
+			}
+			else
+			{
+				// After everything is initialised, DRV8301_CONFIGURED = 1 moves system state from boot to init.
+				DRV8301_CONFIGURED = 1;
+			}
+    	}
 
          /* feed the watchdog periodically */
          ioctl(COP, COP_CLEAR_COUNTER, NULL);

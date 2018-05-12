@@ -350,6 +350,10 @@ typedef struct tagSYSVARS
 	Int16 systemState;
 	Int16 i16StateTransition;
 	
+	// Driver restart after fault
+	Int16 i16DriverRestartState;
+	Int16 i16DriverRestartTimer;
+	
 	// Motor ID
 	Int16 i16MotorID;
 	
@@ -393,5 +397,7 @@ extern UInt8 SCI0RXBuffer[256];
 extern RS485MOTOR RS485DataStruct;
 
 extern Int32 i32Var;
+
+extern UInt16 ui16CANTestCounter;
 
 #endif /* VAR_H_ */

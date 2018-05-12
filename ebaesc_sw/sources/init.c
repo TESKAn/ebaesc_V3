@@ -296,6 +296,9 @@ void InitSysVars(Int16 initial)
 		// Mark transition to idle state
 		SYSTEM.i16StateTransition = SYSTEM_IDLE;
 		
+		// Set driver restart state
+		SYSTEM.i16DriverRestartState = SYSTEM_RESTART_INIT;
+		
 		// If there is calibration data
 		if(0 != SYSTEM.CALIBRATION.i16PolePairArray[0])
 		{

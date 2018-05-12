@@ -50,6 +50,8 @@
 
 #include "PMSM_appconfig.h"
 
+#include "can.h"
+
 #include "drv8301.h"
 
 #include "macro.h"

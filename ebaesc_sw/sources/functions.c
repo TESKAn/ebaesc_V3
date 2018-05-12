@@ -674,21 +674,21 @@ Int16 InitDRV8301(Int16 wReset, Int16 wCurrLimit, Int16 wOC_MODE)
 
 			
 			
-	DRV8301.CtrlReg1.GATE_CURRENT = 0;		// full current 1.7A
-//	DRV8301.CtrlReg1.GATE_CURRENT = 1;		// med current 0.7A
-//	DRV8301.CtrlReg1.GATE_CURRENT = 2;		// min current 0.25A
+	DRV8301.CtrlReg1.GATE_CURRENT = 0;			// full current 1.7A
+//	DRV8301.CtrlReg1.GATE_CURRENT = 1;			// med current 0.7A
+//	DRV8301.CtrlReg1.GATE_CURRENT = 2;			// min current 0.25A
 
 	DRV8301.CtrlReg1.GATE_RESET = 0;			// Normal Mode
 			
-	DRV8301.CtrlReg1.PWM_MODE = 0;			// six independant PWMs
+	DRV8301.CtrlReg1.PWM_MODE = 0;				// six independant PWMs
 			
-	DRV8301.CtrlReg1.OC_MODE = 3;			// No shutdown
-	//DRV8301.CtrlReg1.OC_MODE = 1;	// latched OC shutdown
+	DRV8301.CtrlReg1.OC_MODE = 2;				// No shutdown
+	//DRV8301.CtrlReg1.OC_MODE = 1;				// latched OC shutdown
 			
-	DRV8301.CtrlReg1.OC_ADJ_SET = 31;//wCurrLimit;	// OC @ Vds=0.25V
+	DRV8301.CtrlReg1.OC_ADJ_SET = 31;			//wCurrLimit;	// OC @ Vds=0.25V
 	DRV8301.CtrlReg1.Reserved = 0;
 			
-	DRV8301.CtrlReg2.OCTW_SET = 0;			// report OT and OC
+	DRV8301.CtrlReg2.OCTW_SET = 0;				// report OT and OC
 	//DRV8301.CtrlReg2.OCTW_SET = 1;			// report OT only
 
 
@@ -782,16 +782,7 @@ UInt8 RB_pop(RING_BUFFER* rb)
 			rb->data_start = rb->buffer;
 		}
 		rb->count--;
-		// Check buffer
-		if(0 == rb->count)
-		{
-			// start equal end?
-			if(rb->data_start != rb->data_end)
-			{
-				// If not, fix it.
-				rb->count++;
-			}
-		}
+
 		return data;
 	}
 	return -1;

@@ -43,3 +43,5 @@ Int32 i32Var = 0;
 
 PARAMCONVERSION pConv;
 
+UInt16 ui16CANTestCounter = 0;
+

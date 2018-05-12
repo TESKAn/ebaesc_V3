@@ -9,10 +9,7 @@
 #define MACRO_H_
 
 // Calibration parameters
-//#define M_FR
-//#define M_FL
-//#define M_R
-#define M_V
+#define M_FR
 
 #ifdef M_FR
 #define M_ID				0x23
@@ -71,32 +68,6 @@
 #define RS485_ID			0x21
 // Unit park position
 #define M_PARK_POSITION		1000
-
-#endif
-
-#ifdef M_V
-#define M_ID				0x24
-#define M_MAXSENSORINDEX	3718
-#define M_MINSENSORINDEX	426
-#define M_POLEPAIRS			2
-#define M_POLEARRAY_0		0
-#define M_POLEARRAY_1		0
-#define M_POLEARRAY_2		0
-#define M_POLEARRAY_3		0
-#define M_POLEARRAY_4		0
-#define M_POLEARRAY_5		0
-#define M_POLEARRAY_6		0
-#define M_POLEARRAY_7		0
-// This unit ID
-#define RS485_ID			0x24
-// Unit park position
-#define M_PARK_POSITION		1000
-// Use sensor?
-#define M_USESENSOR			1
-
-
-
-
 
 #endif
 
@@ -197,6 +168,7 @@
 #define DRV_WRITE_GAIN				flag1.BIT7		// Mark write new gain to MOSFET driver
 #define DRV_POLL					flag1.BIT8		// Mark poll DRV
 #define SYSTEM_PARK_ROTOR			flag1.BIT9		// Mark park rotor
+#define REINIT_DRV8301				flag1.BIT10		// Reinitialize MOSFET driver
 
 
 
@@ -223,6 +195,15 @@
 #define SYSTEM_SPINNINGROTOR				14
 #define SYSTEM_MEAS_RPHA					15
 #define SYSTEM_MEAS_LPHA					16
+
+// System restart states
+#define SYSTEM_RESTART_INIT					0
+#define SYSTEM_RESTART_WAIT_POWER_OFF		1
+#define SYSTEM_RESTART_WAIT_POWER_ON		2
+#define SYSTEM_RESTART_WAIT_REINIT			3
+#define SYSTEM_RESTART_WAIT_READ_1			4
+#define SYSTEM_RESTART_WAIT_READ_2			5
+#define SYSTEM_RESTART_WAIT_READ_3			6
 
 // PWM input default values
 #define PWM_IN_MIDDLE_VALUE					2343	// 1.5625 MHz, 0.64 us/tick, ~1.5 ms
