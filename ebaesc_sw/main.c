@@ -29,6 +29,11 @@ void main (void)
 	
 	UInt8 ui8Temp0 = 0;
 	UInt8 ui8Temp1 = 0;
+	UWord32 UW32FlashResult = 0;
+	
+	UWord8 uw8Test = 0;
+	UWord16 uw16Test = 0;
+	UWord32 uw32Test = 0;
 	
 	/* initialise SYS module */
     ioctl(SYS, SYS_INIT, NULL);
@@ -72,6 +77,20 @@ void main (void)
     // Initialise SCI0 ring buffer
     RB_Init(&SCI0RXBuff, SCI0RXBuffer, 256);
     
+    // Check EEPROM
+    UW32FlashResult = GetEepromInfo();
+    UW32FlashResult = UW32FlashResult & 0x0000ffff;
+    // Check uw16EEESize and uw16EEBackUpFlashSize
+    // If flash not partitioned, exec next function
+    if(((uw16EEESize&0x00ff) == 0xff) && ((uw16EEBackUpFlashSize&0x00ff) == 0xff) && (UW32FlashResult == EEPROM_FLASHDRV_SUCCESS))
+    {
+    	UW32FlashResult = DEFlashPartition(EEESIZE_2048B,DEPART_32K);
+    }    
+    else
+    {
+    	UW32FlashResult = SetEEEEnable();
+    }    
+    
     /* initialise interrupt controller and enable interrupts */
     ioctl(INTC, INTC_INIT, NULL);
     archEnableInt();
@@ -91,6 +110,9 @@ void main (void)
     CONTROL_TORQUE = 0;
     CONTROL_SPEED = 0;
     SENSORLESS_BEMF_ON = 0;
+    
+
+    
     
     // Enable gate driver
     EN_GATE_ON;
@@ -131,6 +153,32 @@ void main (void)
 			RS485_States_slave(RB_pop(&SCI0RXBuff));    		
     	}
 */
+    	
+    	switch(i8EEPROMOp)
+    	{
+			case 0:
+			{
+				break;
+			}
+			case 1:
+			{
+			    EepromWriteWord(uw32EEPROMAddress, uw16EEPROMData);
+				i8EEPROMOp = 0;
+				break;
+			}
+			case 2:
+			{
+				EepromReadWord(uw32EEPROMAddress, &uw16EEPROMData);
+				i8EEPROMOp = 0;
+				break;			
+			}
+			default:
+			{
+				i8EEPROMOp = 0;
+				break;
+			}
+    	}
+    	
     	// Check test bit - for testing code
     	if(SYSTEM_TEST_BIT)
     	{

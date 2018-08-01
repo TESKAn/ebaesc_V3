@@ -363,6 +363,12 @@ typedef struct tagSYSVARS
 	
 }SYSTEMVARIABLES;
 
+// EEPROM test
+extern Int8 i8EEPROMOp;
+extern UWord32 uw32EEPROMAddress;
+extern UWord16 uw16EEPROMData;
+// End eeprom test
+
 // Some flags
 extern FLAGBITS flag0;
 extern FLAGBITS flag1;

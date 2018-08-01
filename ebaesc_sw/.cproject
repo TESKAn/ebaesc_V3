@@ -125,6 +125,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_MCLIB/Include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_MLIB/Include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/includes}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/EepromDrv}&quot;"/>
 								</option>
 								<option id="com.freescale.dsc.cdt.toolchain.compiler.input.sysIncludeRecursive.505809737" name="Search System Paths Recursively" superClass="com.freescale.dsc.cdt.toolchain.compiler.input.sysIncludeRecursive" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${MCUToolsBaseDir}/M56800E Support&quot;"/>
@@ -150,6 +151,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_MCLIB/Include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_MLIB/Include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/includes}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/EepromDrv}&quot;"/>
 								</option>
 								<option id="com.freescale.dsc.cdt.toolchain.asm.general.generates56800EX.138450156" name="Generates elf file for 56800EX core" superClass="com.freescale.dsc.cdt.toolchain.asm.general.generates56800EX" value="true" valueType="boolean"/>
 								<option id="com.freescale.dsc.cdt.toolchain.asm.input.include.recursive.920173944" name="User Recursive Path (-ir )" superClass="com.freescale.dsc.cdt.toolchain.asm.input.include.recursive" valueType="includePath">
@@ -250,6 +252,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_MCLIB/Include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_MLIB/Include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/includes}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/EepromDrv}&quot;"/>
 								</option>
 								<option id="com.freescale.dsc.cdt.toolchain.compiler.input.sysIncludeRecursive.849154823" name="Search System Paths Recursively" superClass="com.freescale.dsc.cdt.toolchain.compiler.input.sysIncludeRecursive" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${MCUToolsBaseDir}/M56800E Support&quot;"/>
@@ -276,6 +279,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_MCLIB/Include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_MLIB/Include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/includes}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/EepromDrv}&quot;"/>
 								</option>
 								<option id="com.freescale.dsc.cdt.toolchain.asm.general.generates56800EX.206556035" name="Generates elf file for 56800EX core" superClass="com.freescale.dsc.cdt.toolchain.asm.general.generates56800EX" value="true" valueType="boolean"/>
 								<option id="com.freescale.dsc.cdt.toolchain.asm.input.include.recursive.528823417" name="User Recursive Path (-ir )" superClass="com.freescale.dsc.cdt.toolchain.asm.input.include.recursive" valueType="includePath">

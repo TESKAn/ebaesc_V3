@@ -66,6 +66,7 @@
 #include "events.h"
 #include "init.h"
 #include "systemStates.h"
+#include "EepromDrv.h"
 
 
 #endif /* ALLINCLUDES_H_ */
