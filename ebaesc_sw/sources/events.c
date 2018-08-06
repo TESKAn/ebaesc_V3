@@ -913,32 +913,52 @@ void PIT_0_ISR(void)
 	{
 		SYSTEM.SENSORLESS.i16Counter --;
 	}
-	/*
+	
 	// Test CAN
 	ui16CANTestCounter++;
 	if(1000 < ui16CANTestCounter)
 	{
 		ui16CANTestCounter = 0;
-		if(ioctl(FCAN, FCAN_TEST_READY, null))
-		{
-			// Get free MB
-			for(i=0;i<14;i++)
-			{
-				MB = ioctl(FCAN, FCAN_GET_MB_MODULE, 0);
-				// Get code
-				code = ioctl(MB, FCANMB_GET_CODE, null);
-				if(code == 0b1000)
-				{
-					// Write ID
-					MB->id = 0xff4e2123;
-					// Write message
-					MB->data[0] = 0xaaaa;
-					MB->data[1] = 0x5555;
-					ioctl(MB, FCANMB_SET_LEN, 8);
-					ioctl(MB, FCANMB_SET_CODE, FCAN_MB_CODE_TXONCE);		
-					i = 15;
-				}
-			}			
-		}
-	}*/
+		
+	}
+}
+#pragma interrupt saveall
+void FCAN_MB_ISR(void)
+{
+	FCAN_MB *MB;
+	int i = 0;
+	int code = 0;
+	UWord32 uw32Test = 0;
+	UWord32 *uw32CANDataPtr;
+	
+	MB = ioctl(FCAN, FCAN_GET_MB_MODULE, 1);
+	
+	code = ioctl(MB, FCANMB_GET_CODE, null);
+	// Keep checking MB busy
+	while(0b1 == ioctl(MB, FCANMB_GET_CODE, null))
+	{
+		
+	}
+	
+	// Get data
+	uw32CANDataPtr = ioctl(MB, FCANMB_GET_DATAPTR32, null);
+	uw32Test = *uw32CANDataPtr;
+	
+	uw32Test = MB->data[0];
+	uw32Test = MB->data[1];
+	
+	
+
+	ioctl(FCAN, FCAN_CLEAR_MBINT_FLAGS, FCAN_MBINT_0);
+	ioctl(FCAN, FCAN_CLEAR_MBINT_FLAGS, FCAN_MBINT_1);
+	
+	// Unlock mailboxes
+	ioctl(FCAN, FCAN_UNLOCK_ALL_MB, null);	
+	
+}
+
+#pragma interrupt saveall
+void FCAN_ERR_ISR(void)
+{
+	ioctl(FCAN, FCAN_CLEAR_ERR_INT, NULL);
 }

@@ -10,6 +10,19 @@
 
 #include "allincludes.h"
 
+typedef union tag16BitVars
+{
+	union
+	{
+		UWord16 uw16;
+		UInt16 ui16;
+		Int16 i16;
+		Frac16 f16;
+		Word16 w16;
+	};
+}t16BitVars;
+
+
 typedef struct
 {
 	UInt8* buffer;
@@ -360,6 +373,7 @@ typedef struct tagSYSVARS
 	Int8 i8ErrorLog[16];
 	Int16 i16ErrorIndex;
 	
+	Int16 i16EEPROMStoreDone;
 	
 }SYSTEMVARIABLES;
 
@@ -368,6 +382,9 @@ extern Int8 i8EEPROMOp;
 extern UWord32 uw32EEPROMAddress;
 extern UWord16 uw16EEPROMData;
 // End eeprom test
+
+// CAN test
+extern Int8 i8CANTest;
 
 // Some flags
 extern FLAGBITS flag0;

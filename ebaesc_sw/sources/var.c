@@ -13,6 +13,9 @@ UWord32 uw32EEPROMAddress = 0;
 UWord16 uw16EEPROMData = 0;
 // End eeprom test
 
+// CAN test
+Int8 i8CANTest = 0;
+
 
 // Some flags
 FLAGBITS flag0;

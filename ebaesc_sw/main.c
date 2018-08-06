@@ -35,6 +35,10 @@ void main (void)
 	UWord16 uw16Test = 0;
 	UWord32 uw32Test = 0;
 	
+	FCAN_MB *MB;
+	int i = 0;
+	int code = 0;
+	
 	/* initialise SYS module */
     ioctl(SYS, SYS_INIT, NULL);
 
@@ -55,21 +59,23 @@ void main (void)
      *   e.g. ioctl(SCI, SCI_INIT, NULL)
      *
      */
-    ioctl(XBAR_A, XBAR_A_INIT, null);
-    ioctl(EFPWMA, EFPWM_INIT, null);
-    ioctl(EFPWM_A_SUB0, EFPWM_INIT, null);
-    ioctl(EFPWM_A_SUB1, EFPWM_INIT, null);
-    ioctl(EFPWM_A_SUB2, EFPWM_INIT, null);
     
-    ioctl(ADC_1, ADC_INIT, null);
-    ioctl(PIT_0, PIT_INIT, NULL);
+    ioctl(XBAR_A, XBAR_A_INIT, null);
+    //ioctl(EFPWMA, EFPWM_INIT, null);
+    //ioctl(EFPWM_A_SUB0, EFPWM_INIT, null);
+    //ioctl(EFPWM_A_SUB1, EFPWM_INIT, null);
+    //ioctl(EFPWM_A_SUB2, EFPWM_INIT, null);
+    
+    //ioctl(ADC_1, ADC_INIT, null);
+    //ioctl(PIT_0, PIT_INIT, NULL);
     ioctl(SPI_0, SPI_INIT, NULL);
     ioctl(SCI_0, SCI_INIT, NULL);
     ioctl(SCI_1, SCI_INIT, NULL);
-    ioctl(QTIMER_B0, QT_INIT, NULL);
-    ioctl(QTIMER_B1, QT_INIT, NULL);
-    ioctl(QTIMER_B2, QT_INIT, NULL);
-    ioctl(QTIMER_B3, QT_INIT, NULL);
+    //ioctl(QTIMER_B0, QT_INIT, NULL);
+    //ioctl(QTIMER_B1, QT_INIT, NULL);
+    //ioctl(QTIMER_B2, QT_INIT, NULL);
+    //ioctl(QTIMER_B3, QT_INIT, NULL);
+    
     ioctl(FCAN, FCAN_INIT, NULL);
     
     FMSTR_Init();    
@@ -90,6 +96,8 @@ void main (void)
     {
     	UW32FlashResult = SetEEEEnable();
     }    
+    
+    
     
     /* initialise interrupt controller and enable interrupts */
     ioctl(INTC, INTC_INIT, NULL);
@@ -118,8 +126,23 @@ void main (void)
     EN_GATE_ON;
     delay(30000);
     
-    // Initialise system variables
-    InitSysVars(1);
+    
+	// Initialise system variables to default values
+	InitSysVars(1);      
+    // Check EEPROM sys vars
+    EEPROMReadi16(0, &SYSTEM.i16EEPROMStoreDone);
+    if(0 == SYSTEM.i16EEPROMStoreDone)
+    {
+    	// Store to EEPROM
+    	StoreEEPROM();
+    }
+    else
+    {
+    	// Load from EEPROM
+    	LoadEEPROM();
+    }
+    
+
     
     // Calculate float values from parameters 
     calculateFloats();
@@ -162,13 +185,15 @@ void main (void)
 			}
 			case 1:
 			{
-			    EepromWriteWord(uw32EEPROMAddress, uw16EEPROMData);
+				StoreEEPROM();
 				i8EEPROMOp = 0;
 				break;
 			}
 			case 2:
 			{
-				EepromReadWord(uw32EEPROMAddress, &uw16EEPROMData);
+				SYSTEM.i16MotorID = 0;
+				SYSTEM.REGULATORS.mudtControllerParamId.f16PropGain = 0;
+				LoadEEPROM();
 				i8EEPROMOp = 0;
 				break;			
 			}
@@ -177,6 +202,84 @@ void main (void)
 				i8EEPROMOp = 0;
 				break;
 			}
+    	}
+    	
+    	switch(i8CANTest)
+    	{
+    		case 0:    	
+			{
+				break;
+			}
+    		case 1:
+    		{
+    			if(ioctl(FCAN, FCAN_TEST_READY, null))
+    			{
+    				// Get free MB
+    				for(i=0;i<14;i++)
+    				{
+    					MB = ioctl(FCAN, FCAN_GET_MB_MODULE, i);
+    					// Get code
+    					code = ioctl(MB, FCANMB_GET_CODE, null);
+    					if(code == 0b1000)
+    					{
+    						// Write ID
+    						//MB->id = 0xff4e2123;
+    						// Write message
+    						MB->data[0] = 0xaaaa;
+    						MB->data[1] = 0x5555;
+    						ioctl(MB, FCANMB_SET_ID, 10 | FCAN_ID_EXT);
+    						ioctl(MB, FCANMB_SET_LEN, 8);
+    						ioctl(MB, FCANMB_SET_CODE, FCAN_MB_CODE_TXONCE);		
+    						i = 15;
+    					}
+    				}			
+    			}
+    			i8CANTest = 0;
+    			break;
+    		}
+    		case 2:
+    		{
+    			if(ioctl(FCAN, FCAN_TEST_READY, null))
+    			{
+    				MB = ioctl(FCAN, FCAN_GET_MB_MODULE, 0);
+    				// Get code
+    				code = ioctl(MB, FCANMB_GET_CODE, null);
+    				if(0 == code)
+    				{
+    					ioctl(MB, FCANMB_SET_CODE, FCAN_MB_CODE_TXVOID);	
+    				}
+    				else
+    				{
+    					ioctl(MB, FCANMB_SET_CODE, FCAN_MB_CODE_RXVOID);
+    				}
+    			}
+    			i8CANTest = 0;
+    			break;
+    		}
+    		case 3:
+    		{
+    			if(ioctl(FCAN, FCAN_TEST_READY, null))
+    			{
+    				MB = ioctl(FCAN, FCAN_GET_MB_MODULE, 1);
+    				// Get code
+    				code = ioctl(MB, FCANMB_GET_CODE, null);
+    				if(0 == code)
+    				{
+    					ioctl(MB, FCANMB_SET_ID, 0x4e2123 | FCAN_ID_EXT);	
+    					ioctl(MB, FCANMB_SET_CODE, FCAN_MB_CODE_RXEMPTY);
+    					
+    					// Unlock mailboxes
+    					ioctl(FCAN, FCAN_UNLOCK_ALL_MB, null);	
+    				}
+    			}
+    			i8CANTest = 0;
+    			break;
+    		}
+    		default:
+    		{
+    		    i8CANTest = 0;
+    		    break;
+    		}
     	}
     	
     	// Check test bit - for testing code
