@@ -314,6 +314,12 @@ void InitSysVars(Int16 initial)
 		SYSTEM.i8ErrorLog[SYSTEM.i16ErrorIndex] = 0;
 	}
 	SYSTEM.i16ErrorIndex = 0;
+	
+	//******************************************
+	// CAN
+	//******************************************
+	SYSTEM.CAN.ui16CANInfoInterval = CAN_INFO_INTERVAL;
+	SYSTEM.CAN.ui16CANInfoTimer = 0;
 }
 
 // Store vars to EEPROM
@@ -589,6 +595,9 @@ Int16 LoadEEPROM()
 	CalculateCalibrationData();	
 	// Mark calibrated
 	SYSTEM_CALIBRATED = 1;	
+	
+	uw32Index = EEPROMReadui16(uw32Index, &SYSTEM.CAN.ui16CANInfoInterval);
+	
 
 	return 0;
 }
@@ -746,6 +755,8 @@ Int16 StoreEEPROM()
 	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.PWMIN.i16PWMInOffZone);
 	
 	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.PWMIN.i16PWMFilterSize);
+	
+	uw32Index = EEPROMStoreui16(uw32Index, SYSTEM.CAN.ui16CANInfoInterval);
 	
 
 	return 0;

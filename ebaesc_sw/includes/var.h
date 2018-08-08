@@ -10,10 +10,46 @@
 
 #include "allincludes.h"
 
+
+typedef union tag32BitVars
+{
+	union
+	{
+		struct
+		{
+			UInt8 ui8[4];
+		}bytes;
+		struct
+		{
+			UInt16 ui16[2];
+		}uwords;
+		struct
+		{
+			Int16 i16[2];
+		}words;
+		UWord32 uw32;
+		UInt32 ui32;
+		Int32 i32;
+		Frac32 f32;
+		Word32 w32;
+		float f;
+	};
+}t32BitVars;
+
+typedef union tagFP32
+{
+    UInt32 u;
+    float f;
+}FP32;
+
 typedef union tag16BitVars
 {
 	union
 	{
+		struct
+		{
+			UInt8 ui8[2];
+		}bytes;
 		UWord16 uw16;
 		UInt16 ui16;
 		Int16 i16;
@@ -349,8 +385,16 @@ typedef struct tagSYSVARS
 		float fRPM;
 		float fIInAcc;
 		float fIInFiltDiv;
+		float fTempPCB;
+		float fTempExt;
 	}SIVALUES;
 	
+	// CAN variables
+	struct tagCAN
+	{
+		UInt16 ui16CANInfoTimer;
+		UInt16 ui16CANInfoInterval;
+	}CAN;
 
 	// Phase voltages
 	MCLIB_3_COOR_SYST_T m3UphUVW;
@@ -374,6 +418,8 @@ typedef struct tagSYSVARS
 	Int16 i16ErrorIndex;
 	
 	Int16 i16EEPROMStoreDone;
+	
+	
 	
 }SYSTEMVARIABLES;
 

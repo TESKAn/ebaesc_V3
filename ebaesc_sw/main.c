@@ -61,20 +61,20 @@ void main (void)
      */
     
     ioctl(XBAR_A, XBAR_A_INIT, null);
-    //ioctl(EFPWMA, EFPWM_INIT, null);
-    //ioctl(EFPWM_A_SUB0, EFPWM_INIT, null);
-    //ioctl(EFPWM_A_SUB1, EFPWM_INIT, null);
-    //ioctl(EFPWM_A_SUB2, EFPWM_INIT, null);
+    ioctl(EFPWMA, EFPWM_INIT, null);
+    ioctl(EFPWM_A_SUB0, EFPWM_INIT, null);
+    ioctl(EFPWM_A_SUB1, EFPWM_INIT, null);
+    ioctl(EFPWM_A_SUB2, EFPWM_INIT, null);
     
-    //ioctl(ADC_1, ADC_INIT, null);
-    //ioctl(PIT_0, PIT_INIT, NULL);
+    ioctl(ADC_1, ADC_INIT, null);
+    ioctl(PIT_0, PIT_INIT, NULL);
     ioctl(SPI_0, SPI_INIT, NULL);
     ioctl(SCI_0, SCI_INIT, NULL);
     ioctl(SCI_1, SCI_INIT, NULL);
-    //ioctl(QTIMER_B0, QT_INIT, NULL);
-    //ioctl(QTIMER_B1, QT_INIT, NULL);
-    //ioctl(QTIMER_B2, QT_INIT, NULL);
-    //ioctl(QTIMER_B3, QT_INIT, NULL);
+    ioctl(QTIMER_B0, QT_INIT, NULL);
+    ioctl(QTIMER_B1, QT_INIT, NULL);
+    ioctl(QTIMER_B2, QT_INIT, NULL);
+    ioctl(QTIMER_B3, QT_INIT, NULL);
     
     ioctl(FCAN, FCAN_INIT, NULL);
     
@@ -129,6 +129,7 @@ void main (void)
     
 	// Initialise system variables to default values
 	InitSysVars(1);      
+	/*
     // Check EEPROM sys vars
     EEPROMReadi16(0, &SYSTEM.i16EEPROMStoreDone);
     if(0 == SYSTEM.i16EEPROMStoreDone)
@@ -141,7 +142,7 @@ void main (void)
     	// Load from EEPROM
     	LoadEEPROM();
     }
-    
+    */
 
     
     // Calculate float values from parameters 
@@ -149,6 +150,9 @@ void main (void)
     
     // Set current offsets
     SYS_ZERO_CURRENT = 1;
+    
+    // Init CAN buffers
+    CAN_Init();
     
     
     // Initialise MOSFET driver
@@ -272,6 +276,13 @@ void main (void)
     					ioctl(FCAN, FCAN_UNLOCK_ALL_MB, null);	
     				}
     			}
+    			i8CANTest = 0;
+    			break;
+    		}
+    		case 4:
+    		{
+    			//CAN_TXVoltage();
+    			CAN_TXStatus();
     			i8CANTest = 0;
     			break;
     		}

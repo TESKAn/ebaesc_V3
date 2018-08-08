@@ -86,6 +86,51 @@ Int16 OneMsEvent(void)
 	return 0;
 }
 
+// Function to convert 32 bit float to 16 bit fixed point float
+// Beware of byte order.
+UInt16 Float32ToFloat16(float value)
+{	
+	t16BitVars t16Var1;
+	t16BitVars t16Var2;
+	
+
+	const FP32 f32inf = { 255UL << 23U };
+	const FP32 f16inf = { 31UL << 23U };
+	const FP32 magic = { 15UL << 23U };
+	const UInt32 sign_mask = 0x80000000UL;
+	const UInt32 round_mask = ~0xFFFUL;
+
+	FP32 in;
+	UInt32 sign;
+	    
+	in.f = value;
+	sign = in.u & sign_mask;
+	in.u ^= sign;
+
+	if (in.u >= f32inf.u)
+	{
+		t16Var1.ui16 = (in.u > f32inf.u) ? (UInt16)0x7FFFU : (UInt16)0x7C00U;
+	}
+	else
+	{
+	    in.u &= round_mask;
+	    in.f *= magic.f;
+	    in.u -= round_mask;
+	    if (in.u > f16inf.u)
+	    {
+	        in.u = f16inf.u;
+	    }
+	    t16Var1.ui16 = (UInt16)(in.u >> 13U);
+	}
+	t16Var1.ui16 |= (UInt16)(sign >> 16U);
+	
+	t16Var2.bytes.ui8[0] = t16Var1.bytes.ui8[1]; 
+	t16Var2.bytes.ui8[1] = t16Var1.bytes.ui8[0];
+
+	return t16Var2.ui16;
+}
+
+
 // Function that calculates SI values from frac values
 //#pragma interrupt called
 Int16 CalculateSIValues(void)
@@ -97,6 +142,7 @@ Int16 CalculateSIValues(void)
 	Frac16 f16Temp1;
 	Int32 i32Temp = 0;
 	Int32 i32Temp1 = 0;
+	Int16 i16Temp = 0;
 	
 	// UIn
 	fTemp = (float)SYSTEM.ADC.f16DCLinkVoltageFiltered;
@@ -187,6 +233,10 @@ Int16 CalculateSIValues(void)
 	// Calculate FRAC16 value
 	fTemp = fTemp * 32768;
 	SYSTEM.MCTRL.f16IPh = (Frac16)fTemp;	
+	
+	
+	i16Temp = CalculateTemperature(SYSTEM.ADC.f16TemperatureFiltered);
+	SYSTEM.SIVALUES.fTempPCB = (float)i16Temp;
 	
 	return 0;
 }

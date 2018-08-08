@@ -915,11 +915,14 @@ void PIT_0_ISR(void)
 	}
 	
 	// Test CAN
-	ui16CANTestCounter++;
-	if(1000 < ui16CANTestCounter)
+	if(SEND_CAN_INFO)
 	{
-		ui16CANTestCounter = 0;
-		
+		SYSTEM.CAN.ui16CANInfoTimer++;
+		if(SYSTEM.CAN.ui16CANInfoInterval < SYSTEM.CAN.ui16CANInfoTimer)
+		{
+			CAN_TXStatus();
+			SYSTEM.CAN.ui16CANInfoTimer = 0;
+		}
 	}
 }
 #pragma interrupt saveall
@@ -931,26 +934,40 @@ void FCAN_MB_ISR(void)
 	UWord32 uw32Test = 0;
 	UWord32 *uw32CANDataPtr;
 	
-	MB = ioctl(FCAN, FCAN_GET_MB_MODULE, 1);
-	
-	code = ioctl(MB, FCANMB_GET_CODE, null);
-	// Keep checking MB busy
-	while(0b1 == ioctl(MB, FCANMB_GET_CODE, null))
+	for(i=0;i<16;i++)
 	{
+		MB = ioctl(FCAN, FCAN_GET_MB_MODULE, i);
 		
+		code = ioctl(MB, FCANMB_GET_CODE, null);
+		// Keep checking MB busy
+		while(0b1 == ioctl(MB, FCANMB_GET_CODE, null))
+		{
+			
+		}
+		
+		// Get data
+		uw32CANDataPtr = ioctl(MB, FCANMB_GET_DATAPTR32, null);
+		uw32Test = *uw32CANDataPtr;
+		
+		uw32Test = MB->data[0];
+		uw32Test = MB->data[1];		
 	}
-	
-	// Get data
-	uw32CANDataPtr = ioctl(MB, FCANMB_GET_DATAPTR32, null);
-	uw32Test = *uw32CANDataPtr;
-	
-	uw32Test = MB->data[0];
-	uw32Test = MB->data[1];
-	
-	
-
 	ioctl(FCAN, FCAN_CLEAR_MBINT_FLAGS, FCAN_MBINT_0);
 	ioctl(FCAN, FCAN_CLEAR_MBINT_FLAGS, FCAN_MBINT_1);
+	ioctl(FCAN, FCAN_CLEAR_MBINT_FLAGS, FCAN_MBINT_2);
+	ioctl(FCAN, FCAN_CLEAR_MBINT_FLAGS, FCAN_MBINT_3);
+	ioctl(FCAN, FCAN_CLEAR_MBINT_FLAGS, FCAN_MBINT_4);
+	ioctl(FCAN, FCAN_CLEAR_MBINT_FLAGS, FCAN_MBINT_5);
+	ioctl(FCAN, FCAN_CLEAR_MBINT_FLAGS, FCAN_MBINT_6);
+	ioctl(FCAN, FCAN_CLEAR_MBINT_FLAGS, FCAN_MBINT_7);
+	ioctl(FCAN, FCAN_CLEAR_MBINT_FLAGS, FCAN_MBINT_8);
+	ioctl(FCAN, FCAN_CLEAR_MBINT_FLAGS, FCAN_MBINT_9);
+	ioctl(FCAN, FCAN_CLEAR_MBINT_FLAGS, FCAN_MBINT_10);
+	ioctl(FCAN, FCAN_CLEAR_MBINT_FLAGS, FCAN_MBINT_11);
+	ioctl(FCAN, FCAN_CLEAR_MBINT_FLAGS, FCAN_MBINT_12);
+	ioctl(FCAN, FCAN_CLEAR_MBINT_FLAGS, FCAN_MBINT_13);
+	ioctl(FCAN, FCAN_CLEAR_MBINT_FLAGS, FCAN_MBINT_14);
+	ioctl(FCAN, FCAN_CLEAR_MBINT_FLAGS, FCAN_MBINT_15);
 	
 	// Unlock mailboxes
 	ioctl(FCAN, FCAN_UNLOCK_ALL_MB, null);	

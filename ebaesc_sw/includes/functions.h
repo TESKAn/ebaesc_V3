@@ -11,6 +11,7 @@
 Int16 CalculateTemperature(Int16 valIndex);
 Int16 LogError(UInt8 ui8Error);
 Int16 OneMsEvent(void);
+UInt16 Float32ToFloat16(float value);
 Int16 CalculateSIValues(void);
 Int16 CalculateCalibrationData(void);
 Int16 CalculateFloat(void);

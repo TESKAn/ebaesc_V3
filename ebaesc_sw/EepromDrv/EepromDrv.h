@@ -221,7 +221,7 @@
 
 // Configuration file
 #include "EepromDrv_cfg.h"
-
+#include "types.h"
 
 #if (EEPROM_EMULATION)
 #include "FlashDrv.h"
@@ -232,6 +232,7 @@
  ***************************************************************************/
 /* Generic word data types */
 
+/*
 //typedef signed char    Word8;
 typedef char    Word8;
 typedef unsigned char  UWord8;
@@ -240,7 +241,7 @@ typedef unsigned short UWord16;
 typedef signed long    Word32;
 typedef unsigned long  UWord32;
 
-
+*/
 /*****************************************************************************
  * Constants and macros 
  *****************************************************************************/

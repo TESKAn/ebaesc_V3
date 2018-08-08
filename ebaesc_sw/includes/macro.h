@@ -157,6 +157,8 @@
 #define SENSORLESS_ROTATE			flag0.BIT13		// Blind rotate until we get some speed
 #define SENSORLESS_BEMF_ON			flag0.BIT14		// BEMF observer is running
 #define SYS_CAL_ZERO_CROSSED		flag0.BIT15
+ 
+
 
 #define SYS_CAL_GOTO_NEXT_POLE		flag1.BIT0
 #define SYS_ZERO_CURRENT			flag1.BIT1
@@ -169,7 +171,7 @@
 #define DRV_POLL					flag1.BIT8		// Mark poll DRV
 #define SYSTEM_PARK_ROTOR			flag1.BIT9		// Mark park rotor
 #define REINIT_DRV8301				flag1.BIT10		// Reinitialize MOSFET driver
-
+#define SEND_CAN_INFO				flag1.BIT11		// Enable CAN status messages
 
 
 
@@ -227,6 +229,14 @@
 #define POS_SENS_LOW						200
 #define POS_SENS_HIGH						3900
 
+// CAN macros
+#define CAN_DEVID							1
+#define CAN_MID_UIN							20001
+#define CAN_PRIO_UIN						0x1f
+// CAN RX message ID
+#define CAN_MID_RX							
 
+
+#define CAN_INFO_INTERVAL					100
 
 #endif /* MACRO_H_ */
