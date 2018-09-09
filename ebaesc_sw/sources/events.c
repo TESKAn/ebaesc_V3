@@ -288,6 +288,15 @@ void ADC_1_EOS_ISR(void)
 	// Out m2IDQ
 	MCLIB_ParkTrf(&SYSTEM.MCTRL.m2IDQ, &SYSTEM.MCTRL.m2IAlphaBeta, &SYSTEM.POSITION.mSinCosAngle);
 	
+	// Check if we are measuring LPha
+	if(AD_MEAS_LPHA)
+	{
+		if(FRAC16(0.0254) > SYSTEM.MCTRL.m2IDQ.f16D)
+		{
+			SYSTEM.MEASUREPARAMS.i16ISetTicks++;
+		}
+	}
+	
 	//******************************************
 	// BEMF observer calculation
 	//******************************************
@@ -518,6 +527,13 @@ void ADC_1_EOS_ISR(void)
 			SYSTEM.POSITION.f16SpeedFiltered = GDFLIB_FilterMA32(SYSTEM.POSITION.f16Speed, &SYSTEM.POSITION.FilterMA32Speed);	
 			break;
 		}
+		case POSITION_SOURCE_STANDSTILL:
+		{
+			SYSTEM.POSITION.f16RotorAngle = 0;
+			SYSTEM.POSITION.f16Speed = 0;
+			SYSTEM.POSITION.f16SpeedFiltered = 0;	
+			break;
+		}
 		default:
 		{
 			SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_NONE;
@@ -680,6 +696,13 @@ void ADC_1_EOS_ISR(void)
 			{
 				SYSTEM.REGULATORS.m2IDQReq.f16Q = GFLIB_Ramp16(SYSTEM.SENSORLESS.f16StartCurrent, SYSTEM.REGULATORS.m2IDQReq.f16Q, &SYSTEM.RAMPS.Ramp16_AlignCurrent);						
 			}
+			break;
+		}
+		case CURRENT_SOURCE_MEASURE_RPHA:
+		{
+			// Set Id to some value, Iq to 0
+			SYSTEM.REGULATORS.m2IDQReq.f16D = SYSTEM.MEASUREPARAMS.f16MeasureRPhaId;
+			SYSTEM.REGULATORS.m2IDQReq.f16Q = FRAC16(0.0);
 			break;
 		}
 		default:
@@ -978,4 +1001,26 @@ void FCAN_MB_ISR(void)
 void FCAN_ERR_ISR(void)
 {
 	ioctl(FCAN, FCAN_CLEAR_ERR_INT, NULL);
+}
+
+#pragma interrupt saveall
+void HSCMP_A_ISR(void)
+{
+	UInt16 ui16Result = 0;
+	
+	ui16Result = ioctl(QTIMER_A1, QT_READ_COUNTER_REG, 0);
+	
+	ioctl(HSCMP_A, HSCMP_INT_RISING_EDGE, HSCMP_DISABLE);
+	
+	SYSTEM.MEASUREPARAMS.ui16LPhaTime = ui16Result;
+	HSCMP_MEASURE = 0;
+	
+	ioctl(HSCMP_A, HSCMP_CLEAR_INT_FLAGS, HSCMP_FLAG_RISING_EDGE);
+}
+
+#pragma interrupt called
+void ADC_0_ISR(void)
+{
+	SYSTEM.MEASUREPARAMS.uw16SAR = ioctl(ADC16, ADC16_READ_RESULT, NULL);
+	ioctl(ADC16, ADC16_WRITE_SC1_REG, 1);
 }

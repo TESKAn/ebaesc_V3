@@ -7,1060 +7,63 @@
 
 #include "allincludes.h"
 
-#pragma interrupt called
 Int16 checkSystemStates(void)
 {
-	Int16 result = -1;
-	Int16 i16Temp0 = 0;
-	Int16 i16Temp1 = 0;
-	Int16 i16Temp2 = 0;
-	Int16 i16Temp3 = 0;
-	Frac16 f16Temp0 = 0;
-	Int32 i32Temp0 = 0;
 	switch(SYSTEM.systemState)
 	{
 		case SYSTEM_WAKEUP:
 		{
-			// System has waken up
-			// Wait here until initialisation is done, last is MOSFET driver init
-			// If not in debug
-			if(!SYS_DEBUG_MODE)
-			{
-				// Set pwm input check state
-				//ui8PWMMeasureStates = PWM_MEAS_INIT;
-				//systemVariables.systemState = SYSTEM_INIT;
-			}
-			// Is MOSFET driver initialised?
-			if(DRV8301_CONFIGURED)
-			{
-				// If yes, go to init state
-				SYSTEM.systemState = SYSTEM_INIT;		
-				SYSTEM.i16StateTransition = SYSTEM_IDLE;
-			}			
+			SystemWakeupState();	
 			break;
 		}
 		case SYSTEM_INIT:
 		{
-			// Do initialisation here - wait for input signal, measure input throttle value
-			// If not in debug
-			if(!SYS_DEBUG_MODE)
-			{
-				// Check PWM in value
-				switch(SYSTEM.PWMIN.i16PWMMeasureStates)
-				{
-					
-					case PWM_MEAS_INIT:
-					{
-						if(PWM_MEAS_INITIAL_SAMPLES < SYSTEM.PWMIN.ui32PWMSamplesReceived)
-						{
-							SYSTEM.PWMIN.i16PWMMeasureStates = PWM_MEAS_DECIDE;
-						}
-						break;
-					}
-					case PWM_MEAS_DECIDE:
-					{
-						// Is throttle in high position
-						if(SYSTEM.PWMIN.i16PWMInMiddleValue < SYSTEM.PWMIN.i16PWMFiltered)
-						{
-							// Throttle is over half value
-							SYSTEM.PWMIN.i16PWMMeasureStates = PWM_MEAS_HIGH;
-						}			
-						// Measure for x ms
-						// Throttle has to stay in this position for specified amount of time
-						SYSTEM.PWMIN.i16PWMMeasureTimer = SYSTEM.PWMIN.i16PWMInMeasureTime;
-						break;
-					}
-					case PWM_MEAS_HIGH:
-					{	
-						// If value over high ref, 
-						if(SYSTEM.PWMIN.i16PWMInHighValRef < SYSTEM.PWMIN.i16PWMFiltered)
-						{
-							// Throttle is in max position
-							SYSTEM.PWMIN.i16PWMfullThrottle = SYSTEM.PWMIN.i16PWMFiltered;
-							if(0 < SYSTEM.PWMIN.i16PWMMeasureTimer)
-							{
-								SYSTEM.PWMIN.i16PWMMeasureTimer--;
-							}
-						}
-						else
-						{
-							// Throttle is below high ref
-							// Check timer
-							if(0 == SYSTEM.PWMIN.i16PWMMeasureTimer)
-							{
-								// Measure high is OK, go to measure low
-								// Go to measure low state
-								SYSTEM.PWMIN.i16PWMMeasureStates = PWM_MEAS_LOW;
-							}
-							// Measure for x ms
-							// Throttle has to stay in this position for specified amount of time
-							// Throttle not in high position for specified time, reset measurement
-							// OR set measurement time for low
-							SYSTEM.PWMIN.i16PWMMeasureTimer = SYSTEM.PWMIN.i16PWMInMeasureTime;
-						}
-						
-						break;
-					}
-					case PWM_MEAS_LOW:
-					{
-						// If PWM under half value
-						if(SYSTEM.PWMIN.i16PWMInMiddleValue > SYSTEM.PWMIN.i16PWMFiltered)
-						{
-							// Throttle is in min position
-							SYSTEM.PWMIN.i16PWMinThrottle = SYSTEM.PWMIN.i16PWMFiltered;
-							if(0 < SYSTEM.PWMIN.i16PWMMeasureTimer)
-							{
-								SYSTEM.PWMIN.i16PWMMeasureTimer--;
-								// Check if timer reached 0
-								if(0 == SYSTEM.PWMIN.i16PWMMeasureTimer)
-								{
-									// It did, calculate ON time
-									SYSTEM.PWMIN.i16PWMoffThrottle = SYSTEM.PWMIN.i16PWMinThrottle + SYSTEM.PWMIN.i16PWMInOffZone;
-									// Calculate throttle difference
-									SYSTEM.PWMIN.i16PWMThrottleDifference = SYSTEM.PWMIN.i16PWMfullThrottle - SYSTEM.PWMIN.i16PWMoffThrottle;
-									// Calculate frac multiplier
-									SYSTEM.PWMIN.i16PWMFracMultiplier = (Int16)(32768 / SYSTEM.PWMIN.i16PWMThrottleDifference);
-									// Go to idle state
-									SYSTEM.systemState = SYSTEM_IDLE;	
-								}
-							}
-						}
-						else
-						{
-							// Throttle is not on min value, reset timer
-							SYSTEM.PWMIN.i16PWMMeasureTimer = SYSTEM.PWMIN.i16PWMInMeasureTime;
-						}
-						break;
-					}
-					default:
-					{
-						SYSTEM.PWMIN.i16PWMMeasureStates = PWM_MEAS_INIT;
-						break;
-					}
-				}				
-			}
-			
-			// Check state transition
-			if(SYSTEM_IDLE == SYSTEM.i16StateTransition)
-			{
-				// Go to idle state
-				SYSTEM.systemState = SYSTEM_IDLE;								
-			}
+			SystemInitState();
 			break;
 		}
 		case SYSTEM_IDLE:
 		{
-			// If not in debug
-			if(!SYS_DEBUG_MODE)
-			{
-				// Check throttle
-				if(SYSTEM.PWMIN.i16PWMoffThrottle < SYSTEM.PWMIN.i16PWMFiltered)
-				{
-					// Throttle over off value, start motor
-					//SYSTEM_GOTO_ACTIVE = 1;
-				}
-				else
-				{
-					//SYSTEM_GOTO_ACTIVE = 0;
-				}
-			}
-			
-			// Use PWM?
-			if(1 == RS485DataStruct.REGS.ui8UsePWMIN)
-			{
-				// If PWM over zero speed, go to run mode.
-				i16Temp0 = RS485DataStruct.REGS.i16CurrentPWM - RS485DataStruct.REGS.i16PWMMin;
-
-				if(i16Temp0 > RS485DataStruct.REGS.i16ZeroSpeedPWM)
-				{
-					RS485DataStruct.REGS.ui8Armed = 1;
-				}
-			}
-			
-			
-			// Check comm regs
-			if(1 == RS485DataStruct.REGS.ui8Armed)
-			{
-				// Control system speed
-				CONTROL_SPEED = 1;
-				SYSTEM.i16StateTransition = SYSTEM_RUN;
-			}
-			
-			
-			
-			switch(SYSTEM.i16StateTransition)
-			{
-				case SYSTEM_RUN:
-				{	
-					// Set PWM values
-					SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = FRAC16(0.5);
-					SYSTEM.PWMValues.pwmSub_1_Channel_23_Value = FRAC16(0.5);
-					SYSTEM.PWMValues.pwmSub_2_Channel_23_Value = FRAC16(0.5);
-					ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);
-					// Enable PWM outputs
-					ioctl(EFPWMA, EFPWM_SET_OUTPUTS_ENABLE, EFPWM_SUB0_PWM_A|EFPWM_SUB0_PWM_B|EFPWM_SUB1_PWM_A|EFPWM_SUB1_PWM_B|EFPWM_SUB2_PWM_A|EFPWM_SUB2_PWM_B);
-
-					// Check - run from sensor or sensorless?
-					if(SYSTEM_CALIBRATED && SYSTEM_RUN_SENSORED)
-					{
-						// Run from sensor
-						SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_MULTIPLE;
-						if(CONTROL_SPEED)
-						{
-							SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_CONTROL_SPEED;
-							// Set default values
-							SYSTEM.RAMPS.f16SpeedRampDesiredValue = FRAC16(0.0);
-							SYSTEM.RAMPS.f16SpeedRampActualValue = FRAC16(0.0);
-						}
-						else if(CONTROL_TORQUE)
-						{
-							SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_CONTROL_TORQUE;
-							// Set default values
-							SYSTEM.RAMPS.f16TorqueRampActualValue = FRAC16(0.0);
-							SYSTEM.RAMPS.f16TorqueRampDesiredValue = FRAC16(0.0);
-						}
-						else
-						{
-							// No source, manual
-							SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_MANUAL;
-							SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_CONTROL_MANUAL;
-							// Make sure that we will not rotate
-							SYSTEM_RUN_MANUAL_CW = 0;
-							SYSTEM_RUN_MANUAL_CCW = 0;
-						}
-						SYSTEM.systemState = SYSTEM_RUN;	
-						// Enable regulators
-						PWM_ENABLED = 1;
-					}
-					else if(CONTROL_SPEED || CONTROL_TORQUE)
-					{
-						// Run sensorless only for speed or torque modes
-						// Start open loop mode
-						SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_SENSORLESS_ALIGN;
-						SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_SENSORLESS_ALIGN;
-						// Set time for align
-						SYSTEM.SENSORLESS.i16Counter = SYSTEM.SENSORLESS.i16AlignTime;
-						// Mark no BEMF
-						SENSORLESS_BEMF_ON = 0;
-						// Go to run
-						SYSTEM.systemState = SYSTEM_RUN;
-						// Enable regulators
-						PWM_ENABLED = 1;
-					}
-					else if(CONTROL_MANUAL)
-					{
-						// Manual control
-						SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_MANUAL;
-						SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_CONTROL_MANUAL;
-						// Set D, Q currents to 0
-						SYSTEM.RAMPS.f16AlignCurrentActualValue = FRAC16(0.0);
-						SYSTEM.RAMPS.f16AlignCurrentDesiredValue = FRAC16(0.0);
-						// Set Id, Iq to 0
-						SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.0);
-						SYSTEM.REGULATORS.m2IDQReq.f16Q = FRAC16(0.0);
-						SYSTEM_RUN_MANUAL = 1;
-						SYSTEM_RUN_MANUAL_CW = 0;
-						SYSTEM_RUN_MANUAL_CCW = 0;
-						// Go to run
-						SYSTEM.systemState = SYSTEM_RUN;
-						// Enable regulators
-						PWM_ENABLED = 1;
-					}
-					else
-					{
-						// No option, abort
-						// Turn off PWMs
-						ioctl(EFPWMA, EFPWM_SET_OUTPUTS_DISABLE, EFPWM_SUB0_PWM_A|EFPWM_SUB0_PWM_B|EFPWM_SUB1_PWM_A|EFPWM_SUB1_PWM_B|EFPWM_SUB2_PWM_A|EFPWM_SUB2_PWM_B);
-						
-					}
-					break;
-				}
-				case SYSTEM_CALIBRATE:
-				{						
-					// Set position/current source
-					SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_MANUAL;
-					SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_CONTROL_MANUAL;
-					// Set Id, Iq to 0
-					SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.0);
-					SYSTEM.REGULATORS.m2IDQReq.f16Q = FRAC16(0.0);
-					// Use align current
-					SYSTEM.RAMPS.f16AlignCurrentDesiredValue = SYSTEM.SENSORLESS.f16AlignCurrent;
-					SYSTEM.RAMPS.f16AlignCurrentActualValue = FRAC16(0.0);
-					// Mark run manually
-					SYSTEM_RUN_MANUAL = 1;
-					// Mark system not calibrated
-					SYSTEM_CALIBRATED = 0;
-					// Do not use sensor
-					SYSTEM_RUN_SENSORED = 0;
-					// Do not move rotor
-					SYSTEM_RUN_MANUAL_CW = 0;
-					SYSTEM_RUN_MANUAL_CCW = 0;
-					// Set PWM values
-					SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = FRAC16(0.5);
-					SYSTEM.PWMValues.pwmSub_1_Channel_23_Value = FRAC16(0.5);
-					SYSTEM.PWMValues.pwmSub_2_Channel_23_Value = FRAC16(0.5);
-					ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);
-					// Enable PWM outputs
-					ioctl(EFPWMA, EFPWM_SET_OUTPUTS_ENABLE, EFPWM_SUB0_PWM_A|EFPWM_SUB0_PWM_B|EFPWM_SUB1_PWM_A|EFPWM_SUB1_PWM_B|EFPWM_SUB2_PWM_A|EFPWM_SUB2_PWM_B);
-					// Enable regulators
-					PWM_ENABLED = 1;
-					SYSTEM.systemState = SYSTEM_CALIBRATE;		
-					SYSTEM.CALIBRATION.i16CalibrationState = CALIBRATE_INIT;
-					break;
-				}
-				case SYSTEM_PARKROTOR:
-				{			
-					// Set PWM values
-					SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = FRAC16(0.5);
-					SYSTEM.PWMValues.pwmSub_1_Channel_23_Value = FRAC16(0.5);
-					SYSTEM.PWMValues.pwmSub_2_Channel_23_Value = FRAC16(0.5);
-					ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);
-					// Enable PWM outputs
-					ioctl(EFPWMA, EFPWM_SET_OUTPUTS_ENABLE, EFPWM_SUB0_PWM_A|EFPWM_SUB0_PWM_B|EFPWM_SUB1_PWM_A|EFPWM_SUB1_PWM_B|EFPWM_SUB2_PWM_A|EFPWM_SUB2_PWM_B);
-
-					// Manual control
-					SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_MANUAL;
-					SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_CONTROL_MANUAL;
-					// Set D, Q currents to 0
-					SYSTEM.RAMPS.f16AlignCurrentActualValue = FRAC16(0.0);
-					SYSTEM.RAMPS.f16AlignCurrentDesiredValue = FRAC16(0.01);
-					// Set Id, Iq to 0
-					SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.01);
-					SYSTEM.REGULATORS.m2IDQReq.f16Q = FRAC16(0.0);
-					SYSTEM_RUN_MANUAL = 1;
-					SYSTEM_RUN_MANUAL_CW = 0;
-					SYSTEM_RUN_MANUAL_CCW = 0;
-					// Enable regulators
-					PWM_ENABLED = 1;
-
-					SYSTEM.systemState = SYSTEM_PARKROTOR;
-					break;
-				}
-				case SYSTEM_SPINNINGROTOR:
-				{						
-					// Set PWM values
-					SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = FRAC16(0.5);
-					SYSTEM.PWMValues.pwmSub_1_Channel_23_Value = FRAC16(0.5);
-					SYSTEM.PWMValues.pwmSub_2_Channel_23_Value = FRAC16(0.5);
-					ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);
-					// Enable PWM outputs
-					ioctl(EFPWMA, EFPWM_SET_OUTPUTS_ENABLE, EFPWM_SUB0_PWM_A|EFPWM_SUB0_PWM_B|EFPWM_SUB1_PWM_A|EFPWM_SUB1_PWM_B|EFPWM_SUB2_PWM_A|EFPWM_SUB2_PWM_B);		
-					
-					SYSTEM.systemState = SYSTEM_SPINNINGROTOR;
-					
-					break;
-				}
-				case SYSTEM_RESET:
-				{
-					SYSTEM.systemState = SYSTEM_RESET;
-					break;
-				}
-			}	
+			SystemIdleState();
 			break;
 		}
 		case SYSTEM_RUN:
 		{
-			// Running?
-			if(1 == RS485DataStruct.REGS.ui8Armed)
-			{
-				// Use PWM for speed?
-				if(1 == RS485DataStruct.REGS.ui8UsePWMIN)
-				{
-					// Calculate speed based on input PWM value
-					// Current value
-					i16Temp0 = RS485DataStruct.REGS.i16CurrentPWM - RS485DataStruct.REGS.i16PWMMin;
-					// Limit
-					if(0 > i16Temp0) i16Temp0 = 0;
-					// Full scale value
-					i16Temp1 = RS485DataStruct.REGS.i16PWMMax - RS485DataStruct.REGS.i16PWMMin;
-					if(0 > i16Temp1) i16Temp1 = 1;
-					if(i16Temp0 > RS485DataStruct.REGS.i16ZeroSpeedPWM)
-					{
-						// Calculate speed
-						i32Temp0 = (Int32)RS485DataStruct.REGS.i16MaxRPM * (Int32)i16Temp0;
-						i32Temp0 /= i16Temp1;
-						i16Temp0 = (Int16)i32Temp0;
-						
-						// Limit to min
-						if(i16Temp0 < RS485DataStruct.REGS.i16MinRPM)
-						{
-							i16Temp0 = 0;
-						}
-						else
-						{
-							// Calculate frac value
-							i32Temp0 = (Frac32)i16Temp0 * 32768 * (Frac32)SYSTEM.CALIBRATION.i16MotorPolePairs;
-							i32Temp0 /= 120000;
-							// Check sign
-							if(0 == RS485DataStruct.REGS.ui8ReverseRotation)
-							{
-								SYSTEM.RAMPS.f16SpeedRampDesiredValue = (Frac16)i32Temp0;
-							}
-							else
-							{
-								SYSTEM.RAMPS.f16SpeedRampDesiredValue = -(Frac16)i32Temp0;
-							}		
-						}
-					}
-					else
-					{
-						// Go out of run mode
-						SYSTEM.RAMPS.f16SpeedRampDesiredValue = FRAC16(0.0);
-						RS485DataStruct.REGS.ui8Armed = 0;
-					}
-				}
-				else
-				{
-					// Limit
-					if(RS485DataStruct.REGS.i16SetRPM > RS485DataStruct.REGS.i16MaxRPM)
-					{
-						RS485DataStruct.REGS.i16SetRPM = RS485DataStruct.REGS.i16MaxRPM;
-					}
-					else if(RS485DataStruct.REGS.i16SetRPM < RS485DataStruct.REGS.i16MinRPM)
-					{
-						RS485DataStruct.REGS.i16SetRPM = 0;
-					}
-					// Convert to frac16
-					i32Var = RS485DataStruct.REGS.i16SetRPM * 229376;// 32768 * (Frac32)SYSTEM.CALIBRATION.i16MotorPolePairs;
-					i32Var /= 120000;
-					// Check sign
-					if(0 == RS485DataStruct.REGS.ui8ReverseRotation)
-					{
-						SYSTEM.RAMPS.f16SpeedRampDesiredValue = (Frac16)i32Var;
-					}
-					else
-					{
-						SYSTEM.RAMPS.f16SpeedRampDesiredValue = -(Frac16)i32Var;
-					}		
-				}
-			
-				// Park rotor?
-				if(1 == RS485DataStruct.REGS.ui8Park)
-				{
-					if(FRAC16(0.0) > SYSTEM.POSITION.f16SpeedFiltered)
-					{
-						f16Temp0 = -SYSTEM.POSITION.f16SpeedFiltered;
-					}
-					else
-					{
-						f16Temp0 = SYSTEM.POSITION.f16SpeedFiltered;
-					}
-					// If speed below limit, park
-					if(FRAC16(0.01) > f16Temp0)
-					{
-						SYSTEM.i16StateTransition = SYSTEM_PARKROTOR;
-					}
-					// Else slow down
-					else
-					{
-						SYSTEM.RAMPS.f16SpeedRampDesiredValue = FRAC16(0.0);
-					}
-				}
-			}
-			else
-			{
-				// Go out of run mode
-				SYSTEM.i16StateTransition = SYSTEM_RESET;
-				SYSTEM.RAMPS.f16SpeedRampDesiredValue = FRAC16(0.0);
-			}
-			
-			// When in run mode, check driver status for errors
-			if(0 != DRV8301.StatReg1.FAULT)
-			{
-				// Shut down PWMs, go out of run mode into fault mode
-				SYSTEM.i16StateTransition = SYSTEM_FAULT_DRV8301;
-				// Mark fault
-				RS485DataStruct.REGS.ui16Errors |= RS485ERROR_FAULT;
-				// Check FETs
-				if(0 != DRV8301.StatReg1.FETHA_OC) RS485DataStruct.REGS.ui16Errors |= RS485ERROR_FETHA;
-				if(0 != DRV8301.StatReg1.FETLA_OC) RS485DataStruct.REGS.ui16Errors |= RS485ERROR_FETLA;
-				if(0 != DRV8301.StatReg1.FETHB_OC) RS485DataStruct.REGS.ui16Errors |= RS485ERROR_FETHB;
-				if(0 != DRV8301.StatReg1.FETLB_OC) RS485DataStruct.REGS.ui16Errors |= RS485ERROR_FETLB;
-				if(0 != DRV8301.StatReg1.FETHC_OC) RS485DataStruct.REGS.ui16Errors |= RS485ERROR_FETHC;
-				if(0 != DRV8301.StatReg1.FETLC_OC) RS485DataStruct.REGS.ui16Errors |= RS485ERROR_FETLC;
-				
-			}
-		
-
-			
-			switch(SYSTEM.i16StateTransition)
-			{
-				case SYSTEM_RESET:
-				{
-					SYSTEM.systemState = SYSTEM_RESET;
-					break;
-				}
-				case SYSTEM_PARKROTOR:
-				{			
-					// Stop if spinning
-					if((FRAC16(0.01) < SYSTEM.POSITION.f16SpeedFiltered)||(FRAC16(-0.01) > SYSTEM.POSITION.f16SpeedFiltered))
-					{
-						SYSTEM.RAMPS.f16SpeedRampDesiredValue = FRAC16(0.0);
-						SYSTEM.RAMPS.f16TorqueRampDesiredValue = FRAC16(0.0);						
-					}
-					else
-					{
-						// Manual control
-						SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_MANUAL;
-						SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_CONTROL_MANUAL;
-						// Set D, Q currents to 0
-						SYSTEM.RAMPS.f16AlignCurrentActualValue = FRAC16(0.0);
-						SYSTEM.RAMPS.f16AlignCurrentDesiredValue = FRAC16(0.01);
-						// Set Id, Iq to 0
-						SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.01);
-						SYSTEM.REGULATORS.m2IDQReq.f16Q = FRAC16(0.0);
-						SYSTEM_RUN_MANUAL = 1;
-						SYSTEM_RUN_MANUAL_CW = 0;
-						SYSTEM_RUN_MANUAL_CCW = 0;
-						
-						// Enable regulators
-						PWM_ENABLED = 1;
-						SYSTEM.systemState = SYSTEM_PARKROTOR;					
-					}
-					break;
-				}
-				case SYSTEM_FAULT_DRV8301:
-				{
-					// Stop motor
-					StopMotor();
-					SYSTEM.systemState = SYSTEM_FAULT_DRV8301;	
-					break;
-				}
-			}
+			SystemRunState();
 			break;
-		}
-		
+		}		
 		case SYSTEM_CALIBRATE:
 		{
-			// Mark calibrating
-			switch(SYSTEM.CALIBRATION.i16CalibrationState)
-			{
-				case CALIBRATE_INIT:
-				{
-					SYSTEM.CALIBRATION.i16CalibrationState = CALIBRATE_START;
-					SYSTEM.POSITION.f16RotorAngle = FRAC16(0.0);
-					// Calculate sin/cos
-					SYSTEM.POSITION.mSinCosAngle.f16Sin = GFLIB_SinTlr(SYSTEM.POSITION.f16RotorAngle);
-					SYSTEM.POSITION.mSinCosAngle.f16Cos = GFLIB_CosTlr(SYSTEM.POSITION.f16RotorAngle);
-					
-					// Zero array
-					for(i16Temp0 = 0; i16Temp0 < 4096; i16Temp0++)
-					{
-						SYSTEM.CALIBRATION.f16CalibrationArray[i16Temp0] = FRAC16(0.0);
-					}
-					// Mark waiting for zero cross
-					SYS_CAL_ZERO_CROSSED = 0;
-					
-					// 1 ms interval, wait for 4 sec for initial alignment
-					SYSTEM.CALIBRATION.i16Counter = 4000;
-					break;
-				}
-				case CALIBRATE_START:
-				{
-					SYSTEM.CALIBRATION.i16Counter--;
-					if(0 == SYSTEM.CALIBRATION.i16Counter)
-					{
-						SYSTEM.CALIBRATION.i16Counter = 5;
-						//SYSTEM.CALIBRATION.i16CalibrationState = CALIBRATE_CW;
-						SYSTEM.CALIBRATION.i16CalibrationState = CALIBRATE_FIND_ZERO_CROSS;
-						//i16CurrentPolePair = systemVariables.POSITION.ui16FilteredPositionIndex;	
-					}
-
-					break;
-				}
-				case CALIBRATE_FIND_ZERO_CROSS:
-				{
-					if(!SYS_CAL_ZERO_CROSSED)
-					{
-						// Turn motor fast until we get to some high value
-						if(3000 > SYSTEM.POSITION.i16SensorIndexFiltered)
-						{
-							SYSTEM.POSITION.f16RotorAngle += 40;
-						}
-						else
-						{
-							// Value is high enough
-							// Move motor until we get to next pole pair
-							SYS_CAL_GOTO_NEXT_POLE = 1;
-							// Mark zero is crossed
-							SYS_CAL_ZERO_CROSSED = 1;
-						}
-					}
-					else
-					{
-						// Wait until motor moves to next pole
-						if(!SYS_CAL_GOTO_NEXT_POLE)
-						{
-							// We are at next electrical pole
-							// Check that position is below half mech angle
-							// So that we are over zero cross
-							if(1000 > SYSTEM.POSITION.i16SensorIndexFiltered)
-							{
-								// It is, this is our first pole. Verify it and set index
-								SYSTEM.CALIBRATION.i16CurrentPolePair = 0;
-								SYSTEM.CALIBRATION.i16CalibrationState = CALIBRATE_VERIFY_POLE;
-								// Set settling time
-								SYSTEM.CALIBRATION.i16Counter = 1000;
-							}
-							else
-							{
-								// Else go to next pole
-								SYS_CAL_GOTO_NEXT_POLE = 1;
-							}
-						}
-					}
-					break;
-				}
-				case CALIBRATE_VERIFY_POLE:
-				{
-					// Wait for motor to settle to final position
-					SYSTEM.CALIBRATION.i16Counter--;
-					if(0 == SYSTEM.CALIBRATION.i16Counter)
-					{
-						// This is the spot
-						// Store pole position
-						SYSTEM.CALIBRATION.i16PolePairArray[SYSTEM.CALIBRATION.i16CurrentPolePair] = SYSTEM.POSITION.i16SensorIndexFiltered;
-						// Pole over 0?
-						if(0 < SYSTEM.CALIBRATION.i16CurrentPolePair)
-						{
-							// Check if it is the final pole
-							if(SYSTEM.CALIBRATION.i16PolePairArray[SYSTEM.CALIBRATION.i16CurrentPolePair] < SYSTEM.CALIBRATION.i16PolePairArray[SYSTEM.CALIBRATION.i16CurrentPolePair - 1])	
-							{
-								// Current value is lower than previous - we went over mechanical pole so we are back at first pole
-								// So go to final step for calibration
-								//systemVariables.ui16CalibrationState = CALIBRATE_CALCULATE_VALUES;
-								SYSTEM.CALIBRATION.i16CalibrationState = CALIBRATE_FIND_AD_IN_MAX;
-								SYSTEM.CALIBRATION.i16MaxSensorIndex = 0;
-								SYSTEM.CALIBRATION.i16MinSensorIndex = 4096;
-								
-								// And mark number of pole pairs
-								SYSTEM.CALIBRATION.i16MotorPolePairs = (UInt16)SYSTEM.CALIBRATION.i16CurrentPolePair;
-							}
-							else
-							{
-								// Mark going to next pole
-								SYS_CAL_GOTO_NEXT_POLE = 1;
-								// Increase pole count
-								SYSTEM.CALIBRATION.i16CurrentPolePair ++;	
-								SYSTEM.CALIBRATION.i16CalibrationState = CALIBRATE_WAIT_NEXT_POLE;							
-							}
-						}
-						else
-						{
-							// Else it is first pole
-							// Mark going to next pole
-							SYS_CAL_GOTO_NEXT_POLE = 1;
-							// Increase pole count
-							SYSTEM.CALIBRATION.i16CurrentPolePair ++;	
-							SYSTEM.CALIBRATION.i16CalibrationState = CALIBRATE_WAIT_NEXT_POLE;
-						}
-					}
-					
-					break;
-				}
-				case CALIBRATE_WAIT_NEXT_POLE:
-				{
-					// Wait to move to next pole
-					if(!SYS_CAL_GOTO_NEXT_POLE)
-					{
-						// We are at next pole, go to verify
-						SYSTEM.CALIBRATION.i16CalibrationState = CALIBRATE_VERIFY_POLE;
-						// Set settling time
-						SYSTEM.CALIBRATION.i16Counter = 1000;
-					}
-					break;
-				}
-				case CALIBRATE_FIND_AD_IN_MAX:
-				{
-					// Spin back until we get max value
-					if(3000 > SYSTEM.POSITION.i16SensorIndexFiltered)
-					{
-						// Rotate back
-						if(SYSTEM.POSITION.i16SensorIndexFiltered > 20)
-						{
-							SYSTEM.POSITION.f16RotorAngle -= 5;
-						}
-						else
-						{
-							SYSTEM.POSITION.f16RotorAngle --;
-						}
-						// Store values
-						if(SYSTEM.POSITION.i16SensorIndexFiltered > SYSTEM.CALIBRATION.i16MaxSensorIndex) SYSTEM.CALIBRATION.i16MaxSensorIndex = SYSTEM.POSITION.i16SensorIndexFiltered;
-						if(SYSTEM.POSITION.i16SensorIndexFiltered < SYSTEM.CALIBRATION.i16MinSensorIndex) SYSTEM.CALIBRATION.i16MinSensorIndex = SYSTEM.POSITION.i16SensorIndexFiltered;
-					}
-					else
-					{
-						// Rotate little further back back
-						SYSTEM.POSITION.f16RotorAngle -= 1000;
-						SYSTEM.CALIBRATION.i16CalibrationState = CALIBRATE_FIND_AD_IN_MIN;
-						SYSTEM.CALIBRATION.i16Counter = 1000;
-					}
-					break;
-				}
-				case CALIBRATE_FIND_AD_IN_MIN:
-				{
-					// Wait
-					SYSTEM.CALIBRATION.i16Counter--;
-					if(0 == SYSTEM.CALIBRATION.i16Counter)
-					{
-						SYSTEM.CALIBRATION.i16Counter++;
-						// Spin forward until we get min value
-						if(500 < SYSTEM.POSITION.i16SensorIndexFiltered)
-						{
-							// Rotate back
-							SYSTEM.POSITION.f16RotorAngle ++;
-							// Store values
-							if(SYSTEM.POSITION.i16SensorIndexFiltered > SYSTEM.CALIBRATION.i16MaxSensorIndex) SYSTEM.CALIBRATION.i16MaxSensorIndex = SYSTEM.POSITION.i16SensorIndexFiltered;
-							if(SYSTEM.POSITION.i16SensorIndexFiltered < SYSTEM.CALIBRATION.i16MinSensorIndex) SYSTEM.CALIBRATION.i16MinSensorIndex = SYSTEM.POSITION.i16SensorIndexFiltered;
-						}
-						else
-						{
-							// Go to recalculation
-							SYSTEM.CALIBRATION.i16CalibrationState = CALIBRATE_CALCULATE_VALUES;
-						}							
-					}
-
-					break;
-				}
-				case CALIBRATE_CALCULATE_VALUES:
-				{
-					// Interpolate values between poles
-					// i16Temp0,1,2
-					// Use temp0 for counting pole pairs 											
-					for(i16Temp0 = 0; i16Temp0 < SYSTEM.CALIBRATION.i16MotorPolePairs; i16Temp0 ++)
-					{
-						// Temp1 stores current index in calibration array
-						i16Temp1 = SYSTEM.CALIBRATION.i16PolePairArray[i16Temp0];	
-						// Temp2 stores number of samples for current pole pair
-						if((i16Temp0 + 1) == SYSTEM.CALIBRATION.i16MotorPolePairs)	
-						{
-							// If last pole pair
-							i16Temp2 = SYSTEM.CALIBRATION.i16MaxSensorIndex - SYSTEM.CALIBRATION.i16PolePairArray[i16Temp0] + SYSTEM.CALIBRATION.i16PolePairArray[0];
-						}
-						else
-						{
-							i16Temp2 = SYSTEM.CALIBRATION.i16PolePairArray[i16Temp0 + 1] - SYSTEM.CALIBRATION.i16PolePairArray[i16Temp0];
-						}						
-						// f16Temp0 stores angle delta in current pole
-						i32Temp0 = 65536 / i16Temp2;
-						f16Temp0 = (Frac16)i32Temp0;		
-						// Set first value
-						SYSTEM.CALIBRATION.f16CalibrationArray[i16Temp1] = FRAC16(-1.0);
-						// Calculate the rest
-						for(i16Temp3 = 0; i16Temp3 < i16Temp2; i16Temp3++)
-						{
-							// Move to next index
-							i16Temp1 ++;
-							// Wrap to 0
-							i16Temp1 = i16Temp1 & 4095;
-							// Add difference
-							if(0 == i16Temp1)
-							{
-								SYSTEM.CALIBRATION.f16CalibrationArray[i16Temp1] = SYSTEM.CALIBRATION.f16CalibrationArray[4095] + f16Temp0;
-							}
-							else
-							{
-								SYSTEM.CALIBRATION.f16CalibrationArray[i16Temp1] = SYSTEM.CALIBRATION.f16CalibrationArray[i16Temp1 - 1] + f16Temp0;
-							}							
-						}						
-					}
-					// Recalculate last pole value
-					//i16MaxSensorIndex
-					//i16MinSensorIndex
-					// Store index for zero angle
-					i16Temp1 = SYSTEM.CALIBRATION.i16MaxSensorIndex - SYSTEM.CALIBRATION.i16PolePairArray[SYSTEM.CALIBRATION.i16MotorPolePairs - 1];
-					// Get increment
-					i16Temp2 = SYSTEM.CALIBRATION.i16PolePairArray[0] - SYSTEM.CALIBRATION.i16MinSensorIndex;
-					i16Temp2 = i16Temp2 + i16Temp1;
-					// f16Temp0 stores angle delta in current pole
-					i32Temp0 = 65536 / i16Temp2;
-					f16Temp0 = (Frac16)i32Temp0;
-					// Set first index
-					i16Temp1 = SYSTEM.CALIBRATION.i16PolePairArray[SYSTEM.CALIBRATION.i16MotorPolePairs - 1];
-					// Set first value
-					SYSTEM.CALIBRATION.f16CalibrationArray[i16Temp1] = FRAC16(-1.0);
-					// Fill until last
-					for(i16Temp0 = i16Temp1 + 1; i16Temp0 < SYSTEM.CALIBRATION.i16MaxSensorIndex; i16Temp0 ++)	
-					{
-						SYSTEM.CALIBRATION.f16CalibrationArray[i16Temp0] = SYSTEM.CALIBRATION.f16CalibrationArray[i16Temp0 - 1] + f16Temp0;
-					}
-					// Fill until last					
-					for(i16Temp0 = SYSTEM.CALIBRATION.i16MaxSensorIndex; i16Temp0 < 4096; i16Temp0 ++)	
-					{
-						SYSTEM.CALIBRATION.f16CalibrationArray[i16Temp0] = SYSTEM.CALIBRATION.f16CalibrationArray[i16Temp0 - 1];
-					}				
-					// Now for lower part of values
-					// Fill first value
-					SYSTEM.CALIBRATION.f16CalibrationArray[0] = SYSTEM.CALIBRATION.f16CalibrationArray[4095];
-					// Fill first part
-					for(i16Temp0 = 1; i16Temp0 < SYSTEM.CALIBRATION.i16MinSensorIndex; i16Temp0 ++)	
-					{
-						SYSTEM.CALIBRATION.f16CalibrationArray[i16Temp0] = SYSTEM.CALIBRATION.f16CalibrationArray[i16Temp0 - 1];
-					}
-					// Fill the rest
-					for(i16Temp0 = SYSTEM.CALIBRATION.i16MinSensorIndex; i16Temp0 < SYSTEM.CALIBRATION.i16PolePairArray[0]; i16Temp0 ++)	
-					{
-						SYSTEM.CALIBRATION.f16CalibrationArray[i16Temp0] = SYSTEM.CALIBRATION.f16CalibrationArray[i16Temp0 - 1] + f16Temp0;
-					}		
-					// Set last value
-					SYSTEM.CALIBRATION.f16CalibrationArray[SYSTEM.CALIBRATION.i16PolePairArray[0]] = FRAC16(1.0);
-					
-					SYSTEM.CALIBRATION.i16CalibrationState = CALIBRATE_INIT;
-					SYSTEM.systemState = SYSTEM_RESET;
-					SYSTEM.i16StateTransition = SYSTEM_WAKEUP;
-					
-					SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.0);
-					SYSTEM.REGULATORS.m2IDQReq.f16Q = FRAC16(0.0);
-					SYSTEM_CALIBRATED = 1;
-					SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_NONE;
-					SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_NONE;
-					break;
-				}
-				default:
-				{
-					SYSTEM.CALIBRATION.i16CalibrationState = CALIBRATE_INIT;
-					break;
-				}
-			}
-
+			SystemCalibrateState();
 			break;
 		}
 		case SYSTEM_PARKROTOR:
 		{
-			// Get how far away are we from final position
-			
-			SYSTEM_PARK_ROTOR = 1;
-			SYSTEM_RUN_MANUAL_CW = 0;
-			SYSTEM_RUN_MANUAL_CCW = 0;
-			
-			// Use PWM?
-			if(1 == RS485DataStruct.REGS.ui8UsePWMIN)
-			{
-				// If PWM under zero speed, go to idle mode
-				i16Temp0 = RS485DataStruct.REGS.i16CurrentPWM - RS485DataStruct.REGS.i16PWMMin;
-
-				if(i16Temp0 < RS485DataStruct.REGS.i16ZeroSpeedPWM)
-				{
-					RS485DataStruct.REGS.ui8Armed = 0;
-				}
-			}
-
-			// Go out of park?
-			if(0 == RS485DataStruct.REGS.ui8Park)
-			{
-				// Control system speed
-				CONTROL_SPEED = 1;
-				SYSTEM.i16StateTransition = SYSTEM_RUN;
-			}
-			
-			// Stop motor?
-			if(0 == RS485DataStruct.REGS.ui8Armed)
-			{
-				// Go out of run mode
-				SYSTEM.i16StateTransition = SYSTEM_RESET;
-				SYSTEM.RAMPS.f16SpeedRampDesiredValue = FRAC16(0.0);
-			}
-
-			switch(SYSTEM.i16StateTransition)
-			{
-				case SYSTEM_RESET:
-				{
-					SYSTEM.systemState = SYSTEM_RESET;
-					break;
-				}
-				case SYSTEM_RUN:
-				{	
-					// Check - run from sensor or sensorless?
-					if(SYSTEM_CALIBRATED && SYSTEM_RUN_SENSORED)
-					{
-						// Run from sensor
-						SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_MULTIPLE;
-						if(CONTROL_SPEED)
-						{
-							SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_CONTROL_SPEED;
-							// Set default values
-							SYSTEM.RAMPS.f16SpeedRampDesiredValue = FRAC16(0.0);
-							SYSTEM.RAMPS.f16SpeedRampActualValue = FRAC16(0.0);
-						}
-						else if(CONTROL_TORQUE)
-						{
-							SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_CONTROL_TORQUE;
-							// Set default values
-							SYSTEM.RAMPS.f16TorqueRampActualValue = FRAC16(0.0);
-							SYSTEM.RAMPS.f16TorqueRampDesiredValue = FRAC16(0.0);
-						}
-						else
-						{
-							// No source, manual
-							SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_MANUAL;
-							SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_CONTROL_MANUAL;
-							// Make sure that we will not rotate
-							SYSTEM_RUN_MANUAL_CW = 0;
-							SYSTEM_RUN_MANUAL_CCW = 0;
-						}
-						SYSTEM.systemState = SYSTEM_RUN;	
-						// Enable regulators
-						PWM_ENABLED = 1;
-					}
-					else if(CONTROL_SPEED || CONTROL_TORQUE)
-					{
-						// Run sensorless only for speed or torque modes
-						// Start open loop mode
-						SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_SENSORLESS_ALIGN;
-						SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_SENSORLESS_ALIGN;
-						// Set time for align
-						SYSTEM.SENSORLESS.i16Counter = SYSTEM.SENSORLESS.i16AlignTime;
-						// Mark no BEMF
-						SENSORLESS_BEMF_ON = 0;
-						// Go to run
-						SYSTEM.systemState = SYSTEM_RUN;
-						// Enable regulators
-						PWM_ENABLED = 1;
-					}
-
-					else
-					{
-						SYSTEM.i16StateTransition = SYSTEM_PARKROTOR;
-					}
-					break;
-				}
-			}
+			SystemParkRotorState();
 			break;
 		}
 		case SYSTEM_FAULT:
 		{
-			ioctl(EFPWMA, EFPWM_SET_OUTPUTS_DISABLE, EFPWM_SUB0_PWM_A|EFPWM_SUB0_PWM_B|EFPWM_SUB1_PWM_A|EFPWM_SUB1_PWM_B|EFPWM_SUB2_PWM_A|EFPWM_SUB2_PWM_B);
+			SystemFaultState();
 			break;
 		}
 		case SYSTEM_RESET:
 		{
-			// Stop motor
-			StopMotor();
-			// Change state
-			SYSTEM.systemState = SYSTEM_WAKEUP;
+			SystemResetState();
 			break;
 		}
 		case SYSTEM_FAULT_DRV8301:
 		{
-			// Try restarting driver
-			switch(SYSTEM.i16DriverRestartState)
-			{
-				case SYSTEM_RESTART_INIT:
-				{
-					// Turn driver gate enable off
-					EN_GATE_OFF;
-					// Mark driver not configured
-					DRV8301_CONFIGURED = 0;
-					SYSTEM.i16DriverRestartState = SYSTEM_RESTART_WAIT_POWER_OFF;
-					break;
-				}
-				case SYSTEM_RESTART_WAIT_POWER_OFF:
-				{
-					// Turn driver gate enable on
-					EN_GATE_ON;
-					SYSTEM.i16DriverRestartState = SYSTEM_RESTART_WAIT_POWER_ON;
-					break;
-				}
-				case SYSTEM_RESTART_WAIT_POWER_ON:
-				{
-					// Set values
-					REINIT_DRV8301 = 1;
-					// Reset time counter
-					SYSTEM.i16DriverRestartTimer = 0;
-					SYSTEM.i16DriverRestartState = SYSTEM_RESTART_WAIT_REINIT;
-					break;
-				}
-				case SYSTEM_RESTART_WAIT_REINIT:
-				{
-					// Increase timer
-					SYSTEM.i16DriverRestartTimer++;
-					// Check - initialised?
-					if(DRV8301_CONFIGURED)
-					{
-						// Driver reconfiguration successful, read status
-						// Read reg 1
-						DRV8301.RegReq.RW = 1;								//we are initiating a read
-						DRV8301.RegReq.ADDR = DRV8301_STAT_REG_1_ADDR;		//load the address
-						DRV8301.RegReq.DATA = 0;							//dummy data;
-						// Send data
-						ioctl(SPI_0, SPI_WRITE_DATA, DRV8301.RegReq.reg);	
-						
-						SYSTEM.i16DriverRestartState = SYSTEM_RESTART_WAIT_READ_1;
-					}
-					else if(100 < SYSTEM.i16DriverRestartTimer)
-					{
-						// Something wrong, go to fault
-						SYSTEM.systemState = SYSTEM_FAULT;
-					}
-					break;
-				}
-				case SYSTEM_RESTART_WAIT_READ_1:
-				{
-					// Data ready?
-					if(ioctl(SPI_0, SPI_CAN_READ_DATA, null) == 0)
-					{
-						// Read to req reg
-						DRV8301.RegReq.reg = ioctl(SPI_0, SPI_READ_DATA, null);
-						// Read reg 2
-						DRV8301.RegReq.RW = 1;								//we are initiating a read
-						DRV8301.RegReq.ADDR = DRV8301_STAT_REG_2_ADDR;		//load the address
-						DRV8301.RegReq.DATA = 0;							//dummy data;
-						// Send data
-						ioctl(SPI_0, SPI_WRITE_DATA, DRV8301.RegReq.reg);
-						
-						SYSTEM.i16DriverRestartState = SYSTEM_RESTART_WAIT_READ_2;
-					}
-					break;
-				}
-				case SYSTEM_RESTART_WAIT_READ_2:
-				{
-					// Data ready?
-					if(ioctl(SPI_0, SPI_CAN_READ_DATA, null) == 0)
-					{
-						// Read to req reg
-						DRV8301.RegReq.reg = ioctl(SPI_0, SPI_READ_DATA, null);
-						// Store
-						DRV8301.StatReg1.reg = DRV8301.RegReq.reg; 
-						// Dummy read
-						DRV8301.RegReq.RW = 1;								//we are initiating a read
-						DRV8301.RegReq.ADDR = DRV8301_STAT_REG_2_ADDR;		//load the address
-						DRV8301.RegReq.DATA = 0;							//dummy data;
-						// Send data
-						ioctl(SPI_0, SPI_WRITE_DATA, DRV8301.RegReq.reg);
-						
-						SYSTEM.i16DriverRestartState = SYSTEM_RESTART_WAIT_READ_3;
-					}
-					break;
-				}
-				case SYSTEM_RESTART_WAIT_READ_3:
-				{
-					// Data ready?
-					if(ioctl(SPI_0, SPI_CAN_READ_DATA, null) == 0)
-					{
-						// Read to req reg
-						DRV8301.RegReq.reg = ioctl(SPI_0, SPI_READ_DATA, null);
-						// Store
-						DRV8301.StatReg2.reg = DRV8301.RegReq.reg; 
-						// Check data
-						if(0 == DRV8301.StatReg1.FAULT)
-						{
-							// Go to init
-							SYSTEM.systemState = SYSTEM_WAKEUP;
-						}
-						else
-						{
-							// Something wrong, go to fault
-							SYSTEM.systemState = SYSTEM_FAULT;
-						}
-					}
-					break;
-				}
-				default:
-				{
-					SYSTEM.i16DriverRestartState = SYSTEM_RESTART_INIT;
-					break;
-				}
-			}
+			SystemFaultDRV83xxState();
+			break;
+		}
+		case SYSTEM_MEAS_RPHA:
+		{
+			SystemMeasureRPHAState();
+			break;
+		}
+		case SYSTEM_MEAS_LPHA:
+		{
+			SystemMeasureLPHAState();
 			break;
 		}
 		default:
@@ -1069,5 +72,1320 @@ Int16 checkSystemStates(void)
 			break;
 		}
 	}
+	return 0;
+}
+
+Int16 SystemWakeupState()
+{
+	// System has waken up
+	// Wait here until initialisation is done, last is MOSFET driver init
+	// If not in debug
+	if(!SYS_DEBUG_MODE)
+	{
+		// Set pwm input check state
+		//ui8PWMMeasureStates = PWM_MEAS_INIT;
+		//systemVariables.systemState = SYSTEM_INIT;
+	}
+	// Is MOSFET driver initialised?
+	if(DRV8301_CONFIGURED)
+	{
+		// If yes, go to init state
+		SYSTEM.systemState = SYSTEM_INIT;		
+		SYSTEM.i16StateTransition = SYSTEM_IDLE;
+	}	
+	return 0;
+}
+
+Int16 SystemInitState()
+{
+	// Do initialisation here - wait for input signal, measure input throttle value
+	// If not in debug
+	if(!SYS_DEBUG_MODE)
+	{
+		// Check PWM in value
+		switch(SYSTEM.PWMIN.i16PWMMeasureStates)
+		{
+			
+			case PWM_MEAS_INIT:
+			{
+				if(PWM_MEAS_INITIAL_SAMPLES < SYSTEM.PWMIN.ui32PWMSamplesReceived)
+				{
+					SYSTEM.PWMIN.i16PWMMeasureStates = PWM_MEAS_DECIDE;
+				}
+				break;
+			}
+			case PWM_MEAS_DECIDE:
+			{
+				// Is throttle in high position
+				if(SYSTEM.PWMIN.i16PWMInMiddleValue < SYSTEM.PWMIN.i16PWMFiltered)
+				{
+					// Throttle is over half value
+					SYSTEM.PWMIN.i16PWMMeasureStates = PWM_MEAS_HIGH;
+				}			
+				// Measure for x ms
+				// Throttle has to stay in this position for specified amount of time
+				SYSTEM.PWMIN.i16PWMMeasureTimer = SYSTEM.PWMIN.i16PWMInMeasureTime;
+				break;
+			}
+			case PWM_MEAS_HIGH:
+			{	
+				// If value over high ref, 
+				if(SYSTEM.PWMIN.i16PWMInHighValRef < SYSTEM.PWMIN.i16PWMFiltered)
+				{
+					// Throttle is in max position
+					SYSTEM.PWMIN.i16PWMfullThrottle = SYSTEM.PWMIN.i16PWMFiltered;
+					if(0 < SYSTEM.PWMIN.i16PWMMeasureTimer)
+					{
+						SYSTEM.PWMIN.i16PWMMeasureTimer--;
+					}
+				}
+				else
+				{
+					// Throttle is below high ref
+					// Check timer
+					if(0 == SYSTEM.PWMIN.i16PWMMeasureTimer)
+					{
+						// Measure high is OK, go to measure low
+						// Go to measure low state
+						SYSTEM.PWMIN.i16PWMMeasureStates = PWM_MEAS_LOW;
+					}
+					// Measure for x ms
+					// Throttle has to stay in this position for specified amount of time
+					// Throttle not in high position for specified time, reset measurement
+					// OR set measurement time for low
+					SYSTEM.PWMIN.i16PWMMeasureTimer = SYSTEM.PWMIN.i16PWMInMeasureTime;
+				}
+				
+				break;
+			}
+			case PWM_MEAS_LOW:
+			{
+				// If PWM under half value
+				if(SYSTEM.PWMIN.i16PWMInMiddleValue > SYSTEM.PWMIN.i16PWMFiltered)
+				{
+					// Throttle is in min position
+					SYSTEM.PWMIN.i16PWMinThrottle = SYSTEM.PWMIN.i16PWMFiltered;
+					if(0 < SYSTEM.PWMIN.i16PWMMeasureTimer)
+					{
+						SYSTEM.PWMIN.i16PWMMeasureTimer--;
+						// Check if timer reached 0
+						if(0 == SYSTEM.PWMIN.i16PWMMeasureTimer)
+						{
+							// It did, calculate ON time
+							SYSTEM.PWMIN.i16PWMoffThrottle = SYSTEM.PWMIN.i16PWMinThrottle + SYSTEM.PWMIN.i16PWMInOffZone;
+							// Calculate throttle difference
+							SYSTEM.PWMIN.i16PWMThrottleDifference = SYSTEM.PWMIN.i16PWMfullThrottle - SYSTEM.PWMIN.i16PWMoffThrottle;
+							// Calculate frac multiplier
+							SYSTEM.PWMIN.i16PWMFracMultiplier = (Int16)(32768 / SYSTEM.PWMIN.i16PWMThrottleDifference);
+							// Go to idle state
+							SYSTEM.systemState = SYSTEM_IDLE;	
+						}
+					}
+				}
+				else
+				{
+					// Throttle is not on min value, reset timer
+					SYSTEM.PWMIN.i16PWMMeasureTimer = SYSTEM.PWMIN.i16PWMInMeasureTime;
+				}
+				break;
+			}
+			default:
+			{
+				SYSTEM.PWMIN.i16PWMMeasureStates = PWM_MEAS_INIT;
+				break;
+			}
+		}				
+	}
+	
+	// Transit out of?
+	if(SYSTEM.i16StateTransition != SYSTEM.systemState)
+	{
+		SystemStateTransition();
+	}
+	
+
+	return 0;
+}
+
+Int16 SystemIdleState()
+{
+	Int16 i16Temp0 = 0;
+	// If not in debug
+	if(!SYS_DEBUG_MODE)
+	{
+		// Check throttle
+		if(SYSTEM.PWMIN.i16PWMoffThrottle < SYSTEM.PWMIN.i16PWMFiltered)
+		{
+			// Throttle over off value, start motor
+			//SYSTEM_GOTO_ACTIVE = 1;
+		}
+		else
+		{
+			//SYSTEM_GOTO_ACTIVE = 0;
+		}
+	}
+	
+	// Use PWM?
+	if(1 == RS485DataStruct.REGS.ui8UsePWMIN)
+	{
+		// If PWM over zero speed, go to run mode.
+		i16Temp0 = RS485DataStruct.REGS.i16CurrentPWM - RS485DataStruct.REGS.i16PWMMin;
+
+		if(i16Temp0 > RS485DataStruct.REGS.i16ZeroSpeedPWM)
+		{
+			RS485DataStruct.REGS.ui8Armed = 1;
+		}
+	}
+	
+	
+	// Check comm regs
+	if(1 == RS485DataStruct.REGS.ui8Armed)
+	{
+		// Control system speed
+		CONTROL_SPEED = 1;
+		SYSTEM.i16StateTransition = SYSTEM_RUN;
+	}
+	
+	
+	// Transit out of?
+	if(SYSTEM.i16StateTransition != SYSTEM.systemState)
+	{
+		SystemStateTransition();
+	}
+	
+	
+
+	return 0;
+}
+
+Int16 SystemRunState()
+{
+	Int16 i16Temp0 = 0;
+	Int16 i16Temp1 = 0;
+	Frac16 f16Temp0 = 0;
+	Int32 i32Temp0 = 0;
+	// Running?
+	if(1 == RS485DataStruct.REGS.ui8Armed)
+	{
+		// Use PWM for speed?
+		if(1 == RS485DataStruct.REGS.ui8UsePWMIN)
+		{
+			// Calculate speed based on input PWM value
+			// Current value
+			i16Temp0 = RS485DataStruct.REGS.i16CurrentPWM - RS485DataStruct.REGS.i16PWMMin;
+			// Limit
+			if(0 > i16Temp0) i16Temp0 = 0;
+			// Full scale value
+			i16Temp1 = RS485DataStruct.REGS.i16PWMMax - RS485DataStruct.REGS.i16PWMMin;
+			if(0 > i16Temp1) i16Temp1 = 1;
+			if(i16Temp0 > RS485DataStruct.REGS.i16ZeroSpeedPWM)
+			{
+				// Calculate speed
+				i32Temp0 = (Int32)RS485DataStruct.REGS.i16MaxRPM * (Int32)i16Temp0;
+				i32Temp0 /= i16Temp1;
+				i16Temp0 = (Int16)i32Temp0;
+				
+				// Limit to min
+				if(i16Temp0 < RS485DataStruct.REGS.i16MinRPM)
+				{
+					i16Temp0 = 0;
+				}
+				else
+				{
+					// Calculate frac value
+					i32Temp0 = (Frac32)i16Temp0 * 32768 * (Frac32)SYSTEM.CALIBRATION.i16MotorPolePairs;
+					i32Temp0 /= 120000;
+					// Check sign
+					if(0 == RS485DataStruct.REGS.ui8ReverseRotation)
+					{
+						SYSTEM.RAMPS.f16SpeedRampDesiredValue = (Frac16)i32Temp0;
+					}
+					else
+					{
+						SYSTEM.RAMPS.f16SpeedRampDesiredValue = -(Frac16)i32Temp0;
+					}		
+				}
+			}
+			else
+			{
+				// Go out of run mode
+				SYSTEM.RAMPS.f16SpeedRampDesiredValue = FRAC16(0.0);
+				RS485DataStruct.REGS.ui8Armed = 0;
+			}
+		}
+		else
+		{
+			// Limit
+			if(RS485DataStruct.REGS.i16SetRPM > RS485DataStruct.REGS.i16MaxRPM)
+			{
+				RS485DataStruct.REGS.i16SetRPM = RS485DataStruct.REGS.i16MaxRPM;
+			}
+			else if(RS485DataStruct.REGS.i16SetRPM < RS485DataStruct.REGS.i16MinRPM)
+			{
+				RS485DataStruct.REGS.i16SetRPM = 0;
+			}
+			// Convert to frac16
+			i32Var = RS485DataStruct.REGS.i16SetRPM * 229376;// 32768 * (Frac32)SYSTEM.CALIBRATION.i16MotorPolePairs;
+			i32Var /= 120000;
+			// Check sign
+			if(0 == RS485DataStruct.REGS.ui8ReverseRotation)
+			{
+				SYSTEM.RAMPS.f16SpeedRampDesiredValue = (Frac16)i32Var;
+			}
+			else
+			{
+				SYSTEM.RAMPS.f16SpeedRampDesiredValue = -(Frac16)i32Var;
+			}		
+		}
+	
+		// Park rotor?
+		if(1 == RS485DataStruct.REGS.ui8Park)
+		{
+			if(FRAC16(0.0) > SYSTEM.POSITION.f16SpeedFiltered)
+			{
+				f16Temp0 = -SYSTEM.POSITION.f16SpeedFiltered;
+			}
+			else
+			{
+				f16Temp0 = SYSTEM.POSITION.f16SpeedFiltered;
+			}
+			// If speed below limit, park
+			if(FRAC16(0.01) > f16Temp0)
+			{
+				SYSTEM.i16StateTransition = SYSTEM_PARKROTOR;
+			}
+			// Else slow down
+			else
+			{
+				SYSTEM.RAMPS.f16SpeedRampDesiredValue = FRAC16(0.0);
+			}
+		}
+	}
+	else
+	{
+		// Go out of run mode
+		SYSTEM.i16StateTransition = SYSTEM_RESET;
+		SYSTEM.RAMPS.f16SpeedRampDesiredValue = FRAC16(0.0);
+	}
+	
+	// When in run mode, check driver status for errors
+	if(0 != DRV8301.StatReg1.FAULT)
+	{
+		// Shut down PWMs, go out of run mode into fault mode
+		SYSTEM.i16StateTransition = SYSTEM_FAULT_DRV8301;
+		// Mark fault
+		RS485DataStruct.REGS.ui16Errors |= RS485ERROR_FAULT;
+		// Check FETs
+		if(0 != DRV8301.StatReg1.FETHA_OC) RS485DataStruct.REGS.ui16Errors |= RS485ERROR_FETHA;
+		if(0 != DRV8301.StatReg1.FETLA_OC) RS485DataStruct.REGS.ui16Errors |= RS485ERROR_FETLA;
+		if(0 != DRV8301.StatReg1.FETHB_OC) RS485DataStruct.REGS.ui16Errors |= RS485ERROR_FETHB;
+		if(0 != DRV8301.StatReg1.FETLB_OC) RS485DataStruct.REGS.ui16Errors |= RS485ERROR_FETLB;
+		if(0 != DRV8301.StatReg1.FETHC_OC) RS485DataStruct.REGS.ui16Errors |= RS485ERROR_FETHC;
+		if(0 != DRV8301.StatReg1.FETLC_OC) RS485DataStruct.REGS.ui16Errors |= RS485ERROR_FETLC;
+		
+	}
+	
+	// Transit out of?
+	if(SYSTEM.i16StateTransition != SYSTEM.systemState)
+	{
+		// Stop if spinning
+		if((FRAC16(0.01) < SYSTEM.POSITION.f16SpeedFiltered)||(FRAC16(-0.01) > SYSTEM.POSITION.f16SpeedFiltered))
+		{
+			SYSTEM.RAMPS.f16SpeedRampDesiredValue = FRAC16(0.0);
+			SYSTEM.RAMPS.f16TorqueRampDesiredValue = FRAC16(0.0);						
+		}
+		else if(SYSTEM_FAULT_DRV8301 == SYSTEM.i16StateTransition)
+		{
+			StopMotor();
+			SystemStateTransition();
+		}
+		else
+		{
+			SystemStateTransition();
+		}
+	}
+	return 0;
+}
+
+Int16 SystemCalibrateState()
+{
+
+	Int16 i16Temp0 = 0;
+	Int16 i16Temp1 = 0;
+	Int16 i16Temp2 = 0;
+	Int16 i16Temp3 = 0;
+	Frac16 f16Temp0 = 0;
+	Int32 i32Temp0 = 0;
+	// Mark calibrating
+	switch(SYSTEM.CALIBRATION.i16CalibrationState)
+	{
+		case CALIBRATE_INIT:
+		{
+			SYSTEM.CALIBRATION.i16CalibrationState = CALIBRATE_START;
+			SYSTEM.POSITION.f16RotorAngle = FRAC16(0.0);
+			// Calculate sin/cos
+			SYSTEM.POSITION.mSinCosAngle.f16Sin = GFLIB_SinTlr(SYSTEM.POSITION.f16RotorAngle);
+			SYSTEM.POSITION.mSinCosAngle.f16Cos = GFLIB_CosTlr(SYSTEM.POSITION.f16RotorAngle);
+			
+			// Zero array
+			for(i16Temp0 = 0; i16Temp0 < 4096; i16Temp0++)
+			{
+				SYSTEM.CALIBRATION.f16CalibrationArray[i16Temp0] = FRAC16(0.0);
+			}
+			// Mark waiting for zero cross
+			SYS_CAL_ZERO_CROSSED = 0;
+			
+			// 1 ms interval, wait for 4 sec for initial alignment
+			SYSTEM.CALIBRATION.i16Counter = 4000;
+			break;
+		}
+		case CALIBRATE_START:
+		{
+			SYSTEM.CALIBRATION.i16Counter--;
+			if(0 == SYSTEM.CALIBRATION.i16Counter)
+			{
+				SYSTEM.CALIBRATION.i16Counter = 5;
+				//SYSTEM.CALIBRATION.i16CalibrationState = CALIBRATE_CW;
+				SYSTEM.CALIBRATION.i16CalibrationState = CALIBRATE_FIND_ZERO_CROSS;
+				//i16CurrentPolePair = systemVariables.POSITION.ui16FilteredPositionIndex;	
+			}
+
+			break;
+		}
+		case CALIBRATE_FIND_ZERO_CROSS:
+		{
+			if(!SYS_CAL_ZERO_CROSSED)
+			{
+				// Turn motor fast until we get to some high value
+				if(3000 > SYSTEM.POSITION.i16SensorIndexFiltered)
+				{
+					SYSTEM.POSITION.f16RotorAngle += 40;
+				}
+				else
+				{
+					// Value is high enough
+					// Move motor until we get to next pole pair
+					SYS_CAL_GOTO_NEXT_POLE = 1;
+					// Mark zero is crossed
+					SYS_CAL_ZERO_CROSSED = 1;
+				}
+			}
+			else
+			{
+				// Wait until motor moves to next pole
+				if(!SYS_CAL_GOTO_NEXT_POLE)
+				{
+					// We are at next electrical pole
+					// Check that position is below half mech angle
+					// So that we are over zero cross
+					if(1000 > SYSTEM.POSITION.i16SensorIndexFiltered)
+					{
+						// It is, this is our first pole. Verify it and set index
+						SYSTEM.CALIBRATION.i16CurrentPolePair = 0;
+						SYSTEM.CALIBRATION.i16CalibrationState = CALIBRATE_VERIFY_POLE;
+						// Set settling time
+						SYSTEM.CALIBRATION.i16Counter = 1000;
+					}
+					else
+					{
+						// Else go to next pole
+						SYS_CAL_GOTO_NEXT_POLE = 1;
+					}
+				}
+			}
+			break;
+		}
+		case CALIBRATE_VERIFY_POLE:
+		{
+			// Wait for motor to settle to final position
+			SYSTEM.CALIBRATION.i16Counter--;
+			if(0 == SYSTEM.CALIBRATION.i16Counter)
+			{
+				// This is the spot
+				// Store pole position
+				SYSTEM.CALIBRATION.i16PolePairArray[SYSTEM.CALIBRATION.i16CurrentPolePair] = SYSTEM.POSITION.i16SensorIndexFiltered;
+				// Pole over 0?
+				if(0 < SYSTEM.CALIBRATION.i16CurrentPolePair)
+				{
+					// Check if it is the final pole
+					if(SYSTEM.CALIBRATION.i16PolePairArray[SYSTEM.CALIBRATION.i16CurrentPolePair] < SYSTEM.CALIBRATION.i16PolePairArray[SYSTEM.CALIBRATION.i16CurrentPolePair - 1])	
+					{
+						// Current value is lower than previous - we went over mechanical pole so we are back at first pole
+						// So go to final step for calibration
+						//systemVariables.ui16CalibrationState = CALIBRATE_CALCULATE_VALUES;
+						SYSTEM.CALIBRATION.i16CalibrationState = CALIBRATE_FIND_AD_IN_MAX;
+						SYSTEM.CALIBRATION.i16MaxSensorIndex = 0;
+						SYSTEM.CALIBRATION.i16MinSensorIndex = 4096;
+						
+						// And mark number of pole pairs
+						SYSTEM.CALIBRATION.i16MotorPolePairs = (UInt16)SYSTEM.CALIBRATION.i16CurrentPolePair;
+					}
+					else
+					{
+						// Mark going to next pole
+						SYS_CAL_GOTO_NEXT_POLE = 1;
+						// Increase pole count
+						SYSTEM.CALIBRATION.i16CurrentPolePair ++;	
+						SYSTEM.CALIBRATION.i16CalibrationState = CALIBRATE_WAIT_NEXT_POLE;							
+					}
+				}
+				else
+				{
+					// Else it is first pole
+					// Mark going to next pole
+					SYS_CAL_GOTO_NEXT_POLE = 1;
+					// Increase pole count
+					SYSTEM.CALIBRATION.i16CurrentPolePair ++;	
+					SYSTEM.CALIBRATION.i16CalibrationState = CALIBRATE_WAIT_NEXT_POLE;
+				}
+			}
+			
+			break;
+		}
+		case CALIBRATE_WAIT_NEXT_POLE:
+		{
+			// Wait to move to next pole
+			if(!SYS_CAL_GOTO_NEXT_POLE)
+			{
+				// We are at next pole, go to verify
+				SYSTEM.CALIBRATION.i16CalibrationState = CALIBRATE_VERIFY_POLE;
+				// Set settling time
+				SYSTEM.CALIBRATION.i16Counter = 1000;
+			}
+			break;
+		}
+		case CALIBRATE_FIND_AD_IN_MAX:
+		{
+			// Spin back until we get max value
+			if(3000 > SYSTEM.POSITION.i16SensorIndexFiltered)
+			{
+				// Rotate back
+				if(SYSTEM.POSITION.i16SensorIndexFiltered > 20)
+				{
+					SYSTEM.POSITION.f16RotorAngle -= 5;
+				}
+				else
+				{
+					SYSTEM.POSITION.f16RotorAngle --;
+				}
+				// Store values
+				if(SYSTEM.POSITION.i16SensorIndexFiltered > SYSTEM.CALIBRATION.i16MaxSensorIndex) SYSTEM.CALIBRATION.i16MaxSensorIndex = SYSTEM.POSITION.i16SensorIndexFiltered;
+				if(SYSTEM.POSITION.i16SensorIndexFiltered < SYSTEM.CALIBRATION.i16MinSensorIndex) SYSTEM.CALIBRATION.i16MinSensorIndex = SYSTEM.POSITION.i16SensorIndexFiltered;
+			}
+			else
+			{
+				// Rotate little further back back
+				SYSTEM.POSITION.f16RotorAngle -= 1000;
+				SYSTEM.CALIBRATION.i16CalibrationState = CALIBRATE_FIND_AD_IN_MIN;
+				SYSTEM.CALIBRATION.i16Counter = 1000;
+			}
+			break;
+		}
+		case CALIBRATE_FIND_AD_IN_MIN:
+		{
+			// Wait
+			SYSTEM.CALIBRATION.i16Counter--;
+			if(0 == SYSTEM.CALIBRATION.i16Counter)
+			{
+				SYSTEM.CALIBRATION.i16Counter++;
+				// Spin forward until we get min value
+				if(500 < SYSTEM.POSITION.i16SensorIndexFiltered)
+				{
+					// Rotate back
+					SYSTEM.POSITION.f16RotorAngle ++;
+					// Store values
+					if(SYSTEM.POSITION.i16SensorIndexFiltered > SYSTEM.CALIBRATION.i16MaxSensorIndex) SYSTEM.CALIBRATION.i16MaxSensorIndex = SYSTEM.POSITION.i16SensorIndexFiltered;
+					if(SYSTEM.POSITION.i16SensorIndexFiltered < SYSTEM.CALIBRATION.i16MinSensorIndex) SYSTEM.CALIBRATION.i16MinSensorIndex = SYSTEM.POSITION.i16SensorIndexFiltered;
+				}
+				else
+				{
+					// Go to recalculation
+					SYSTEM.CALIBRATION.i16CalibrationState = CALIBRATE_CALCULATE_VALUES;
+				}							
+			}
+
+			break;
+		}
+		case CALIBRATE_CALCULATE_VALUES:
+		{
+			// Interpolate values between poles
+			// i16Temp0,1,2
+			// Use temp0 for counting pole pairs 											
+			for(i16Temp0 = 0; i16Temp0 < SYSTEM.CALIBRATION.i16MotorPolePairs; i16Temp0 ++)
+			{
+				// Temp1 stores current index in calibration array
+				i16Temp1 = SYSTEM.CALIBRATION.i16PolePairArray[i16Temp0];	
+				// Temp2 stores number of samples for current pole pair
+				if((i16Temp0 + 1) == SYSTEM.CALIBRATION.i16MotorPolePairs)	
+				{
+					// If last pole pair
+					i16Temp2 = SYSTEM.CALIBRATION.i16MaxSensorIndex - SYSTEM.CALIBRATION.i16PolePairArray[i16Temp0] + SYSTEM.CALIBRATION.i16PolePairArray[0];
+				}
+				else
+				{
+					i16Temp2 = SYSTEM.CALIBRATION.i16PolePairArray[i16Temp0 + 1] - SYSTEM.CALIBRATION.i16PolePairArray[i16Temp0];
+				}						
+				// f16Temp0 stores angle delta in current pole
+				i32Temp0 = 65536 / i16Temp2;
+				f16Temp0 = (Frac16)i32Temp0;		
+				// Set first value
+				SYSTEM.CALIBRATION.f16CalibrationArray[i16Temp1] = FRAC16(-1.0);
+				// Calculate the rest
+				for(i16Temp3 = 0; i16Temp3 < i16Temp2; i16Temp3++)
+				{
+					// Move to next index
+					i16Temp1 ++;
+					// Wrap to 0
+					i16Temp1 = i16Temp1 & 4095;
+					// Add difference
+					if(0 == i16Temp1)
+					{
+						SYSTEM.CALIBRATION.f16CalibrationArray[i16Temp1] = SYSTEM.CALIBRATION.f16CalibrationArray[4095] + f16Temp0;
+					}
+					else
+					{
+						SYSTEM.CALIBRATION.f16CalibrationArray[i16Temp1] = SYSTEM.CALIBRATION.f16CalibrationArray[i16Temp1 - 1] + f16Temp0;
+					}							
+				}						
+			}
+			// Recalculate last pole value
+			//i16MaxSensorIndex
+			//i16MinSensorIndex
+			// Store index for zero angle
+			i16Temp1 = SYSTEM.CALIBRATION.i16MaxSensorIndex - SYSTEM.CALIBRATION.i16PolePairArray[SYSTEM.CALIBRATION.i16MotorPolePairs - 1];
+			// Get increment
+			i16Temp2 = SYSTEM.CALIBRATION.i16PolePairArray[0] - SYSTEM.CALIBRATION.i16MinSensorIndex;
+			i16Temp2 = i16Temp2 + i16Temp1;
+			// f16Temp0 stores angle delta in current pole
+			i32Temp0 = 65536 / i16Temp2;
+			f16Temp0 = (Frac16)i32Temp0;
+			// Set first index
+			i16Temp1 = SYSTEM.CALIBRATION.i16PolePairArray[SYSTEM.CALIBRATION.i16MotorPolePairs - 1];
+			// Set first value
+			SYSTEM.CALIBRATION.f16CalibrationArray[i16Temp1] = FRAC16(-1.0);
+			// Fill until last
+			for(i16Temp0 = i16Temp1 + 1; i16Temp0 < SYSTEM.CALIBRATION.i16MaxSensorIndex; i16Temp0 ++)	
+			{
+				SYSTEM.CALIBRATION.f16CalibrationArray[i16Temp0] = SYSTEM.CALIBRATION.f16CalibrationArray[i16Temp0 - 1] + f16Temp0;
+			}
+			// Fill until last					
+			for(i16Temp0 = SYSTEM.CALIBRATION.i16MaxSensorIndex; i16Temp0 < 4096; i16Temp0 ++)	
+			{
+				SYSTEM.CALIBRATION.f16CalibrationArray[i16Temp0] = SYSTEM.CALIBRATION.f16CalibrationArray[i16Temp0 - 1];
+			}				
+			// Now for lower part of values
+			// Fill first value
+			SYSTEM.CALIBRATION.f16CalibrationArray[0] = SYSTEM.CALIBRATION.f16CalibrationArray[4095];
+			// Fill first part
+			for(i16Temp0 = 1; i16Temp0 < SYSTEM.CALIBRATION.i16MinSensorIndex; i16Temp0 ++)	
+			{
+				SYSTEM.CALIBRATION.f16CalibrationArray[i16Temp0] = SYSTEM.CALIBRATION.f16CalibrationArray[i16Temp0 - 1];
+			}
+			// Fill the rest
+			for(i16Temp0 = SYSTEM.CALIBRATION.i16MinSensorIndex; i16Temp0 < SYSTEM.CALIBRATION.i16PolePairArray[0]; i16Temp0 ++)	
+			{
+				SYSTEM.CALIBRATION.f16CalibrationArray[i16Temp0] = SYSTEM.CALIBRATION.f16CalibrationArray[i16Temp0 - 1] + f16Temp0;
+			}		
+			// Set last value
+			SYSTEM.CALIBRATION.f16CalibrationArray[SYSTEM.CALIBRATION.i16PolePairArray[0]] = FRAC16(1.0);
+			
+			SYSTEM.CALIBRATION.i16CalibrationState = CALIBRATE_INIT;
+			SYSTEM.systemState = SYSTEM_RESET;
+			SYSTEM.i16StateTransition = SYSTEM_WAKEUP;
+			
+			SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.0);
+			SYSTEM.REGULATORS.m2IDQReq.f16Q = FRAC16(0.0);
+			SYSTEM_CALIBRATED = 1;
+			SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_NONE;
+			SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_NONE;
+			break;
+		}
+		default:
+		{
+			SYSTEM.CALIBRATION.i16CalibrationState = CALIBRATE_INIT;
+			break;
+		}
+	}
+	// Transit out of?
+	if(SYSTEM.i16StateTransition != SYSTEM.systemState)
+	{
+		StopMotor();
+		SystemStateTransition();
+	}
+	return 0;
+}
+
+Int16 SystemParkRotorState()
+{
+	Int16 i16Temp0 = 0;
+	// Get how far away are we from final position
+	
+	SYSTEM_PARK_ROTOR = 1;
+	SYSTEM_RUN_MANUAL_CW = 0;
+	SYSTEM_RUN_MANUAL_CCW = 0;
+	
+	// Use PWM?
+	if(1 == RS485DataStruct.REGS.ui8UsePWMIN)
+	{
+		// If PWM under zero speed, go to idle mode
+		i16Temp0 = RS485DataStruct.REGS.i16CurrentPWM - RS485DataStruct.REGS.i16PWMMin;
+
+		if(i16Temp0 < RS485DataStruct.REGS.i16ZeroSpeedPWM)
+		{
+			RS485DataStruct.REGS.ui8Armed = 0;
+		}
+	}
+
+	// Go out of park?
+	if(0 == RS485DataStruct.REGS.ui8Park)
+	{
+		// Control system speed
+		CONTROL_SPEED = 1;
+		SYSTEM.i16StateTransition = SYSTEM_RUN;
+	}
+	
+	// Stop motor?
+	if(0 == RS485DataStruct.REGS.ui8Armed)
+	{
+		// Go out of run mode
+		SYSTEM.i16StateTransition = SYSTEM_RESET;
+		SYSTEM.RAMPS.f16SpeedRampDesiredValue = FRAC16(0.0);
+	}
+	
+	// Transit out of?
+	if(SYSTEM.i16StateTransition != SYSTEM.systemState)
+	{
+		StopMotor();
+		SystemStateTransition();
+	}
+	return 0;	
+}
+
+Int16 SystemFaultState()
+{
+	ioctl(EFPWMA, EFPWM_SET_OUTPUTS_DISABLE, EFPWM_SUB0_PWM_A|EFPWM_SUB0_PWM_B|EFPWM_SUB1_PWM_A|EFPWM_SUB1_PWM_B|EFPWM_SUB2_PWM_A|EFPWM_SUB2_PWM_B);
+	// Transit out of?
+	if(SYSTEM.i16StateTransition != SYSTEM.systemState)
+	{
+		StopMotor();
+		SystemStateTransition();
+	}
+	return 0;
+}
+
+Int16 SystemResetState()
+{
+	// Stop motor
+	StopMotor();
+	// Change state
+	SYSTEM.systemState = SYSTEM_WAKEUP;
+	return 0;
+}
+
+Int16 SystemFaultDRV83xxState()
+{
+
+	// Try restarting driver
+	switch(SYSTEM.i16DriverRestartState)
+	{
+		case SYSTEM_RESTART_INIT:
+		{
+			// Turn driver gate enable off
+			EN_GATE_OFF;
+			// Mark driver not configured
+			DRV8301_CONFIGURED = 0;
+			SYSTEM.i16DriverRestartState = SYSTEM_RESTART_WAIT_POWER_OFF;
+			break;
+		}
+		case SYSTEM_RESTART_WAIT_POWER_OFF:
+		{
+			// Turn driver gate enable on
+			EN_GATE_ON;
+			SYSTEM.i16DriverRestartState = SYSTEM_RESTART_WAIT_POWER_ON;
+			break;
+		}
+		case SYSTEM_RESTART_WAIT_POWER_ON:
+		{
+			// Set values
+			REINIT_DRV8301 = 1;
+			// Reset time counter
+			SYSTEM.i16DriverRestartTimer = 0;
+			SYSTEM.i16DriverRestartState = SYSTEM_RESTART_WAIT_REINIT;
+			break;
+		}
+		case SYSTEM_RESTART_WAIT_REINIT:
+		{
+			// Increase timer
+			SYSTEM.i16DriverRestartTimer++;
+			// Check - initialised?
+			if(DRV8301_CONFIGURED)
+			{
+				// Driver reconfiguration successful, read status
+				// Read reg 1
+				DRV8301.RegReq.RW = 1;								//we are initiating a read
+				DRV8301.RegReq.ADDR = DRV8301_STAT_REG_1_ADDR;		//load the address
+				DRV8301.RegReq.DATA = 0;							//dummy data;
+				// Send data
+				ioctl(SPI_0, SPI_WRITE_DATA, DRV8301.RegReq.reg);	
+				
+				SYSTEM.i16DriverRestartState = SYSTEM_RESTART_WAIT_READ_1;
+			}
+			else if(100 < SYSTEM.i16DriverRestartTimer)
+			{
+				// Something wrong, go to fault
+				SYSTEM.systemState = SYSTEM_FAULT;
+			}
+			break;
+		}
+		case SYSTEM_RESTART_WAIT_READ_1:
+		{
+			// Data ready?
+			if(ioctl(SPI_0, SPI_CAN_READ_DATA, null) == 0)
+			{
+				// Read to req reg
+				DRV8301.RegReq.reg = ioctl(SPI_0, SPI_READ_DATA, null);
+				// Read reg 2
+				DRV8301.RegReq.RW = 1;								//we are initiating a read
+				DRV8301.RegReq.ADDR = DRV8301_STAT_REG_2_ADDR;		//load the address
+				DRV8301.RegReq.DATA = 0;							//dummy data;
+				// Send data
+				ioctl(SPI_0, SPI_WRITE_DATA, DRV8301.RegReq.reg);
+				
+				SYSTEM.i16DriverRestartState = SYSTEM_RESTART_WAIT_READ_2;
+			}
+			break;
+		}
+		case SYSTEM_RESTART_WAIT_READ_2:
+		{
+			// Data ready?
+			if(ioctl(SPI_0, SPI_CAN_READ_DATA, null) == 0)
+			{
+				// Read to req reg
+				DRV8301.RegReq.reg = ioctl(SPI_0, SPI_READ_DATA, null);
+				// Store
+				DRV8301.StatReg1.reg = DRV8301.RegReq.reg; 
+				// Dummy read
+				DRV8301.RegReq.RW = 1;								//we are initiating a read
+				DRV8301.RegReq.ADDR = DRV8301_STAT_REG_2_ADDR;		//load the address
+				DRV8301.RegReq.DATA = 0;							//dummy data;
+				// Send data
+				ioctl(SPI_0, SPI_WRITE_DATA, DRV8301.RegReq.reg);
+				
+				SYSTEM.i16DriverRestartState = SYSTEM_RESTART_WAIT_READ_3;
+			}
+			break;
+		}
+		case SYSTEM_RESTART_WAIT_READ_3:
+		{
+			// Data ready?
+			if(ioctl(SPI_0, SPI_CAN_READ_DATA, null) == 0)
+			{
+				// Read to req reg
+				DRV8301.RegReq.reg = ioctl(SPI_0, SPI_READ_DATA, null);
+				// Store
+				DRV8301.StatReg2.reg = DRV8301.RegReq.reg; 
+				// Check data
+				if(0 == DRV8301.StatReg1.FAULT)
+				{
+					// Go to init
+					SYSTEM.systemState = SYSTEM_WAKEUP;
+				}
+				else
+				{
+					// Something wrong, go to fault
+					SYSTEM.systemState = SYSTEM_FAULT;
+				}
+			}
+			break;
+		}
+		default:
+		{
+			SYSTEM.i16DriverRestartState = SYSTEM_RESTART_INIT;
+			break;
+		}
+	}
+	return 0;
+}
+
+Int16 SystemMeasureRPHAState()
+{
+	Frac16 f16Temp = 0;
+	float fUph = 0.0f;
+	float fRph = 0.0f;
+	switch (SYSTEM.i16MotorRPhaMeasureState)
+	{
+		case SYSTEM_MEAS_RPHA_INIT:
+		{
+			// Set PWM values
+			SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = FRAC16(0.5);
+			SYSTEM.PWMValues.pwmSub_1_Channel_23_Value = FRAC16(0.5);
+			SYSTEM.PWMValues.pwmSub_2_Channel_23_Value = FRAC16(0.5);
+			ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);
+			// Enable PWM outputs
+			ioctl(EFPWMA, EFPWM_SET_OUTPUTS_ENABLE, EFPWM_SUB0_PWM_A|EFPWM_SUB0_PWM_B|EFPWM_SUB1_PWM_A|EFPWM_SUB1_PWM_B|EFPWM_SUB2_PWM_A|EFPWM_SUB2_PWM_B);		
+			// Set Id, Iq to 0
+			SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.0);
+			SYSTEM.REGULATORS.m2IDQReq.f16Q = FRAC16(0.0);
+			// Enable regulators
+			PWM_ENABLED = 1;			
+			// Set Id
+			SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_STANDSTILL;
+			SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_MEASURE_RPHA;
+			// Set Id to ~6.592 A
+			SYSTEM.MEASUREPARAMS.f16MeasureRPhaId = FRAC16(0.02);
+			SYSTEM.i16MotorRPhaMeasureState = SYSTEM_MEAS_RPHA_SET1_IPHA;
+			SYSTEM.MEASUREPARAMS.i16StabilizeCounter = 0;
+			break;
+		}
+		case SYSTEM_MEAS_RPHA_SET1_IPHA:
+		{
+			// Wait set time
+			SYSTEM.MEASUREPARAMS.i16StabilizeCounter++;
+			if(1000 < SYSTEM.MEASUREPARAMS.i16StabilizeCounter)
+			{
+				SYSTEM.MEASUREPARAMS.i16StabilizeCounter = 1000;
+				// Iphase at set value?
+				f16Temp = SYSTEM.MCTRL.m2IDQ.f16D - SYSTEM.MEASUREPARAMS.f16MeasureRPhaId;
+				if((FRAC16(0.001 > f16Temp)&&(FRAC16(-0.001 < f16Temp))))
+				{
+					// Store U values
+					SYSTEM.MEASUREPARAMS.f16U1 = SYSTEM.MCTRL.m2UDQ.f16D;
+					// Set Id to ~9.888 A
+					SYSTEM.MEASUREPARAMS.f16MeasureRPhaId = FRAC16(0.03);
+					SYSTEM.i16MotorRPhaMeasureState = SYSTEM_MEAS_RPHA_SET2_IPHA;
+					SYSTEM.MEASUREPARAMS.i16StabilizeCounter = 0;
+				}
+			}
+			break;
+		}
+		case SYSTEM_MEAS_RPHA_SET2_IPHA:
+		{
+			// Wait set time
+			SYSTEM.MEASUREPARAMS.i16StabilizeCounter++;
+			if(1000 < SYSTEM.MEASUREPARAMS.i16StabilizeCounter)
+			{
+				SYSTEM.MEASUREPARAMS.i16StabilizeCounter = 1000;
+				// Iphase at set value?
+				f16Temp = SYSTEM.MCTRL.m2IDQ.f16D - SYSTEM.MEASUREPARAMS.f16MeasureRPhaId;
+				if((FRAC16(0.001 > f16Temp)&&(FRAC16(-0.001 < f16Temp))))
+				{
+					// Store U values
+					SYSTEM.MEASUREPARAMS.f16U2 = SYSTEM.MCTRL.m2UDQ.f16D;
+					// Set Id to 0 A
+					SYSTEM.MEASUREPARAMS.f16MeasureRPhaId = FRAC16(0.0);
+					// Calculate RPha
+					f16Temp = SYSTEM.MEASUREPARAMS.f16U2 - SYSTEM.MEASUREPARAMS.f16U1;
+					fUph = (float)f16Temp;
+					fUph = fUph / 32768;
+					fUph = fUph * SYSTEM.SIVALUES.fUIn;
+					fRph = fUph / 3.296f; //9.888 - 6.592;
+					
+					fRph = fRph - MOSFET_RDSON - (MOSFET_RDSON/2);
+					
+					fRph = fRph * 2.0f;
+					fRph = fRph / 3.0f;
+					
+					SYSTEM.MEASUREPARAMS.fMeasuredRPha = fRph;
+					
+					SYSTEM.i16MotorRPhaMeasureState = SYSTEM_MEAS_RPHA_INIT;
+					SYSTEM.i16StateTransition = SYSTEM_IDLE;
+				}
+			}
+			break;
+		}
+		default:
+		{
+			break;
+		}
+	}
+	// Transit out of?
+	if(SYSTEM.i16StateTransition != SYSTEM.systemState)
+	{
+		StopMotor();
+		SystemStateTransition();
+	}
+	return 0;
+}
+
+Int16 SystemMeasureLPHAState()
+{
+	Frac16 f16Temp = 0;
+	UWord16 uw16Temp = 0;
+	switch (SYSTEM.i16MotorLPhaMeasureState)
+	{
+		case SYSTEM_MEAS_LPHA_INIT:
+		{
+			// Set required current to get required PWM value
+			// Set PWM values
+			SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = FRAC16(0.5);
+			SYSTEM.PWMValues.pwmSub_1_Channel_23_Value = FRAC16(0.5);
+			SYSTEM.PWMValues.pwmSub_2_Channel_23_Value = FRAC16(0.5);
+			ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);
+			// Enable PWM outputs
+			ioctl(EFPWMA, EFPWM_SET_OUTPUTS_ENABLE, EFPWM_SUB0_PWM_A|EFPWM_SUB0_PWM_B|EFPWM_SUB1_PWM_A|EFPWM_SUB1_PWM_B|EFPWM_SUB2_PWM_A|EFPWM_SUB2_PWM_B);		
+			// Set Id, Iq to 0
+			SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.0);
+			SYSTEM.REGULATORS.m2IDQReq.f16Q = FRAC16(0.0);
+			// Enable regulators
+			PWM_ENABLED = 1;			
+			// Set Id
+			SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_STANDSTILL;
+			SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_MEASURE_RPHA;
+			// Set Id to ~6.592 A
+			SYSTEM.MEASUREPARAMS.f16MeasureRPhaId = SYSTEM.MEASUREPARAMS.f16LphaIset;
+			SYSTEM.i16MotorLPhaMeasureState = SYSTEM_MEAS_LPHA_GET_UREQ;
+			SYSTEM.MEASUREPARAMS.i16StabilizeCounter = 0;
+
+			break;
+		}
+		case SYSTEM_MEAS_LPHA_GET_UREQ:
+		{
+			// Store required PWM value and turn off PWM
+			// Set PWM values
+			// Wait set time
+			SYSTEM.MEASUREPARAMS.i16StabilizeCounter++;
+			if(1000 < SYSTEM.MEASUREPARAMS.i16StabilizeCounter)
+			{
+				SYSTEM.MEASUREPARAMS.i16StabilizeCounter = 1000;
+				SYSTEM.MEASUREPARAMS.pwmSubReqPWMValues.pwmSub_0_Channel_23_Value = SYSTEM.MCTRL.m3U_UVW.f16A;
+				SYSTEM.MEASUREPARAMS.pwmSubReqPWMValues.pwmSub_1_Channel_23_Value = SYSTEM.MCTRL.m3U_UVW.f16B;
+				SYSTEM.MEASUREPARAMS.pwmSubReqPWMValues.pwmSub_2_Channel_23_Value = SYSTEM.MCTRL.m3U_UVW.f16C;
+				
+				SYSTEM.MEASUREPARAMS.f16IphAValue = SYSTEM.ADC.m3IphUVWRaw.f16A;
+				StopMotor();
+				SYSTEM.MEASUREPARAMS.i16StabilizeCounter = 0;
+				SYSTEM.i16MotorLPhaMeasureState = SYSTEM_MEAS_LPHA_DELAY;				
+			}
+			break;
+		}
+		case SYSTEM_MEAS_LPHA_DELAY:
+		{
+			// Wait to get current to 0 and set measurement
+			// Wait set time
+			SYSTEM.MEASUREPARAMS.i16StabilizeCounter++;
+			if(1000 < SYSTEM.MEASUREPARAMS.i16StabilizeCounter)
+			{
+				SYSTEM.MEASUREPARAMS.i16StabilizeCounter = 1000;
+				// Setup measurement
+				// Setup comparator
+				ioctl(HSCMP_A, HSCMP_CLEAR_INT_FLAGS, HSCMP_FLAG_RISING_EDGE);
+				// VDAC needs to be 1,65 V + whatever current
+				// DACO = V_in /64 * (VOSEL + 1), 44 = 2.32 V
+				
+				// Get 63.5 % of value - tau
+				f16Temp = mult(SYSTEM.MEASUREPARAMS.f16IphAValue, SYSTEM.MEASUREPARAMS.f16SetpointMulti);
+				// Add 0.5 for offset
+				f16Temp += FRAC16(0.5);
+				// Mult with 64
+				uw16Temp = mult(f16Temp, 64);
+				uw16Temp -= 1;
+				SYSTEM.MEASUREPARAMS.uw16Setpoint = uw16Temp;
+				
+				// Set correct bit for enable
+				uw16Temp = uw16Temp & 0x0080;
+				
+				//ioctl(HSCMP_A, HSCMP_DAC_OUT_VOLTAGE_SELECT, 38);
+				
+				periphMemWrite(HSCMP_A_DACCR_INIT, &uw16Temp);
+				
+				// Set PWMs to req value for I
+				SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = SYSTEM.MEASUREPARAMS.pwmSubReqPWMValues.pwmSub_0_Channel_23_Value;
+				SYSTEM.PWMValues.pwmSub_1_Channel_23_Value = SYSTEM.MEASUREPARAMS.pwmSubReqPWMValues.pwmSub_1_Channel_23_Value;
+				SYSTEM.PWMValues.pwmSub_2_Channel_23_Value = SYSTEM.MEASUREPARAMS.pwmSubReqPWMValues.pwmSub_2_Channel_23_Value;
+				ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);
+				// Enable PWM outputs
+				ioctl(EFPWMA, EFPWM_SET_OUTPUTS_ENABLE, EFPWM_SUB0_PWM_A|EFPWM_SUB0_PWM_B|EFPWM_SUB1_PWM_A|EFPWM_SUB1_PWM_B|EFPWM_SUB2_PWM_A|EFPWM_SUB2_PWM_B);		
+				// Reset timer counter
+				ioctl(QTIMER_A1, QT_WRITE_COUNTER_REG, 0);
+				// Enable HSCMP interrupt
+				ioctl(HSCMP_A, HSCMP_INT_RISING_EDGE, HSCMP_ENABLE);
+				HSCMP_MEASURE = 1;
+				
+				
+				//SYSTEM.MEASUREPARAMS.i16ISetTicks = 0;
+				//AD_MEAS_LPHA = 1;
+				// Wait set time
+				SYSTEM.MEASUREPARAMS.i16TempValue = 1;
+				
+				//SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_STANDSTILL;
+				
+				SYSTEM.i16MotorLPhaMeasureState = SYSTEM_MEAS_LPHA_GETVAL;
+				SYSTEM.MEASUREPARAMS.i16StabilizeCounter = 0;
+			}
+			break;
+		}
+		case SYSTEM_MEAS_LPHA_GETVAL:
+		{
+			if(0 == HSCMP_MEASURE)
+			{
+				// Set PWMs to 50%
+				SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = FRAC16(0.5);
+				SYSTEM.PWMValues.pwmSub_1_Channel_23_Value = FRAC16(0.5);
+				SYSTEM.PWMValues.pwmSub_2_Channel_23_Value = FRAC16(0.5);
+				ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);	
+			}
+			
+			/*
+			
+			// Wait set time
+			SYSTEM.MEASUREPARAMS.i16StabilizeCounter++;
+			if(1000 < SYSTEM.MEASUREPARAMS.i16StabilizeCounter)
+			{
+				SYSTEM.MEASUREPARAMS.i16StabilizeCounter = 1000;
+				if(FRAC16(0.015) < SYSTEM.MCTRL.m2IDQ.f16D)
+				{
+					// Set PWMs to 50%
+					SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = FRAC16(0.5);
+					SYSTEM.PWMValues.pwmSub_1_Channel_23_Value = FRAC16(0.5);
+					SYSTEM.PWMValues.pwmSub_2_Channel_23_Value = FRAC16(0.5);
+					ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);				
+					//SYSTEM.MEASUREPARAMS.i16StabilizeCounter = 0;
+					AD_MEAS_LPHA = 0;
+				}
+			}*/
+			break;
+		}
+		default:
+		{
+			break;
+		}
+	}
+	// Transit out of?
+	if(SYSTEM.i16StateTransition != SYSTEM.systemState)
+	{
+		StopMotor();
+		SystemStateTransition();
+	}
+	return 0;
+}
+
+Int16 SystemStateTransition()
+{
+	// Check state transition	
+	switch(SYSTEM.i16StateTransition)
+	{
+		case SYSTEM_WAKEUP:
+		{
+			break;
+		}
+		case SYSTEM_INIT:
+		{
+			break;
+		}
+		case SYSTEM_IDLE:
+		{
+			// Go to idle state
+			SYSTEM.systemState = SYSTEM_IDLE;	
+			break;
+		}
+		
+		case SYSTEM_RUN:
+		{	
+			// Set PWM values
+			SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = FRAC16(0.5);
+			SYSTEM.PWMValues.pwmSub_1_Channel_23_Value = FRAC16(0.5);
+			SYSTEM.PWMValues.pwmSub_2_Channel_23_Value = FRAC16(0.5);
+			ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);
+			// Enable PWM outputs
+			ioctl(EFPWMA, EFPWM_SET_OUTPUTS_ENABLE, EFPWM_SUB0_PWM_A|EFPWM_SUB0_PWM_B|EFPWM_SUB1_PWM_A|EFPWM_SUB1_PWM_B|EFPWM_SUB2_PWM_A|EFPWM_SUB2_PWM_B);
+
+			// Check - run from sensor or sensorless?
+			if(SYSTEM_CALIBRATED && SYSTEM_RUN_SENSORED)
+			{
+				// Run from sensor
+				SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_MULTIPLE;
+				if(CONTROL_SPEED)
+				{
+					SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_CONTROL_SPEED;
+					// Set default values
+					SYSTEM.RAMPS.f16SpeedRampDesiredValue = FRAC16(0.0);
+					SYSTEM.RAMPS.f16SpeedRampActualValue = FRAC16(0.0);
+				}
+				else if(CONTROL_TORQUE)
+				{
+					SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_CONTROL_TORQUE;
+					// Set default values
+					SYSTEM.RAMPS.f16TorqueRampActualValue = FRAC16(0.0);
+					SYSTEM.RAMPS.f16TorqueRampDesiredValue = FRAC16(0.0);
+				}
+				else
+				{
+					// No source, manual
+					SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_MANUAL;
+					SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_CONTROL_MANUAL;
+					// Make sure that we will not rotate
+					SYSTEM_RUN_MANUAL_CW = 0;
+					SYSTEM_RUN_MANUAL_CCW = 0;
+				}
+				SYSTEM.systemState = SYSTEM_RUN;	
+				// Enable regulators
+				PWM_ENABLED = 1;
+			}
+			else if(CONTROL_SPEED || CONTROL_TORQUE)
+			{
+				// Run sensorless only for speed or torque modes
+				// Start open loop mode
+				SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_SENSORLESS_ALIGN;
+				SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_SENSORLESS_ALIGN;
+				// Set time for align
+				SYSTEM.SENSORLESS.i16Counter = SYSTEM.SENSORLESS.i16AlignTime;
+				// Mark no BEMF
+				SENSORLESS_BEMF_ON = 0;
+				// Go to run
+				SYSTEM.systemState = SYSTEM_RUN;
+				// Enable regulators
+				PWM_ENABLED = 1;
+			}
+			else if(CONTROL_MANUAL)
+			{
+				// Manual control
+				SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_MANUAL;
+				SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_CONTROL_MANUAL;
+				// Set D, Q currents to 0
+				SYSTEM.RAMPS.f16AlignCurrentActualValue = FRAC16(0.0);
+				SYSTEM.RAMPS.f16AlignCurrentDesiredValue = FRAC16(0.0);
+				// Set Id, Iq to 0
+				SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.0);
+				SYSTEM.REGULATORS.m2IDQReq.f16Q = FRAC16(0.0);
+				SYSTEM_RUN_MANUAL = 1;
+				SYSTEM_RUN_MANUAL_CW = 0;
+				SYSTEM_RUN_MANUAL_CCW = 0;
+				// Go to run
+				SYSTEM.systemState = SYSTEM_RUN;
+				// Enable regulators
+				PWM_ENABLED = 1;
+			}
+			else
+			{
+				// No option, abort
+				// Turn off PWMs
+				ioctl(EFPWMA, EFPWM_SET_OUTPUTS_DISABLE, EFPWM_SUB0_PWM_A|EFPWM_SUB0_PWM_B|EFPWM_SUB1_PWM_A|EFPWM_SUB1_PWM_B|EFPWM_SUB2_PWM_A|EFPWM_SUB2_PWM_B);
+				
+			}
+			break;
+		}
+		case SYSTEM_FAULT:
+		{
+			break;
+		}
+		case SYSTEM_RESET:
+		{
+			SYSTEM.systemState = SYSTEM_RESET;
+			break;
+		}
+		case SYSTEM_RESTARTING:
+		{
+			break;
+		}
+		case SYSTEM_FAULT_DRV8301:
+		{
+			break;
+		}
+		case SYSTEM_FAULT_RESET:
+		{
+			break;
+		}
+		case SYSTEM_BLOCKEXEC:
+		{
+			break;
+		}
+		case SYSTEM_FOC_LOST_TIMEOUT:
+		{
+			break;
+		}
+		case SYSTEM_PWM_IN_LOST:
+		{
+			break;
+		}	
+		case SYSTEM_CALIBRATE:
+		{						
+			// Set position/current source
+			SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_MANUAL;
+			SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_CONTROL_MANUAL;
+			// Set Id, Iq to 0
+			SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.0);
+			SYSTEM.REGULATORS.m2IDQReq.f16Q = FRAC16(0.0);
+			// Use align current
+			SYSTEM.RAMPS.f16AlignCurrentDesiredValue = SYSTEM.SENSORLESS.f16AlignCurrent;
+			SYSTEM.RAMPS.f16AlignCurrentActualValue = FRAC16(0.0);
+			// Mark run manually
+			SYSTEM_RUN_MANUAL = 1;
+			// Mark system not calibrated
+			SYSTEM_CALIBRATED = 0;
+			// Do not use sensor
+			SYSTEM_RUN_SENSORED = 0;
+			// Do not move rotor
+			SYSTEM_RUN_MANUAL_CW = 0;
+			SYSTEM_RUN_MANUAL_CCW = 0;
+			// Set PWM values
+			SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = FRAC16(0.5);
+			SYSTEM.PWMValues.pwmSub_1_Channel_23_Value = FRAC16(0.5);
+			SYSTEM.PWMValues.pwmSub_2_Channel_23_Value = FRAC16(0.5);
+			ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);
+			// Enable PWM outputs
+			ioctl(EFPWMA, EFPWM_SET_OUTPUTS_ENABLE, EFPWM_SUB0_PWM_A|EFPWM_SUB0_PWM_B|EFPWM_SUB1_PWM_A|EFPWM_SUB1_PWM_B|EFPWM_SUB2_PWM_A|EFPWM_SUB2_PWM_B);
+			// Enable regulators
+			PWM_ENABLED = 1;
+			SYSTEM.systemState = SYSTEM_CALIBRATE;		
+			SYSTEM.CALIBRATION.i16CalibrationState = CALIBRATE_INIT;
+			break;
+		}
+		case SYSTEM_PARKROTOR:
+		{			
+			// Set PWM values
+			SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = FRAC16(0.5);
+			SYSTEM.PWMValues.pwmSub_1_Channel_23_Value = FRAC16(0.5);
+			SYSTEM.PWMValues.pwmSub_2_Channel_23_Value = FRAC16(0.5);
+			ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);
+			// Enable PWM outputs
+			ioctl(EFPWMA, EFPWM_SET_OUTPUTS_ENABLE, EFPWM_SUB0_PWM_A|EFPWM_SUB0_PWM_B|EFPWM_SUB1_PWM_A|EFPWM_SUB1_PWM_B|EFPWM_SUB2_PWM_A|EFPWM_SUB2_PWM_B);
+
+			// Manual control
+			SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_MANUAL;
+			SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_CONTROL_MANUAL;
+			// Set D, Q currents to 0
+			SYSTEM.RAMPS.f16AlignCurrentActualValue = FRAC16(0.0);
+			SYSTEM.RAMPS.f16AlignCurrentDesiredValue = FRAC16(0.01);
+			// Set Id, Iq to 0
+			SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.01);
+			SYSTEM.REGULATORS.m2IDQReq.f16Q = FRAC16(0.0);
+			SYSTEM_RUN_MANUAL = 1;
+			SYSTEM_RUN_MANUAL_CW = 0;
+			SYSTEM_RUN_MANUAL_CCW = 0;
+			// Enable regulators
+			PWM_ENABLED = 1;
+
+			SYSTEM.systemState = SYSTEM_PARKROTOR;
+			break;
+		}
+		
+		
+		case SYSTEM_SPINNINGROTOR:
+		{						
+			// Set PWM values
+			SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = FRAC16(0.5);
+			SYSTEM.PWMValues.pwmSub_1_Channel_23_Value = FRAC16(0.5);
+			SYSTEM.PWMValues.pwmSub_2_Channel_23_Value = FRAC16(0.5);
+			ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);
+			// Enable PWM outputs
+			ioctl(EFPWMA, EFPWM_SET_OUTPUTS_ENABLE, EFPWM_SUB0_PWM_A|EFPWM_SUB0_PWM_B|EFPWM_SUB1_PWM_A|EFPWM_SUB1_PWM_B|EFPWM_SUB2_PWM_A|EFPWM_SUB2_PWM_B);		
+			
+			SYSTEM.systemState = SYSTEM_SPINNINGROTOR;
+			
+			break;
+		}		
+		case SYSTEM_MEAS_RPHA:
+		{			
+			SYSTEM.i16MotorRPhaMeasureState = SYSTEM_MEAS_RPHA_INIT;
+			SYSTEM.systemState = SYSTEM_MEAS_RPHA;
+			break;
+		}
+		case SYSTEM_MEAS_LPHA:
+		{
+			SYSTEM.i16MotorLPhaMeasureState = SYSTEM_MEAS_LPHA_INIT;
+			SYSTEM.systemState = SYSTEM_MEAS_LPHA;
+			break;
+		}
+	}	
 	return 0;
 }

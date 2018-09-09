@@ -13,7 +13,6 @@
 #include "allincludes.h"
 
 
-
 /* local prototypes */
 
 
@@ -71,12 +70,14 @@ void main (void)
     ioctl(SPI_0, SPI_INIT, NULL);
     ioctl(SCI_0, SCI_INIT, NULL);
     ioctl(SCI_1, SCI_INIT, NULL);
+    ioctl(QTIMER_A1, QT_INIT, NULL);
     ioctl(QTIMER_B0, QT_INIT, NULL);
     ioctl(QTIMER_B1, QT_INIT, NULL);
     ioctl(QTIMER_B2, QT_INIT, NULL);
     ioctl(QTIMER_B3, QT_INIT, NULL);
-    
+    ioctl(HSCMP_A, HSCMP_INIT, NULL);
     ioctl(FCAN, FCAN_INIT, NULL);
+    ioctl(ADC16, ADC16_INIT, NULL);
     
     FMSTR_Init();    
     
@@ -167,6 +168,9 @@ void main (void)
 		// After everything is initialised, DRV8301_CONFIGURED = 1 moves system state from boot to init.
 		DRV8301_CONFIGURED = 1;
 	}
+	
+	ioctl(ADC16, ADC16_WRITE_SC1_REG, 1);
+	
     while(1)
     {
     	// Check freemaster

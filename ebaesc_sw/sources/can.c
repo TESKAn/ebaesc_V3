@@ -58,7 +58,7 @@ Int16 CAN_TXStatus()
 	UInt16 ui16fIIn = 0;
 	UInt16 ui16fTemp = 0;
 	ui16fUIn = Float32ToFloat16(SYSTEM.SIVALUES.fUIn);
-	ui16fIIn = Float32ToFloat16(SYSTEM.SIVALUES.fIIn);
+	ui16fIIn = Float32ToFloat16(-53.10f);
 	ui16fTemp = Float32ToFloat16(SYSTEM.SIVALUES.fTempPCB);
 	
 	if(ioctl(FCAN, FCAN_TEST_READY, null))

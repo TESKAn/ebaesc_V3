@@ -82,6 +82,10 @@
 #define SI_IIN_FACTOR		164.8f		// 164.8A max
 #define SI_RPM_FACTOR		17142.8571f	//120.000/n pole pairs
 
+// Macros for calculating motor parameters
+//#define MOSFET_RDSON		0.0126f
+#define MOSFET_RDSON		0.001f
+
 // Macros for correcting angle offset
 #define AOFFSET_FACTOR		0.7340032f	//(.000096*6*(32768/180))*7
 
@@ -120,6 +124,7 @@
 #define POSITION_SOURCE_SENSORLESS_ROTATE		3
 #define POSITION_SOURCE_SENSORLESS_MERGE		4
 #define POSITION_SOURCE_MULTIPLE				5
+#define POSITION_SOURCE_STANDSTILL				6	
 
 // Current source states
 #define CURRENT_SOURCE_NONE						0
@@ -128,6 +133,7 @@
 #define CURRENT_SOURCE_CONTROL_MANUAL			3
 #define CURRENT_SOURCE_SENSORLESS_ALIGN			4
 #define CURRENT_SOURCE_SENSORLESS_ROTATE		5
+#define CURRENT_SOURCE_MEASURE_RPHA				6
 
 // Calibration measure state
 #define CALIBRATE_INIT							0
@@ -172,7 +178,8 @@
 #define SYSTEM_PARK_ROTOR			flag1.BIT9		// Mark park rotor
 #define REINIT_DRV8301				flag1.BIT10		// Reinitialize MOSFET driver
 #define SEND_CAN_INFO				flag1.BIT11		// Enable CAN status messages
-
+#define AD_MEAS_LPHA				flag1.BIT12
+#define HSCMP_MEASURE				flag1.BIT13		// Measuring HSCMP for motor inductance
 
 
 // Driver HW interface defs
@@ -206,6 +213,18 @@
 #define SYSTEM_RESTART_WAIT_READ_1			4
 #define SYSTEM_RESTART_WAIT_READ_2			5
 #define SYSTEM_RESTART_WAIT_READ_3			6
+
+// Measure RPha states
+#define SYSTEM_MEAS_RPHA_INIT				0
+#define SYSTEM_MEAS_RPHA_SET1_IPHA			1
+#define SYSTEM_MEAS_RPHA_SET2_IPHA			2
+
+// Measure LPha states
+#define SYSTEM_MEAS_LPHA_INIT				0
+#define SYSTEM_MEAS_LPHA_GET_UREQ			1
+#define SYSTEM_MEAS_LPHA_DELAY				2
+#define SYSTEM_MEAS_LPHA_GETVAL				3
+
 
 // PWM input default values
 #define PWM_IN_MIDDLE_VALUE					2343	// 1.5625 MHz, 0.64 us/tick, ~1.5 ms

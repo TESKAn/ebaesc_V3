@@ -11,5 +11,6 @@
 void ADC_1_EOS_ISR(void);
 void SPI_0_RX_FULL_ISR(void);
 void PIT_0_ISR(void);
+void HSCMP_A_ISR(void);
 
 #endif /* EVENTS_H_ */

@@ -395,6 +395,26 @@ typedef struct tagSYSVARS
 		UInt16 ui16CANInfoTimer;
 		UInt16 ui16CANInfoInterval;
 	}CAN;
+	
+	// Measure motor parameters
+	struct tagMEASUREPARAMS
+	{
+		Frac16 f16MeasureRPhaId;
+		Frac16 f16U1;
+		Frac16 f16U2;
+		Int16 i16ISetTicks;
+		UWord16 uw16SAR;
+		UInt16 ui16LPhaTime;
+		Int16 i16StabilizeCounter;
+		UWord16 uw16Setpoint;
+		Frac16 f16SetpointMulti;
+		Frac16 f16LphaIset;
+		pwm_sComplementaryValues pwmSubReqPWMValues;
+		Frac16 f16IphAValue;
+		Frac16 f1663PercentValue;
+		float fMeasuredRPha;
+		Int16 i16TempValue;
+	}MEASUREPARAMS;
 
 	// Phase voltages
 	MCLIB_3_COOR_SYST_T m3UphUVW;
@@ -411,6 +431,12 @@ typedef struct tagSYSVARS
 	Int16 i16DriverRestartState;
 	Int16 i16DriverRestartTimer;
 	
+	// Measure Rpha state
+	Int16 i16MotorRPhaMeasureState;
+
+	// Measure Lpha state
+	Int16 i16MotorLPhaMeasureState;
+
 	// Motor ID
 	Int16 i16MotorID;
 	
