@@ -1,0 +1,41 @@
+UAVCAN
+MID: 1030
+
+#
+# Raw ESC command normalized into [-8192, 8191]; negative values indicate reverse rotation.
+# The ESC should normalize the setpoint into its effective input range.
+# Non-zero setpoint value below minimum should be interpreted as min valid setpoint for the given motor.
+#
+
+int14[<=20] cmd
+
+MID: 1031
+#
+# Simple RPM setpoint.
+# The ESC should automatically clamp the setpoint according to the minimum and maximum supported RPM;
+# for example, given a ESC that operates in the range 100 to 10000 RPM, a setpoint of 1 RPM will be clamped to 100 RPM.
+# Negative values indicate reverse rotation.
+#
+
+int18[<=20] rpm
+
+MID: 1034
+#
+# Generic ESC status.
+# Unknown fields should be set to NAN.
+#
+
+uint32 error_count          # Resets when the motor restarts
+
+float16 voltage             # Volt
+float16 current             # Ampere. Can be negative in case of a regenerative braking.
+float16 temperature         # Kelvin
+
+int18 rpm                   # Negative value indicates reverse rotation
+
+uint7 power_rating_pct      # Instant demand factor in percent (percent of maximum power); range 0% to 127%.
+
+uint5 esc_index
+
+Moje:
+

@@ -286,7 +286,17 @@ void InitSysVars(Int16 initial)
 		SYSTEM.SIVALUES.fIInFiltDiv = 0.25f;
 	}
 	SYSTEM.SIVALUES.fIInAcc = 0.0f;
-
+	
+	//******************************************
+	// CAN
+	//******************************************
+	
+	//******************************************
+	// Measure params
+	//******************************************
+	SYSTEM.MEASUREPARAMS.f16SetpointMulti = FRAC16(0.7485);		// 1.5 Tau
+	SYSTEM.MEASUREPARAMS.f16LphaIset = FRAC16(0.05);			// ~16.48 A
+	SYSTEM.MEASUREPARAMS.i16TotalMeasurements = 8;
 	
 	//******************************************
 	// Other

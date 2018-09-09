@@ -224,6 +224,7 @@
 #define SYSTEM_MEAS_LPHA_GET_UREQ			1
 #define SYSTEM_MEAS_LPHA_DELAY				2
 #define SYSTEM_MEAS_LPHA_GETVAL				3
+#define SYSTEM_MEAS_LPHA_END				4
 
 
 // PWM input default values

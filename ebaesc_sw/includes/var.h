@@ -402,18 +402,25 @@ typedef struct tagSYSVARS
 		Frac16 f16MeasureRPhaId;
 		Frac16 f16U1;
 		Frac16 f16U2;
-		Int16 i16ISetTicks;
+		Int16 i16ITauTicks;
+		Int16 i16Measurements;
+		Int16 i16TotalMeasurements;
+		Int16 i16TotalTicks;
 		UWord16 uw16SAR;
 		UInt16 ui16LPhaTime;
 		Int16 i16StabilizeCounter;
 		UWord16 uw16Setpoint;
 		Frac16 f16SetpointMulti;
 		Frac16 f16LphaIset;
+		Frac16 f16LphaITrig;
 		pwm_sComplementaryValues pwmSubReqPWMValues;
 		Frac16 f16IphAValue;
 		Frac16 f1663PercentValue;
-		float fMeasuredRPha;
 		Int16 i16TempValue;
+		float fMeasuredRTotal;
+		float fMeasuredLTotal;
+		float fMeasuredRPha;
+		float fMeasuredLPha;
 	}MEASUREPARAMS;
 
 	// Phase voltages

@@ -980,6 +980,8 @@ Int16 SystemMeasureRPHAState()
 					fUph = fUph * SYSTEM.SIVALUES.fUIn;
 					fRph = fUph / 3.296f; //9.888 - 6.592;
 					
+					SYSTEM.MEASUREPARAMS.fMeasuredRTotal = fRph;
+					
 					fRph = fRph - MOSFET_RDSON - (MOSFET_RDSON/2);
 					
 					fRph = fRph * 2.0f;
@@ -1011,6 +1013,7 @@ Int16 SystemMeasureLPHAState()
 {
 	Frac16 f16Temp = 0;
 	UWord16 uw16Temp = 0;
+	float fLph = 0.0f;
 	switch (SYSTEM.i16MotorLPhaMeasureState)
 	{
 		case SYSTEM_MEAS_LPHA_INIT:
@@ -1044,16 +1047,18 @@ Int16 SystemMeasureLPHAState()
 			// Set PWM values
 			// Wait set time
 			SYSTEM.MEASUREPARAMS.i16StabilizeCounter++;
-			if(1000 < SYSTEM.MEASUREPARAMS.i16StabilizeCounter)
+			if(250 < SYSTEM.MEASUREPARAMS.i16StabilizeCounter)
 			{
-				SYSTEM.MEASUREPARAMS.i16StabilizeCounter = 1000;
+				SYSTEM.MEASUREPARAMS.i16StabilizeCounter = 250;
 				SYSTEM.MEASUREPARAMS.pwmSubReqPWMValues.pwmSub_0_Channel_23_Value = SYSTEM.MCTRL.m3U_UVW.f16A;
 				SYSTEM.MEASUREPARAMS.pwmSubReqPWMValues.pwmSub_1_Channel_23_Value = SYSTEM.MCTRL.m3U_UVW.f16B;
 				SYSTEM.MEASUREPARAMS.pwmSubReqPWMValues.pwmSub_2_Channel_23_Value = SYSTEM.MCTRL.m3U_UVW.f16C;
 				
-				SYSTEM.MEASUREPARAMS.f16IphAValue = SYSTEM.ADC.m3IphUVWRaw.f16A;
+				SYSTEM.MEASUREPARAMS.f16IphAValue = SYSTEM.ADC.m3IphUVW.f16A;
 				StopMotor();
 				SYSTEM.MEASUREPARAMS.i16StabilizeCounter = 0;
+				SYSTEM.MEASUREPARAMS.i16Measurements = 0;
+				SYSTEM.MEASUREPARAMS.i16TotalTicks = 0;
 				SYSTEM.i16MotorLPhaMeasureState = SYSTEM_MEAS_LPHA_DELAY;				
 			}
 			break;
@@ -1063,51 +1068,27 @@ Int16 SystemMeasureLPHAState()
 			// Wait to get current to 0 and set measurement
 			// Wait set time
 			SYSTEM.MEASUREPARAMS.i16StabilizeCounter++;
-			if(1000 < SYSTEM.MEASUREPARAMS.i16StabilizeCounter)
+			if(250 < SYSTEM.MEASUREPARAMS.i16StabilizeCounter)
 			{
-				SYSTEM.MEASUREPARAMS.i16StabilizeCounter = 1000;
+				SYSTEM.MEASUREPARAMS.i16StabilizeCounter = 250;
 				// Setup measurement
-				// Setup comparator
-				ioctl(HSCMP_A, HSCMP_CLEAR_INT_FLAGS, HSCMP_FLAG_RISING_EDGE);
-				// VDAC needs to be 1,65 V + whatever current
-				// DACO = V_in /64 * (VOSEL + 1), 44 = 2.32 V
 				
-				// Get 63.5 % of value - tau
-				f16Temp = mult(SYSTEM.MEASUREPARAMS.f16IphAValue, SYSTEM.MEASUREPARAMS.f16SetpointMulti);
-				// Add 0.5 for offset
-				f16Temp += FRAC16(0.5);
-				// Mult with 64
-				uw16Temp = mult(f16Temp, 64);
-				uw16Temp -= 1;
-				SYSTEM.MEASUREPARAMS.uw16Setpoint = uw16Temp;
-				
-				// Set correct bit for enable
-				uw16Temp = uw16Temp & 0x0080;
-				
-				//ioctl(HSCMP_A, HSCMP_DAC_OUT_VOLTAGE_SELECT, 38);
-				
-				periphMemWrite(HSCMP_A_DACCR_INIT, &uw16Temp);
-				
+				// Get 63.2 % of value - tau
+				// Get 74.85 % of value - 1.5 tau
+				SYSTEM.MEASUREPARAMS.f16LphaITrig = mult(SYSTEM.MEASUREPARAMS.f16IphAValue, SYSTEM.MEASUREPARAMS.f16SetpointMulti);
+
 				// Set PWMs to req value for I
 				SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = SYSTEM.MEASUREPARAMS.pwmSubReqPWMValues.pwmSub_0_Channel_23_Value;
 				SYSTEM.PWMValues.pwmSub_1_Channel_23_Value = SYSTEM.MEASUREPARAMS.pwmSubReqPWMValues.pwmSub_1_Channel_23_Value;
 				SYSTEM.PWMValues.pwmSub_2_Channel_23_Value = SYSTEM.MEASUREPARAMS.pwmSubReqPWMValues.pwmSub_2_Channel_23_Value;
 				ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);
 				// Enable PWM outputs
-				ioctl(EFPWMA, EFPWM_SET_OUTPUTS_ENABLE, EFPWM_SUB0_PWM_A|EFPWM_SUB0_PWM_B|EFPWM_SUB1_PWM_A|EFPWM_SUB1_PWM_B|EFPWM_SUB2_PWM_A|EFPWM_SUB2_PWM_B);		
-				// Reset timer counter
-				ioctl(QTIMER_A1, QT_WRITE_COUNTER_REG, 0);
-				// Enable HSCMP interrupt
-				ioctl(HSCMP_A, HSCMP_INT_RISING_EDGE, HSCMP_ENABLE);
-				HSCMP_MEASURE = 1;
+				ioctl(EFPWMA, EFPWM_SET_OUTPUTS_ENABLE, EFPWM_SUB0_PWM_A|EFPWM_SUB0_PWM_B|EFPWM_SUB1_PWM_A|EFPWM_SUB1_PWM_B|EFPWM_SUB2_PWM_A|EFPWM_SUB2_PWM_B);					
 				
-				
-				//SYSTEM.MEASUREPARAMS.i16ISetTicks = 0;
-				//AD_MEAS_LPHA = 1;
-				// Wait set time
+				SYSTEM.MEASUREPARAMS.i16ITauTicks = 0;
+				AD_MEAS_LPHA = 1;
+
 				SYSTEM.MEASUREPARAMS.i16TempValue = 1;
-				
-				//SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_STANDSTILL;
 				
 				SYSTEM.i16MotorLPhaMeasureState = SYSTEM_MEAS_LPHA_GETVAL;
 				SYSTEM.MEASUREPARAMS.i16StabilizeCounter = 0;
@@ -1116,33 +1097,50 @@ Int16 SystemMeasureLPHAState()
 		}
 		case SYSTEM_MEAS_LPHA_GETVAL:
 		{
-			if(0 == HSCMP_MEASURE)
+			if(0 == AD_MEAS_LPHA)
 			{
 				// Set PWMs to 50%
 				SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = FRAC16(0.5);
 				SYSTEM.PWMValues.pwmSub_1_Channel_23_Value = FRAC16(0.5);
 				SYSTEM.PWMValues.pwmSub_2_Channel_23_Value = FRAC16(0.5);
 				ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);	
-			}
-			
-			/*
-			
-			// Wait set time
-			SYSTEM.MEASUREPARAMS.i16StabilizeCounter++;
-			if(1000 < SYSTEM.MEASUREPARAMS.i16StabilizeCounter)
-			{
-				SYSTEM.MEASUREPARAMS.i16StabilizeCounter = 1000;
-				if(FRAC16(0.015) < SYSTEM.MCTRL.m2IDQ.f16D)
+				
+				SYSTEM.MEASUREPARAMS.i16Measurements++;
+				SYSTEM.MEASUREPARAMS.i16TotalTicks += SYSTEM.MEASUREPARAMS.i16ITauTicks;
+				if(SYSTEM.MEASUREPARAMS.i16Measurements < SYSTEM.MEASUREPARAMS.i16TotalMeasurements)
 				{
-					// Set PWMs to 50%
-					SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = FRAC16(0.5);
-					SYSTEM.PWMValues.pwmSub_1_Channel_23_Value = FRAC16(0.5);
-					SYSTEM.PWMValues.pwmSub_2_Channel_23_Value = FRAC16(0.5);
-					ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);				
-					//SYSTEM.MEASUREPARAMS.i16StabilizeCounter = 0;
-					AD_MEAS_LPHA = 0;
+					SYSTEM.i16MotorLPhaMeasureState = SYSTEM_MEAS_LPHA_DELAY;	
 				}
-			}*/
+				else
+				{
+					SYSTEM.i16MotorLPhaMeasureState = SYSTEM_MEAS_LPHA_END;
+				}
+			}
+			break;
+		}
+		case SYSTEM_MEAS_LPHA_END:
+		{
+			// Calculate tau
+			fLph = (float)SYSTEM.MEASUREPARAMS.i16TotalTicks;
+			fLph *= 62.5f;
+			fLph /= (float)SYSTEM.MEASUREPARAMS.i16Measurements;
+			fLph /= 1.5f;
+			// Tau is in usec
+			
+			fLph = fLph * SYSTEM.MEASUREPARAMS.fMeasuredRTotal;
+			
+			SYSTEM.MEASUREPARAMS.fMeasuredLTotal = fLph;
+			
+			fLph *= 2.0f;
+			fLph /= 3.0f;
+			
+			// Convert to H
+			fLph = fLph / 1000000;
+			
+			SYSTEM.MEASUREPARAMS.fMeasuredLPha = fLph;
+			
+			SYSTEM.i16MotorLPhaMeasureState = SYSTEM_MEAS_LPHA_INIT;
+			SYSTEM.i16StateTransition = SYSTEM_IDLE;
 			break;
 		}
 		default:

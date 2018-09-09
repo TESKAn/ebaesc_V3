@@ -56,6 +56,19 @@ void ADC_1_EOS_ISR(void)
 	SYSTEM.ADC.m3IphUVW.f16B = mult(SYSTEM.ADC.f16CurrentGainFactor, SYSTEM.ADC.m3IphUVW.f16B);
 	SYSTEM.ADC.m3IphUVW.f16C = mult(SYSTEM.ADC.f16CurrentGainFactor, SYSTEM.ADC.m3IphUVW.f16C);
 	
+	// Check if we are measuring LPha
+	if(AD_MEAS_LPHA)
+	{
+		if(SYSTEM.MEASUREPARAMS.f16LphaITrig > SYSTEM.ADC.m3IphUVW.f16A)
+		{
+			SYSTEM.MEASUREPARAMS.i16ITauTicks++;
+		}
+		else
+		{
+			AD_MEAS_LPHA = 0;
+		}
+	}
+	
 	// Measure phase voltages
 	// U
 	SYSTEM.ADC.m3UphUVW.f16A = ioctl(ADC_1, ADC_READ_SAMPLE, 3);
@@ -213,7 +226,7 @@ void ADC_1_EOS_ISR(void)
 	}
 		
 	// Call freemaster recorder
-	FMSTR_Recorder();
+	//FMSTR_Recorder();
 	
 	// Recalculate input capture values
 	// Values are read from timer modules in PWM reload interrupt
@@ -287,15 +300,6 @@ void ADC_1_EOS_ISR(void)
 	// Calculate park transform to get Id, Iq
 	// Out m2IDQ
 	MCLIB_ParkTrf(&SYSTEM.MCTRL.m2IDQ, &SYSTEM.MCTRL.m2IAlphaBeta, &SYSTEM.POSITION.mSinCosAngle);
-	
-	// Check if we are measuring LPha
-	if(AD_MEAS_LPHA)
-	{
-		if(FRAC16(0.0254) > SYSTEM.MCTRL.m2IDQ.f16D)
-		{
-			SYSTEM.MEASUREPARAMS.i16ISetTicks++;
-		}
-	}
 	
 	//******************************************
 	// BEMF observer calculation
@@ -1004,6 +1008,15 @@ void FCAN_ERR_ISR(void)
 }
 
 #pragma interrupt saveall
+void QT_A1_ISR(void)
+{
+	// Call freemaster recorder
+	FMSTR_Recorder();
+	ioctl(QTIMER_A1, QT_CLEAR_FLAG, QT_COMPARE_FLAG);
+}
+
+
+#pragma interrupt saveall
 void HSCMP_A_ISR(void)
 {
 	UInt16 ui16Result = 0;
@@ -1024,3 +1037,4 @@ void ADC_0_ISR(void)
 	SYSTEM.MEASUREPARAMS.uw16SAR = ioctl(ADC16, ADC16_READ_RESULT, NULL);
 	ioctl(ADC16, ADC16_WRITE_SC1_REG, 1);
 }
+

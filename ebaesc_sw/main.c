@@ -75,9 +75,9 @@ void main (void)
     ioctl(QTIMER_B1, QT_INIT, NULL);
     ioctl(QTIMER_B2, QT_INIT, NULL);
     ioctl(QTIMER_B3, QT_INIT, NULL);
-    ioctl(HSCMP_A, HSCMP_INIT, NULL);
+    //ioctl(HSCMP_A, HSCMP_INIT, NULL);
     ioctl(FCAN, FCAN_INIT, NULL);
-    ioctl(ADC16, ADC16_INIT, NULL);
+    //ioctl(ADC16, ADC16_INIT, NULL);
     
     FMSTR_Init();    
     
