@@ -13,17 +13,17 @@
 
 #ifdef M_FR
 #define M_ID				0x23
-#define M_MAXSENSORINDEX	3716
-#define M_MINSENSORINDEX	426
+#define M_MAXSENSORINDEX	3700
+#define M_MINSENSORINDEX	410
 #define M_POLEPAIRS			7
-#define M_POLEARRAY_0		446
-#define M_POLEARRAY_1		916
-#define M_POLEARRAY_2		1383
-#define M_POLEARRAY_3		1857
-#define M_POLEARRAY_4		2331
-#define M_POLEARRAY_5		2788
-#define M_POLEARRAY_6		3267
-#define M_POLEARRAY_7		447
+#define M_POLEARRAY_0		643
+#define M_POLEARRAY_1		1108
+#define M_POLEARRAY_2		1578
+#define M_POLEARRAY_3		2045
+#define M_POLEARRAY_4		2517
+#define M_POLEARRAY_5		2987
+#define M_POLEARRAY_6		3459
+#define M_POLEARRAY_7		643
 // This unit ID
 #define RS485_ID			0x23
 // Unit park position
