@@ -121,7 +121,7 @@
 #define OL_I_RAMP_UP                FRAC16(0.0001)	//FRAC16(0.000056818182)
 #define OL_I_RAMP_DOWN              FRAC16(0.0001)	//FRAC16(0.000056818182)
 #define OL_ALIGN_TIME				500			// Time in ms for aligning
-#define MAX_BEMF_ERROR_COUNT		5			// Max. number of times BEMF is wrong before triggering restart
+#define MAX_BEMF_ERROR_COUNT		2			// Max. number of times BEMF is wrong before triggering restart
 
 // Position sources states
 #define POSITION_SOURCE_NONE					0

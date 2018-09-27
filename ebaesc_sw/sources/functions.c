@@ -154,16 +154,16 @@ Int16 CalculateSIValues(void)
 	fTemp = fTemp * SI_IIN_FACTOR;
 	fTemp = fTemp / 32768;
 	fTemp1 = (float)SYSTEM.MCTRL.m2UDQ.f16Q;	// Uq
-	fTemp1 = fTemp1 * SI_UIN_FACTOR;
-	fTemp1 = fTemp1 / 65535;//32768;
+	fTemp1 = fTemp1 * SYSTEM.SIVALUES.fUIn;
+	fTemp1 = fTemp1 / 32768;
 	SYSTEM.SIVALUES.fPIn = fTemp * fTemp1;		// P = Iq * Uq
 	
 	fTemp = (float)SYSTEM.MCTRL.m2IDQ.f16D;		// Id
 	fTemp = fTemp * SI_IIN_FACTOR;
 	fTemp = fTemp / 32768;
 	fTemp1 = (float)SYSTEM.MCTRL.m2UDQ.f16D;	// Ud
-	fTemp1 = fTemp1 * SI_UIN_FACTOR;
-	fTemp1 = fTemp1 / 65535;//32768;
+	fTemp1 = fTemp1 * SYSTEM.SIVALUES.fUIn;
+	fTemp1 = fTemp1 / 32768;
 	SYSTEM.SIVALUES.fPIn += fTemp * fTemp1;		// P = Iq * Uq
 	
 	// Frac calc
