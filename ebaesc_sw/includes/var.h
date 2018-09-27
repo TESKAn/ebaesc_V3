@@ -171,9 +171,10 @@ typedef struct tagSYSVARS
 		Frac16 f16MeasuredAngleError;
 		// Phase error
 		Frac16 f16AnglePhaseError;
-		// Kp, Ki - AcToPos
+		// Kp, Ki, Kth - AcToPos
 		float Kpactopos;
 		float Kiactopos;
+		float Kthactopos;
 		// Manual angle increase
 		Frac16 f16ManualAngleIncrease;
 		// Position source
@@ -184,6 +185,15 @@ typedef struct tagSYSVARS
 		Frac16 f16AddedAngleOffset;
 		// Factor for calculating offset
 		float fOffsetCalcFactor;
+		
+		// Observer parameters
+		float fKpBemfDQ;
+		float fKiBemfDQ;
+		Frac16 f16Ufrac;
+		Frac16 f16Efrac;
+		Frac16 f16WIfrac;
+		Frac16 f16Ifrac;
+		
 	}POSITION;
 	
 	struct tagSENSORLESS
@@ -209,8 +219,13 @@ typedef struct tagSYSVARS
 		// Angle increase on each iteration
 		Frac16 f16AngleManualError;
 		// How much BEMF error to use?
-		Frac16 f16BEMFErrorPart;
-		
+		Frac16 f16BEMFErrorPart;		
+		// Detection count - observer error error
+		UInt8 ui8BemfObserverErrorCount;
+		// Max observer error count before restart
+		UInt8 ui8MaxBemfObserverErrorCount;
+		// Previous BEMF error
+		Frac16 f16PrevBEMFObserverError;
 		// Merge
 	}SENSORLESS;
 	
@@ -336,6 +351,9 @@ typedef struct tagSYSVARS
 		Frac16 f16SpeedRampDesiredValue;
 		Frac16 f16SpeedRampActualValue;
 		
+		float fSRampUp;
+		float fSRampDown;
+		
 		// Torque ramp
 		GFLIB_RAMP16_T Ramp16_Torque;
 		// Rampup vars
@@ -421,7 +439,41 @@ typedef struct tagSYSVARS
 		float fMeasuredLTotal;
 		float fMeasuredRPha;
 		float fMeasuredLPha;
+		
+		float fLD;
+		float fLQ;
+		float fRS;
+		
 	}MEASUREPARAMS;
+	
+	struct tagPMSMAppConfig
+	{
+		// D/Q current regulators
+		float fCLoop_lim;
+		
+		float fID_KP;
+		float fID_KI;
+		float fID_KD;
+		
+		float fIQ_KP;
+		float fIQ_KI;
+		float fIQ_KD;
+		
+		// Speed loop		
+		float fSLoop_HLim;
+		float fSLoop_LLim;
+		
+
+		
+		float fSLoop_KP;
+		float fSLoop_KI;
+		float fSLoop_KD;
+		
+		//Bemf DQ Observer       
+
+		float fU_RPM;
+
+	}PMSMAPPCONFIG;
 
 	// Phase voltages
 	MCLIB_3_COOR_SYST_T m3UphUVW;
@@ -464,6 +516,9 @@ extern UWord16 uw16EEPROMData;
 
 // CAN test
 extern Int8 i8CANTest;
+
+// Parameters test 
+extern Int8 i8ParamTest;
 
 // Some flags
 extern FLAGBITS flag0;

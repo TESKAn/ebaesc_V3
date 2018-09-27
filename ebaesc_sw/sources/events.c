@@ -226,7 +226,7 @@ void ADC_1_EOS_ISR(void)
 	}
 		
 	// Call freemaster recorder
-	//FMSTR_Recorder();
+	FMSTR_Recorder();
 	
 	// Recalculate input capture values
 	// Values are read from timer modules in PWM reload interrupt
@@ -311,6 +311,32 @@ void ADC_1_EOS_ISR(void)
 	{
 		// Calculate DQ observer
 		ACLIB_PMSMBemfObsrvDQ(&SYSTEM.MCTRL.m2IDQ, &SYSTEM.MCTRL.m2UDQ_m, SYSTEM.POSITION.f16SpeedFiltered, &SYSTEM.POSITION.acBemfObsrvDQ);
+		// Check BEMF error
+		if(POSITION_SOURCE_MULTIPLE == SYSTEM.POSITION.i16PositionSource)
+		{
+			if((SYSTEM.SENSORLESS.f16PrevBEMFObserverError > FRAC16(0.9))&&(SYSTEM.POSITION.acBemfObsrvDQ.f16Error < FRAC16(-0.9)))
+			{
+				SYSTEM.SENSORLESS.ui8BemfObserverErrorCount++;
+				if(254 < SYSTEM.SENSORLESS.ui8BemfObserverErrorCount)
+				{
+					SYSTEM.SENSORLESS.ui8BemfObserverErrorCount = 254;
+				}
+			}
+			else if((SYSTEM.SENSORLESS.f16PrevBEMFObserverError < FRAC16(-0.9))&&(SYSTEM.POSITION.acBemfObsrvDQ.f16Error > FRAC16(0.9)))
+			{
+				SYSTEM.SENSORLESS.ui8BemfObserverErrorCount++;
+				if(254 < SYSTEM.SENSORLESS.ui8BemfObserverErrorCount)
+				{
+					SYSTEM.SENSORLESS.ui8BemfObserverErrorCount = 254;
+				}
+			}
+			else
+			{
+				SYSTEM.SENSORLESS.ui8BemfObserverErrorCount = 0;
+			}			
+			SYSTEM.SENSORLESS.f16PrevBEMFObserverError = SYSTEM.POSITION.acBemfObsrvDQ.f16Error;
+		}
+
 		if(!SENSORLESS_BEMF_ON)
 		{
 			// Check that error is small enough before we enable use of observer
@@ -741,7 +767,7 @@ void ADC_1_EOS_ISR(void)
 		SYSTEM.REGULATORS.mudtControllerParamIq.f16LowerLimit = -SYSTEM.REGULATORS.f16UqRemaining;
 		
 		// Controller calculation
-		SYSTEM.MCTRL.m2UDQ.f16Q = GFLIB_ControllerPIp(mf16ErrorK, &SYSTEM.REGULATORS.mudtControllerParamIq, &SYSTEM.REGULATORS.i16SatFlagQ);
+		SYSTEM.MCTRL.m2UDQ.f16Q = GFLIB_ControllerPIp(mf16ErrorK, &SYSTEM.REGULATORS.mudtControllerParamIq, &SYSTEM.REGULATORS.mudtControllerParamId.i16LimitFlag);
 		
 		//******************************************
 		// Transformation to stationary frame, SVM, PWM
@@ -1011,7 +1037,7 @@ void FCAN_ERR_ISR(void)
 void QT_A1_ISR(void)
 {
 	// Call freemaster recorder
-	FMSTR_Recorder();
+	//FMSTR_Recorder();
 	ioctl(QTIMER_A1, QT_CLEAR_FLAG, QT_COMPARE_FLAG);
 }
 

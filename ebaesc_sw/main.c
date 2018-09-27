@@ -70,7 +70,7 @@ void main (void)
     ioctl(SPI_0, SPI_INIT, NULL);
     ioctl(SCI_0, SCI_INIT, NULL);
     ioctl(SCI_1, SCI_INIT, NULL);
-    ioctl(QTIMER_A1, QT_INIT, NULL);
+    //ioctl(QTIMER_A1, QT_INIT, NULL);
     ioctl(QTIMER_B0, QT_INIT, NULL);
     ioctl(QTIMER_B1, QT_INIT, NULL);
     ioctl(QTIMER_B2, QT_INIT, NULL);
@@ -184,6 +184,31 @@ void main (void)
 			RS485_States_slave(RB_pop(&SCI0RXBuff));    		
     	}
 */
+    	
+    	switch(i8ParamTest)
+    	{
+			case 0:
+			{
+				break;
+			}
+			case 1:
+			{
+				calculateFloats();
+				i8ParamTest = 0;
+				break;
+			}			
+			case 2:
+			{
+				MCAT_Load();
+				i8ParamTest = 0;
+				break;
+			}	
+			default:
+			{
+				i8ParamTest = 0;
+				break;
+			}
+    	}
     	
     	switch(i8EEPROMOp)
     	{

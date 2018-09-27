@@ -29,5 +29,7 @@ Int16 RB_Init(RING_BUFFER* rb, UInt8 *buf, Int16 size);
 Int16 RB_push(RING_BUFFER* rb, UInt8 data);
 UInt8 RB_pop(RING_BUFFER* rb);
 Int16 RB_flush(RING_BUFFER* rb);
+Int16 MCAT_Calculate();
+Int16 MCAT_Load();
 
 #endif /* FUNCTIONS_H_ */

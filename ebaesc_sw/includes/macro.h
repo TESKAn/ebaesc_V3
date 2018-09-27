@@ -79,12 +79,17 @@
 
 // Macros for calculating SI values
 #define SI_UIN_FACTOR		60.87f		// 60.87V max
-#define SI_IIN_FACTOR		164.8f		// 164.8A max
+#define SI_IIN_FACTOR		329.6f		// 164.8A max
 #define SI_RPM_FACTOR		17142.8571f	//120.000/n pole pairs
 
 // Macros for calculating motor parameters
-//#define MOSFET_RDSON		0.0126f
-#define MOSFET_RDSON		0.001f
+#define MOSFET_RDSON		0.0078f
+//#define MOSFET_RDSON		0.001f
+
+#define PI					6.2831853072f
+#define AD_SAMPLE_TIME		0.0000625f
+#define UMAX				60.87f
+#define EMAX				60.87f
 
 // Macros for correcting angle offset
 #define AOFFSET_FACTOR		0.7340032f	//(.000096*6*(32768/180))*7
@@ -108,14 +113,15 @@
 
 #define SENSORLESS_MIN_SPEED		FRAC16(0.01)	// When to calculate BEMF observer
 #define SENSORLESS_MAX_ERROR		FRAC16(0.005)	// If error below this, we use observer result
-#define SENSORLESS_ALIGN_CURRENT	FRAC16(0.025)	// Rotor align current
-#define SENSORLESS_START_CURRENT	FRAC16(0.025)	// Rotor start current
+#define SENSORLESS_ALIGN_CURRENT	FRAC16(0.045)	// Rotor align current
+#define SENSORLESS_START_CURRENT	FRAC16(0.045)	// Rotor start current
 #define SENSORLESS_START_SPEED		FRAC16(0.1)
 #define SENSORLESS_START_TORQUE		FRAC16(0.005)
 #define SENSORLESS_ANGLE_MAN_ERROR	FRAC16(0.01)	
 #define OL_I_RAMP_UP                FRAC16(0.0001)	//FRAC16(0.000056818182)
 #define OL_I_RAMP_DOWN              FRAC16(0.0001)	//FRAC16(0.000056818182)
-#define OL_ALIGN_TIME				2000			// Time in ms for aligning
+#define OL_ALIGN_TIME				500			// Time in ms for aligning
+#define MAX_BEMF_ERROR_COUNT		5			// Max. number of times BEMF is wrong before triggering restart
 
 // Position sources states
 #define POSITION_SOURCE_NONE					0

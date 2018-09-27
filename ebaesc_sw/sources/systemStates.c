@@ -367,6 +367,14 @@ Int16 SystemRunState()
 		SYSTEM.i16StateTransition = SYSTEM_RESET;
 		SYSTEM.RAMPS.f16SpeedRampDesiredValue = FRAC16(0.0);
 	}
+	// BEMF error, restart?
+	if(SYSTEM.SENSORLESS.ui8MaxBemfObserverErrorCount < SYSTEM.SENSORLESS.ui8BemfObserverErrorCount)
+	{
+		// Go out of run mode
+		SYSTEM.i16StateTransition = SYSTEM_RESET;
+		SYSTEM.RAMPS.f16SpeedRampDesiredValue = FRAC16(0.0);
+		RS485DataStruct.REGS.ui8Armed = 3;
+	}
 	
 	// When in run mode, check driver status for errors
 	if(0 != DRV8301.StatReg1.FAULT)
@@ -392,7 +400,20 @@ Int16 SystemRunState()
 		if((FRAC16(0.01) < SYSTEM.POSITION.f16SpeedFiltered)||(FRAC16(-0.01) > SYSTEM.POSITION.f16SpeedFiltered))
 		{
 			SYSTEM.RAMPS.f16SpeedRampDesiredValue = FRAC16(0.0);
-			SYSTEM.RAMPS.f16TorqueRampDesiredValue = FRAC16(0.0);						
+			SYSTEM.RAMPS.f16TorqueRampDesiredValue = FRAC16(0.0);		
+			if(2 == RS485DataStruct.REGS.ui8Armed)
+			{
+				RS485DataStruct.REGS.ui8Armed = 0;
+				StopMotor();
+				SystemStateTransition();
+			}
+			else if(3 == RS485DataStruct.REGS.ui8Armed)
+			{
+				RS485DataStruct.REGS.ui8Armed = 1;
+				SYSTEM.SENSORLESS.ui8BemfObserverErrorCount = 0;
+				StopMotor();
+				SystemStateTransition();
+			}
 		}
 		else if(SYSTEM_FAULT_DRV8301 == SYSTEM.i16StateTransition)
 		{

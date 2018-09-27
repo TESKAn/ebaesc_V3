@@ -108,16 +108,14 @@ void InitSysVars(Int16 initial)
 	SYSTEM.POSITION.acBemfObsrvDQ.udtEObsrv.f32Q = FRAC32(0.0);
 	SYSTEM.POSITION.acBemfObsrvDQ.udtCtrl.f32ID_1= FRAC32(0.0);
 	SYSTEM.POSITION.acBemfObsrvDQ.udtCtrl.f32IQ_1= FRAC32(0.0);
-
-
 	
 	// Tracking observer
 	if(0 != initial)
 	{
-		SYSTEM.POSITION.acToPos.f16PropGain= FRAC16(0.767975);
-		SYSTEM.POSITION.acToPos.i16PropGainShift= -5;
-		SYSTEM.POSITION.acToPos.f16IntegGain= FRAC16(0.61438);
-		SYSTEM.POSITION.acToPos.i16IntegGainShift= -10;
+		SYSTEM.POSITION.acToPos.f16PropGain= TO_KP_GAIN;
+		SYSTEM.POSITION.acToPos.i16PropGainShift= TO_KP_SHIFT;
+		SYSTEM.POSITION.acToPos.f16IntegGain= TO_KI_GAIN;
+		SYSTEM.POSITION.acToPos.i16IntegGainShift= TO_KI_SHIFT;
 		SYSTEM.POSITION.acToPos.f16ThGain= TO_THETA_GAIN;
 		SYSTEM.POSITION.acToPos.i16ThGainShift = TO_THETA_SHIFT;	
 	}
@@ -154,6 +152,8 @@ void InitSysVars(Int16 initial)
 	
 	SYSTEM.POSITION.f16AngleOffset = FRAC16(0.0);
 	
+	SENSORLESS_BEMF_ON = 0;
+	
 	//******************************************
 	// Sensorless
 	//******************************************
@@ -168,6 +168,7 @@ void InitSysVars(Int16 initial)
 		SYSTEM.SENSORLESS.f16StartTorque = SENSORLESS_START_TORQUE;
 		SYSTEM.SENSORLESS.f16AngleManualError = SENSORLESS_ANGLE_MAN_ERROR;
 		SYSTEM.SENSORLESS.f16BEMFErrorPart = FRAC16(0.0);		
+		SYSTEM.SENSORLESS.ui8MaxBemfObserverErrorCount = MAX_BEMF_ERROR_COUNT;
 	}
 	SYSTEM.SENSORLESS.f16MinSpeedHysteresis = mult(SYSTEM.SENSORLESS.f16MinSpeed, FRAC16(0.1));
 	SYSTEM.SENSORLESS.i16Counter = 0;

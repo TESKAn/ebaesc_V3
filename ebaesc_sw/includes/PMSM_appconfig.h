@@ -76,8 +76,8 @@
 #define SPEED_PI_PROP_SHIFT             (0)
 #define SPEED_PI_INTEG_GAIN             FRAC16(0.762935023406)
 #define SPEED_PI_INTEG_SHIFT            (-7)
-#define SPEED_LOOP_HIGH_LIMIT           FRAC16(0.25)
-#define SPEED_LOOP_LOW_LIMIT            FRAC16(-0.25)
+#define SPEED_LOOP_HIGH_LIMIT           FRAC16(0.09)
+#define SPEED_LOOP_LOW_LIMIT            FRAC16(-0.09)
 
 
 #define SPEED_RAMP_UP                   FRAC16(0.002)//FRAC16(0.000056818182)
@@ -96,7 +96,10 @@
 //Loop Attenuation                      = 1 [-]
 //Loop sample time                      = 0.000125 [sec]
 //----------------------------------------------------------------------
-//Bemf DQ Observer                      
+
+//Bemf DQ Observer    
+/*
+ // Aerodrive 500
 #define I_SCALE 						FRAC16(0.785829307569)  
 #define U_SCALE 						FRAC16(0.512991885935)  
 #define E_SCALE 						FRAC16(0.886743117115)  
@@ -106,12 +109,26 @@
 #define BEMF_DQ_KP_SHIFT 				(-2)  
 #define BEMF_DQ_KI_GAIN 				FRAC16(0.68571903253)  
 #define BEMF_DQ_KI_SHIFT 				(-4)  
+*/
+
+
+// TMC
+#define I_SCALE FRAC16(0.879120879121)  
+#define U_SCALE FRAC16(0.101471647285)  
+#define E_SCALE FRAC16(0.101471647285)  
+#define WI_SCALE FRAC16(0.443045117814)  
+#define BEMF_DQ_KP_GAIN FRAC16(0.713989175715)  
+#define BEMF_DQ_KP_SHIFT (0)  
+#define BEMF_DQ_KI_GAIN FRAC16(0.837972381373)  
+#define BEMF_DQ_KI_SHIFT (-3) 
+
+
 
 //Bemf DQ Observer                      
-#define TO_KP_GAIN 						FRAC16(0.768000000000)  
-#define TO_KP_SHIFT 					(-5)  
-#define TO_KI_GAIN 						FRAC16(0.926493372655)  
-#define TO_KI_SHIFT 					(-13)  
+#define TO_KP_GAIN 						FRAC16(0.767975)  
+#define TO_KP_SHIFT 					(-2)  
+#define TO_KI_GAIN 						FRAC16(0.299988)  
+#define TO_KI_SHIFT 					(-10)  
 #define TO_THETA_GAIN 					FRAC16(0.5)  
 #define TO_THETA_SHIFT 					(-1)  
 

@@ -16,6 +16,8 @@ UWord16 uw16EEPROMData = 0;
 // CAN test
 Int8 i8CANTest = 0;
 
+// Parameters test 
+Int8 i8ParamTest = 0;
 
 // Some flags
 FLAGBITS flag0;
