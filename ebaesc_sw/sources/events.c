@@ -100,6 +100,7 @@ void ADC_1_EOS_ISR(void)
 	
 	RS485DataStruct.REGS.i16RPM = mult(SYSTEM.POSITION.f16SpeedFiltered, 17142);
 	
+	/*
 	// Change phase current amplification if necessary
 	if(DRV8301_CONFIGURED)
 	{
@@ -224,7 +225,7 @@ void ADC_1_EOS_ISR(void)
 			}
 		}
 	}
-		
+		*/
 	// Call freemaster recorder
 	FMSTR_Recorder();
 	
@@ -632,9 +633,6 @@ void ADC_1_EOS_ISR(void)
 			{
 				SYSTEM.REGULATORS.ui16SpeedRegCounter = 0;
 				
-				//******************************
-				// TODO: If Id and/or Iq is on limit, stop integrator
-				//******************************
 				// Do we have to do ramp?
 				if(SYSTEM.RAMPS.f16SpeedRampActualValue != SYSTEM.RAMPS.f16SpeedRampDesiredValue)
 				{
@@ -642,42 +640,11 @@ void ADC_1_EOS_ISR(void)
 				}
 				
 				f16SpeedErrorK = SYSTEM.RAMPS.f16SpeedRampActualValue - SYSTEM.POSITION.f16SpeedFiltered;
-				// Check Iq
-				// If Iq > Iqmax, check speed error
-				// If error leads to lower Iq, OK
-				// Else skip regulator
-				// SYSTEM.REGULATORS.mudtControllerParamIq.i16LimitFlag -> if 1, Iq regulator is saturated
+
+				SYSTEM.REGULATORS.m2IDQReq.f16Q = GFLIB_ControllerPIp(f16SpeedErrorK, &SYSTEM.REGULATORS.mudtControllerParamW, &SYSTEM.REGULATORS.mudtControllerParamIq.i16LimitFlag);
 				
-				if(0 != SYSTEM.REGULATORS.mudtControllerParamIq.i16LimitFlag)
-				{
-					// If error will decrease required current, run regulation
-					// Else do nothing					
-					// Iq is saturated, run regulation, decrease Iq
-					SYSTEM.REGULATORS.i16SatFlagW = 1;
-					
-					if(FRAC16(0.0) < SYSTEM.REGULATORS.m2IDQReq.f16Q)
-					{
-						if(f16SpeedErrorK <= FRAC16(0.0))
-						{
-							SYSTEM.REGULATORS.m2IDQReq.f16Q = GFLIB_ControllerPIp(f16SpeedErrorK, &SYSTEM.REGULATORS.mudtControllerParamW, &SYSTEM.REGULATORS.i16SatFlagW);
-						}
-					}
-					else
-					{
-						if(f16SpeedErrorK >= FRAC16(0.0))
-						{
-							SYSTEM.REGULATORS.m2IDQReq.f16Q = GFLIB_ControllerPIp(f16SpeedErrorK, &SYSTEM.REGULATORS.mudtControllerParamW, &SYSTEM.REGULATORS.i16SatFlagW);
-						}
-					}
-				}
-				else
-				{
-					// Iq available, run regulation
-					SYSTEM.REGULATORS.i16SatFlagW = 0;
-					SYSTEM.REGULATORS.m2IDQReq.f16Q = GFLIB_ControllerPIp(f16SpeedErrorK, &SYSTEM.REGULATORS.mudtControllerParamW, &SYSTEM.REGULATORS.i16SatFlagW);
-				}
-				// Set some small D value
-				//SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.01);
+				// Set D value to 0
+				SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.0);
 			}		
 			break;
 		}

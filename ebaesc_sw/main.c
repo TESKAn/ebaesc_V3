@@ -155,7 +155,9 @@ void main (void)
     // Init CAN buffers
     CAN_Init();
     
+    SYSTEM.ADC.f16CurrentGainFactor = FRAC16(0.5);
     
+    /*
     // Initialise MOSFET driver
 	if(0 != InitDRV8301(0,31,1))
 	{
@@ -170,7 +172,7 @@ void main (void)
 	}
 	
 	ioctl(ADC16, ADC16_WRITE_SC1_REG, 1);
-	
+	*/
     while(1)
     {
     	// Check freemaster
@@ -338,6 +340,8 @@ void main (void)
     	// Reinitialize driver?
     	if(REINIT_DRV8301)
     	{
+    		REINIT_DRV8301 = 0;
+    		/*
 			// Initialise MOSFET driver
 			if(0 != InitDRV8301(0,31,1))
 			{
@@ -350,6 +354,7 @@ void main (void)
 				// After everything is initialised, DRV8301_CONFIGURED = 1 moves system state from boot to init.
 				DRV8301_CONFIGURED = 1;
 			}
+			*/
     	}
 
          /* feed the watchdog periodically */
