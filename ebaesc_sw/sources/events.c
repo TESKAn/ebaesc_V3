@@ -36,20 +36,24 @@ void ADC_1_EOS_ISR(void)
 	//******************************************
 	// Phase currents
 	SYSTEM.ADC.m3IphUVWRaw.f16A = ioctl(ADC_1, ADC_READ_SAMPLE, 0);
-	SYSTEM.ADC.m3IphUVWRaw.f16C = ioctl(ADC_1, ADC_READ_SAMPLE, 8);
+	SYSTEM.ADC.m3IphUVWRaw.f16B = ioctl(ADC_1, ADC_READ_SAMPLE, 8);
+	SYSTEM.ADC.m3IphUVWRaw.f16C = ioctl(ADC_1, ADC_READ_SAMPLE, 12);
 	// Zero currents?
 	if(SYS_ZERO_CURRENT)
 	{
 		SYS_ZERO_CURRENT = 0;
 		SYSTEM.ADC.f16OffsetU = SYSTEM.ADC.m3IphUVWRaw.f16A;
+		SYSTEM.ADC.f16OffsetV = SYSTEM.ADC.m3IphUVWRaw.f16B;
 		SYSTEM.ADC.f16OffsetW = SYSTEM.ADC.m3IphUVWRaw.f16C;
 	}
 	
 	// Remove offsets
 	SYSTEM.ADC.m3IphUVW.f16A = SYSTEM.ADC.m3IphUVWRaw.f16A - SYSTEM.ADC.f16OffsetU;
+	SYSTEM.ADC.m3IphUVW.f16B = SYSTEM.ADC.m3IphUVWRaw.f16B - SYSTEM.ADC.f16OffsetV;
 	SYSTEM.ADC.m3IphUVW.f16C = SYSTEM.ADC.m3IphUVWRaw.f16C - SYSTEM.ADC.f16OffsetW;
 	// Calculate third
-	SYSTEM.ADC.m3IphUVW.f16B = -SYSTEM.ADC.m3IphUVW.f16A - SYSTEM.ADC.m3IphUVW.f16C;
+	//SYSTEM.ADC.m3IphUVW.f16B = -SYSTEM.ADC.m3IphUVW.f16A - SYSTEM.ADC.m3IphUVW.f16C;
+	SYSTEM.ADC.m3IphUVW.f16C = -SYSTEM.ADC.m3IphUVW.f16A - SYSTEM.ADC.m3IphUVW.f16B;
 	
 	// Multiply with gain
 	SYSTEM.ADC.m3IphUVW.f16A = mult(SYSTEM.ADC.f16CurrentGainFactor, SYSTEM.ADC.m3IphUVW.f16A);

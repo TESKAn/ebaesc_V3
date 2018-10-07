@@ -87,7 +87,7 @@ Int16 SystemWakeupState()
 		//systemVariables.systemState = SYSTEM_INIT;
 	}
 	// Is MOSFET driver initialised?
-	if(DRV8301_CONFIGURED)
+	//if(DRV8301_CONFIGURED)
 	{
 		// If yes, go to init state
 		SYSTEM.systemState = SYSTEM_INIT;		
@@ -967,7 +967,8 @@ Int16 SystemMeasureRPHAState()
 				SYSTEM.MEASUREPARAMS.i16StabilizeCounter = 1000;
 				// Iphase at set value?
 				f16Temp = SYSTEM.MCTRL.m2IDQ.f16D - SYSTEM.MEASUREPARAMS.f16MeasureRPhaId;
-				if((FRAC16(0.001 > f16Temp)&&(FRAC16(-0.001 < f16Temp))))
+				SYSTEM.MEASUREPARAMS.f16TempDelta = f16Temp;
+				if((FRAC16(0.001) > f16Temp)&&(FRAC16(-0.001) < f16Temp))
 				{
 					// Store U values
 					SYSTEM.MEASUREPARAMS.f16U1 = SYSTEM.MCTRL.m2UDQ.f16D;
@@ -988,7 +989,8 @@ Int16 SystemMeasureRPHAState()
 				SYSTEM.MEASUREPARAMS.i16StabilizeCounter = 1000;
 				// Iphase at set value?
 				f16Temp = SYSTEM.MCTRL.m2IDQ.f16D - SYSTEM.MEASUREPARAMS.f16MeasureRPhaId;
-				if((FRAC16(0.001 > f16Temp)&&(FRAC16(-0.001 < f16Temp))))
+				SYSTEM.MEASUREPARAMS.f16TempDelta = f16Temp;
+				if((FRAC16(0.001) > f16Temp)&&(FRAC16(-0.001) < f16Temp))
 				{
 					// Store U values
 					SYSTEM.MEASUREPARAMS.f16U2 = SYSTEM.MCTRL.m2UDQ.f16D;

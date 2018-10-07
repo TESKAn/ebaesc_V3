@@ -47,16 +47,16 @@ void InitSysVars(Int16 initial)
 		SYSTEM.REGULATORS.mudtControllerParamId.f16IntegGain = D_KI_GAIN;
 		SYSTEM.REGULATORS.mudtControllerParamId.i16PropGainShift = D_KP_SHIFT;
 		SYSTEM.REGULATORS.mudtControllerParamId.i16IntegGainShift = D_KI_SHIFT;
-		SYSTEM.REGULATORS.mudtControllerParamId.f16UpperLimit = FRAC16(0.95);
-		SYSTEM.REGULATORS.mudtControllerParamId.f16LowerLimit = FRAC16(-0.95);
+		SYSTEM.REGULATORS.mudtControllerParamId.f16UpperLimit = FRAC16(0.25);
+		SYSTEM.REGULATORS.mudtControllerParamId.f16LowerLimit = FRAC16(-0.25);
 		
 		// Q
 		SYSTEM.REGULATORS.mudtControllerParamIq.f16PropGain = Q_KP_GAIN;
 		SYSTEM.REGULATORS.mudtControllerParamIq.f16IntegGain = Q_KI_GAIN;
 		SYSTEM.REGULATORS.mudtControllerParamIq.i16PropGainShift = Q_KP_SHIFT;
 		SYSTEM.REGULATORS.mudtControllerParamIq.i16IntegGainShift = Q_KI_SHIFT;
-		SYSTEM.REGULATORS.mudtControllerParamIq.f16UpperLimit = FRAC16(0.95);
-		SYSTEM.REGULATORS.mudtControllerParamIq.f16LowerLimit = FRAC16(-0.95);
+		SYSTEM.REGULATORS.mudtControllerParamIq.f16UpperLimit = FRAC16(0.25);
+		SYSTEM.REGULATORS.mudtControllerParamIq.f16LowerLimit = FRAC16(-0.25);
 		
 		// W regulator
 		SYSTEM.REGULATORS.mudtControllerParamW.f16PropGain = SPEED_PI_PROP_GAIN;

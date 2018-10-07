@@ -155,8 +155,9 @@ void main (void)
     // Init CAN buffers
     CAN_Init();
     
+    // Gain = 40 (x20 DRV, x2 AD)
+    //SYSTEM.ADC.f16CurrentGainFactor = FRAC16(0.25);
     SYSTEM.ADC.f16CurrentGainFactor = FRAC16(0.5);
-    
     /*
     // Initialise MOSFET driver
 	if(0 != InitDRV8301(0,31,1))
@@ -186,7 +187,55 @@ void main (void)
 			RS485_States_slave(RB_pop(&SCI0RXBuff));    		
     	}
 */
-    	
+		switch(i8LEDTest)
+		{
+			case 0:
+			{
+				break;
+			}
+			case 1:
+			{
+				LED_Y_ON;
+				i8LEDTest = 0;
+				break;
+			}			
+			case 2:
+			{
+				LED_Y_OFF;
+				i8LEDTest = 0;
+				break;
+			}	
+			case 3:
+			{
+				LED_R_ON;
+				i8LEDTest = 0;
+				break;
+			}			
+			case 4:
+			{
+				LED_R_OFF;
+				i8LEDTest = 0;
+				break;
+			}
+			case 5:
+			{
+				LED_G_ON;
+				i8LEDTest = 0;
+				break;
+			}			
+			case 6:
+			{
+				LED_G_OFF;
+				i8LEDTest = 0;
+				break;
+			}
+			default:
+			{
+				i8LEDTest = 0;
+				break;
+			}
+		}
+				
     	switch(i8ParamTest)
     	{
 			case 0:

@@ -259,6 +259,7 @@ typedef struct tagSYSVARS
 		MCLIB_3_COOR_SYST_T m3IphUVWRaw;
 		// Offsets
 		Frac16 f16OffsetU;
+		Frac16 f16OffsetV;
 		Frac16 f16OffsetW;
 		// Phase voltages
 		MCLIB_3_COOR_SYST_T m3UphUVW;
@@ -417,6 +418,7 @@ typedef struct tagSYSVARS
 	// Measure motor parameters
 	struct tagMEASUREPARAMS
 	{
+		Frac16 f16TempDelta;
 		Frac16 f16MeasureRPhaId;
 		Frac16 f16U1;
 		Frac16 f16U2;
@@ -519,6 +521,9 @@ extern Int8 i8CANTest;
 
 // Parameters test 
 extern Int8 i8ParamTest;
+
+// LED test
+extern Int8 i8LEDTest;
 
 // Some flags
 extern FLAGBITS flag0;

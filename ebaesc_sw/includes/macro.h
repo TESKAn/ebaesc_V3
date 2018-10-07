@@ -78,13 +78,16 @@
 #define RS485BROADCAST_ID		0xfe
 
 // Macros for calculating SI values
-#define SI_UIN_FACTOR		60.87f		// 60.87V max
-#define SI_IIN_FACTOR		329.6f		// 164.8A max
+//#define SI_UIN_FACTOR		60.87f		// 60.87V max for normal
+#define SI_UIN_FACTOR		42.6191489f	// 42.6V max for mini
+//#define SI_IIN_FACTOR		329.6f		// 164.8A max
+#define SI_IIN_FACTOR		330.0f		// 330.0A max for mini
 #define SI_RPM_FACTOR		17142.8571f	//120.000/n pole pairs
 
 // Macros for calculating motor parameters
-#define MOSFET_RDSON		0.0078f
+//#define MOSFET_RDSON		0.0078f
 //#define MOSFET_RDSON		0.001f
+#define MOSFET_RDSON		0.0024f		// Mini
 
 #define PI					6.2831853072f
 #define AD_SAMPLE_TIME		0.0000625f
@@ -189,8 +192,16 @@
 
 
 // Driver HW interface defs
-#define EN_GATE_ON					ioctl(GPIO_C, GPIO_SET_PIN, BIT_13)
-#define EN_GATE_OFF					ioctl(GPIO_C, GPIO_CLEAR_PIN, BIT_13)
+#define EN_GATE_ON					ioctl(GPIO_E, GPIO_SET_PIN, BIT_7)
+#define EN_GATE_OFF					ioctl(GPIO_E, GPIO_CLEAR_PIN, BIT_7)
+
+#define LED_Y_ON					ioctl(GPIO_B, GPIO_SET_PIN, BIT_6)
+#define LED_Y_OFF					ioctl(GPIO_B, GPIO_CLEAR_PIN, BIT_6)
+#define LED_R_ON					ioctl(GPIO_B, GPIO_SET_PIN, BIT_7)
+#define LED_R_OFF					ioctl(GPIO_B, GPIO_CLEAR_PIN, BIT_7)
+#define LED_G_ON					ioctl(GPIO_C, GPIO_SET_PIN, BIT_5)
+#define LED_G_OFF					ioctl(GPIO_C, GPIO_CLEAR_PIN, BIT_5)
+
 
 // System states
 #define SYSTEM_WAKEUP						0
