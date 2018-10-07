@@ -65,11 +65,11 @@ typedef struct
 	Frac32	f32Speed;
 	Frac32	f32I_1;
 	Frac16	f16IntegGain;
-	Frac16	i16IntegGainShift;
+	Int16	i16IntegGainShift;
 	Frac16	f16PropGain;
-	Frac16	i16PropGainShift;
+	Int16	i16PropGainShift;
 	Frac16	f16ThGain;
-	Frac16	i16ThGainShift;
+	Int16	i16ThGainShift;
 	
 } ACLIB_TRACK_OBSRV_T;
 

@@ -91,8 +91,8 @@
 
 #define PI					6.2831853072f
 #define AD_SAMPLE_TIME		0.0000625f
-#define UMAX				60.87f
-#define EMAX				60.87f
+#define UMAX				42.6191489f
+#define EMAX				42.6191489f
 
 // Macros for correcting angle offset
 #define AOFFSET_FACTOR		0.7340032f	//(.000096*6*(32768/180))*7

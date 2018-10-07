@@ -21,7 +21,7 @@ typedef union tag32BitVars
 		}bytes;
 		struct
 		{
-			UInt16 ui16[2];
+			UWord16 uw16[2];
 		}uwords;
 		struct
 		{
@@ -50,6 +50,10 @@ typedef union tag16BitVars
 		{
 			UInt8 ui8[2];
 		}bytes;
+		struct
+		{
+			Int8 i8[2];
+		}ints;
 		UWord16 uw16;
 		UInt16 ui16;
 		Int16 i16;

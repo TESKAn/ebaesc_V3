@@ -375,75 +375,59 @@ Int16 CalculateFloat(void)
 // Function calculates frac gain and int shift from float input
 Int16 CalculateShiftGain(float K)
 {
+	int i;
 	Int16 shift1;
 	Int16 shift2;
 	Int16 shift;
 	Frac16 gain1;
 	float x;
+	float y;
+	float z;
+	float exp;
 	float logK;
-	float log05 = log(0.5);
-	float log2 = log(2.0);
+	float log05 = log10(0.5);
+	float log2 = log10(2.0);
 	
-	logK = log(K);
+	logK = log10(K);
 	
 	x = logK - log05;
 	x = x / log2;
 	shift1 = (Int16)x;
+	y = (float)shift1;
+	if(y > x) shift1--;
 	
 	x = logK / log2;
 	shift2 = (Int16)x;	
+	y = (float)shift2;
+	if(y < x) shift2++;
 	
+	x = (float)shift1;
 	// Select the right shift
-	// Larger of the two numbers (abs value)
-	// Sign determined by logK
-	if(0 <= logK)
+	for(i=shift2; i < shift1+1; i++)
 	{
-		// Both positive
-		if(shift1 > shift2)
+		z = K;
+		shift = i;
+		while(0 != shift)
 		{
-			shift = shift1;
+			if(0 < shift)
+			{
+				z = z/2;
+				shift--;
+			}
+			else
+			{
+				z = z*2;
+				shift++;
+			}
 		}
-		else
+		if((0.5f <= z)&&(1.0f > z))
 		{
-			shift = shift2;
-		}		
-	}
-	else
-	{
-		// Both negative
-		if(shift1 > shift2)
-		{
-			shift = shift2;
-		}
-		else
-		{
-			shift = shift1;
-		}
-	}	
-	
-	// Calculate shift
-	pConv.shift = shift;
-	
-	// Calculate gain
-	x = K;
-	while(shift != 0)
-	{
-		if(0 < shift)
-		{
-			x = x/2;
-			shift--;
-		}
-		else
-		{
-			x = x*2;
-			shift++;
+			pConv.shift = i;
+			z = z * 32768;
+			pConv.gain = (Frac16)z;
+			break;
 		}
 	}
-	
-	// Convert to fractional
-	x = x * 32768;
-	pConv.gain = (Frac16)x;
-
 	return 0;
 }
 
