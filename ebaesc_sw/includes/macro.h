@@ -230,6 +230,7 @@
 #define SYSTEM_RESTART_WAIT_READ_1			4
 #define SYSTEM_RESTART_WAIT_READ_2			5
 #define SYSTEM_RESTART_WAIT_READ_3			6
+#define SYSTEM_RESTART_GO					7
 
 // Measure RPha states
 #define SYSTEM_MEAS_RPHA_INIT				0

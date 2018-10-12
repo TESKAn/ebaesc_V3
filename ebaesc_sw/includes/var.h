@@ -480,6 +480,12 @@ typedef struct tagSYSVARS
 		float fU_RPM;
 
 	}PMSMAPPCONFIG;
+	
+	struct tagDRIVERSTATE
+	{
+		Int8 i8DriverFaultCount;
+		Int8 i8DriverFault;
+	}DRIVERSTATE;
 
 	// Phase voltages
 	MCLIB_3_COOR_SYST_T m3UphUVW;

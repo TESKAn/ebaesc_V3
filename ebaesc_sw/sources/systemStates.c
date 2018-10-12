@@ -374,6 +374,7 @@ Int16 SystemRunState()
 		SYSTEM.i16StateTransition = SYSTEM_RESET;
 		SYSTEM.RAMPS.f16SpeedRampDesiredValue = FRAC16(0.0);
 		RS485DataStruct.REGS.ui8Armed = 3;
+		RS485DataStruct.REGS.i16SetRPM = RS485DataStruct.REGS.i16MinRPM; 
 	}
 	
 	// When in run mode, check driver status for errors
@@ -381,6 +382,7 @@ Int16 SystemRunState()
 	{
 		// Shut down PWMs, go out of run mode into fault mode
 		SYSTEM.i16StateTransition = SYSTEM_FAULT_DRV8301;
+		RS485DataStruct.REGS.ui8Armed = 0;
 		// Mark fault
 		RS485DataStruct.REGS.ui16Errors |= RS485ERROR_FAULT;
 		// Check FETs
@@ -390,7 +392,17 @@ Int16 SystemRunState()
 		if(0 != DRV8301.StatReg1.FETLB_OC) RS485DataStruct.REGS.ui16Errors |= RS485ERROR_FETLB;
 		if(0 != DRV8301.StatReg1.FETHC_OC) RS485DataStruct.REGS.ui16Errors |= RS485ERROR_FETHC;
 		if(0 != DRV8301.StatReg1.FETLC_OC) RS485DataStruct.REGS.ui16Errors |= RS485ERROR_FETLC;
-		
+		LED_G_OFF;
+		LED_R_ON;
+	}
+	
+	// Driver fault?
+	if(0 != SYSTEM.DRIVERSTATE.i8DriverFault)
+	{
+		SYSTEM.i16StateTransition = SYSTEM_FAULT_DRV8301;
+		RS485DataStruct.REGS.ui8Armed = 0;
+		LED_G_OFF;
+		LED_R_ON;
 	}
 	
 	// Transit out of?
@@ -399,6 +411,11 @@ Int16 SystemRunState()
 		// Stop if spinning
 		if((FRAC16(0.01) < SYSTEM.POSITION.f16SpeedFiltered)||(FRAC16(-0.01) > SYSTEM.POSITION.f16SpeedFiltered))
 		{
+			if(SYSTEM_FAULT_DRV8301 == SYSTEM.i16StateTransition)
+			{
+				StopMotor();
+				SystemStateTransition();
+			}
 			SYSTEM.RAMPS.f16SpeedRampDesiredValue = FRAC16(0.0);
 			SYSTEM.RAMPS.f16TorqueRampDesiredValue = FRAC16(0.0);		
 			if(2 == RS485DataStruct.REGS.ui8Armed)
@@ -413,6 +430,8 @@ Int16 SystemRunState()
 				SYSTEM.SENSORLESS.ui8BemfObserverErrorCount = 0;
 				StopMotor();
 				SystemStateTransition();
+				LED_G_OFF;
+				LED_Y_ON;
 			}
 		}
 		else if(SYSTEM_FAULT_DRV8301 == SYSTEM.i16StateTransition)
@@ -805,124 +824,136 @@ Int16 SystemResetState()
 
 Int16 SystemFaultDRV83xxState()
 {
-
-	// Try restarting driver
-	switch(SYSTEM.i16DriverRestartState)
+	// Transit out of?
+	if(SYSTEM.i16StateTransition != SYSTEM.systemState)
 	{
-		case SYSTEM_RESTART_INIT:
+		// Try restarting driver
+		switch(SYSTEM.i16DriverRestartState)
 		{
-			// Turn driver gate enable off
-			EN_GATE_OFF;
-			// Mark driver not configured
-			DRV8301_CONFIGURED = 0;
-			SYSTEM.i16DriverRestartState = SYSTEM_RESTART_WAIT_POWER_OFF;
-			break;
-		}
-		case SYSTEM_RESTART_WAIT_POWER_OFF:
-		{
-			// Turn driver gate enable on
-			EN_GATE_ON;
-			SYSTEM.i16DriverRestartState = SYSTEM_RESTART_WAIT_POWER_ON;
-			break;
-		}
-		case SYSTEM_RESTART_WAIT_POWER_ON:
-		{
-			// Set values
-			REINIT_DRV8301 = 1;
-			// Reset time counter
-			SYSTEM.i16DriverRestartTimer = 0;
-			SYSTEM.i16DriverRestartState = SYSTEM_RESTART_WAIT_REINIT;
-			break;
-		}
-		case SYSTEM_RESTART_WAIT_REINIT:
-		{
-			// Increase timer
-			SYSTEM.i16DriverRestartTimer++;
-			// Check - initialised?
-			if(DRV8301_CONFIGURED)
+			case SYSTEM_RESTART_INIT:
 			{
-				// Driver reconfiguration successful, read status
-				// Read reg 1
-				DRV8301.RegReq.RW = 1;								//we are initiating a read
-				DRV8301.RegReq.ADDR = DRV8301_STAT_REG_1_ADDR;		//load the address
-				DRV8301.RegReq.DATA = 0;							//dummy data;
-				// Send data
-				ioctl(SPI_0, SPI_WRITE_DATA, DRV8301.RegReq.reg);	
-				
-				SYSTEM.i16DriverRestartState = SYSTEM_RESTART_WAIT_READ_1;
+				// Turn driver gate enable off
+				EN_GATE_OFF;
+				//SYSTEM.i16DriverRestartState = SYSTEM_RESTART_WAIT_POWER_OFF;
+				break;
 			}
-			else if(100 < SYSTEM.i16DriverRestartTimer)
+			case SYSTEM_RESTART_WAIT_POWER_OFF:
 			{
-				// Something wrong, go to fault
-				SYSTEM.systemState = SYSTEM_FAULT;
+				// Turn driver gate enable on
+				EN_GATE_ON;
+				SYSTEM.i16DriverRestartState = SYSTEM_RESTART_WAIT_POWER_ON;
+				break;
 			}
-			break;
-		}
-		case SYSTEM_RESTART_WAIT_READ_1:
-		{
-			// Data ready?
-			if(ioctl(SPI_0, SPI_CAN_READ_DATA, null) == 0)
+			case SYSTEM_RESTART_WAIT_POWER_ON:
 			{
-				// Read to req reg
-				DRV8301.RegReq.reg = ioctl(SPI_0, SPI_READ_DATA, null);
-				// Read reg 2
-				DRV8301.RegReq.RW = 1;								//we are initiating a read
-				DRV8301.RegReq.ADDR = DRV8301_STAT_REG_2_ADDR;		//load the address
-				DRV8301.RegReq.DATA = 0;							//dummy data;
-				// Send data
-				ioctl(SPI_0, SPI_WRITE_DATA, DRV8301.RegReq.reg);
-				
-				SYSTEM.i16DriverRestartState = SYSTEM_RESTART_WAIT_READ_2;
+				/*
+				// Set values
+				REINIT_DRV8301 = 1;
+				// Reset time counter
+				SYSTEM.i16DriverRestartTimer = 0;
+				SYSTEM.i16DriverRestartState = SYSTEM_RESTART_WAIT_REINIT;*/
+				SYSTEM.i16DriverRestartState = SYSTEM_RESTART_GO;
+				break;
 			}
-			break;
-		}
-		case SYSTEM_RESTART_WAIT_READ_2:
-		{
-			// Data ready?
-			if(ioctl(SPI_0, SPI_CAN_READ_DATA, null) == 0)
+			case SYSTEM_RESTART_WAIT_REINIT:
 			{
-				// Read to req reg
-				DRV8301.RegReq.reg = ioctl(SPI_0, SPI_READ_DATA, null);
-				// Store
-				DRV8301.StatReg1.reg = DRV8301.RegReq.reg; 
-				// Dummy read
-				DRV8301.RegReq.RW = 1;								//we are initiating a read
-				DRV8301.RegReq.ADDR = DRV8301_STAT_REG_2_ADDR;		//load the address
-				DRV8301.RegReq.DATA = 0;							//dummy data;
-				// Send data
-				ioctl(SPI_0, SPI_WRITE_DATA, DRV8301.RegReq.reg);
-				
-				SYSTEM.i16DriverRestartState = SYSTEM_RESTART_WAIT_READ_3;
-			}
-			break;
-		}
-		case SYSTEM_RESTART_WAIT_READ_3:
-		{
-			// Data ready?
-			if(ioctl(SPI_0, SPI_CAN_READ_DATA, null) == 0)
-			{
-				// Read to req reg
-				DRV8301.RegReq.reg = ioctl(SPI_0, SPI_READ_DATA, null);
-				// Store
-				DRV8301.StatReg2.reg = DRV8301.RegReq.reg; 
-				// Check data
-				if(0 == DRV8301.StatReg1.FAULT)
+				// Increase timer
+				SYSTEM.i16DriverRestartTimer++;
+				// Check - initialised?
+				if(DRV8301_CONFIGURED)
 				{
-					// Go to init
-					SYSTEM.systemState = SYSTEM_WAKEUP;
+					// Driver reconfiguration successful, read status
+					// Read reg 1
+					DRV8301.RegReq.RW = 1;								//we are initiating a read
+					DRV8301.RegReq.ADDR = DRV8301_STAT_REG_1_ADDR;		//load the address
+					DRV8301.RegReq.DATA = 0;							//dummy data;
+					// Send data
+					ioctl(SPI_0, SPI_WRITE_DATA, DRV8301.RegReq.reg);	
+					
+					SYSTEM.i16DriverRestartState = SYSTEM_RESTART_WAIT_READ_1;
 				}
-				else
+				else if(100 < SYSTEM.i16DriverRestartTimer)
 				{
 					// Something wrong, go to fault
 					SYSTEM.systemState = SYSTEM_FAULT;
 				}
+				break;
 			}
-			break;
-		}
-		default:
-		{
-			SYSTEM.i16DriverRestartState = SYSTEM_RESTART_INIT;
-			break;
+			case SYSTEM_RESTART_WAIT_READ_1:
+			{
+				// Data ready?
+				if(ioctl(SPI_0, SPI_CAN_READ_DATA, null) == 0)
+				{
+					// Read to req reg
+					DRV8301.RegReq.reg = ioctl(SPI_0, SPI_READ_DATA, null);
+					// Read reg 2
+					DRV8301.RegReq.RW = 1;								//we are initiating a read
+					DRV8301.RegReq.ADDR = DRV8301_STAT_REG_2_ADDR;		//load the address
+					DRV8301.RegReq.DATA = 0;							//dummy data;
+					// Send data
+					ioctl(SPI_0, SPI_WRITE_DATA, DRV8301.RegReq.reg);
+					
+					SYSTEM.i16DriverRestartState = SYSTEM_RESTART_WAIT_READ_2;
+				}
+				break;
+			}
+			case SYSTEM_RESTART_WAIT_READ_2:
+			{
+				// Data ready?
+				if(ioctl(SPI_0, SPI_CAN_READ_DATA, null) == 0)
+				{
+					// Read to req reg
+					DRV8301.RegReq.reg = ioctl(SPI_0, SPI_READ_DATA, null);
+					// Store
+					DRV8301.StatReg1.reg = DRV8301.RegReq.reg; 
+					// Dummy read
+					DRV8301.RegReq.RW = 1;								//we are initiating a read
+					DRV8301.RegReq.ADDR = DRV8301_STAT_REG_2_ADDR;		//load the address
+					DRV8301.RegReq.DATA = 0;							//dummy data;
+					// Send data
+					ioctl(SPI_0, SPI_WRITE_DATA, DRV8301.RegReq.reg);
+					
+					SYSTEM.i16DriverRestartState = SYSTEM_RESTART_WAIT_READ_3;
+				}
+				break;
+			}
+			case SYSTEM_RESTART_WAIT_READ_3:
+			{
+				// Data ready?
+				if(ioctl(SPI_0, SPI_CAN_READ_DATA, null) == 0)
+				{
+					// Read to req reg
+					DRV8301.RegReq.reg = ioctl(SPI_0, SPI_READ_DATA, null);
+					// Store
+					DRV8301.StatReg2.reg = DRV8301.RegReq.reg; 
+					// Check data
+					if(0 == DRV8301.StatReg1.FAULT)
+					{
+						// Go to init
+						SYSTEM.systemState = SYSTEM_WAKEUP;
+					}
+					else
+					{
+						// Something wrong, go to fault
+						SYSTEM.systemState = SYSTEM_FAULT;
+					}
+				}
+				break;
+			}
+			case SYSTEM_RESTART_GO:
+			{
+				if(0 == SYSTEM.DRIVERSTATE.i8DriverFaultCount)
+				{
+					// Go to init
+					SYSTEM.systemState = SYSTEM_WAKEUP;
+				}
+				break;
+			}
+			default:
+			{
+				SYSTEM.i16DriverRestartState = SYSTEM_RESTART_INIT;
+				break;
+			}
 		}
 	}
 	return 0;
@@ -1239,6 +1270,9 @@ Int16 SystemStateTransition()
 					SYSTEM_RUN_MANUAL_CCW = 0;
 				}
 				SYSTEM.systemState = SYSTEM_RUN;	
+				LED_G_ON;
+				LED_R_OFF;
+				LED_Y_OFF;
 				// Enable regulators
 				PWM_ENABLED = 1;
 			}
@@ -1254,6 +1288,9 @@ Int16 SystemStateTransition()
 				SENSORLESS_BEMF_ON = 0;
 				// Go to run
 				SYSTEM.systemState = SYSTEM_RUN;
+				LED_G_ON;
+				LED_R_OFF;
+				LED_Y_OFF;
 				// Enable regulators
 				PWM_ENABLED = 1;
 			}
@@ -1273,6 +1310,9 @@ Int16 SystemStateTransition()
 				SYSTEM_RUN_MANUAL_CCW = 0;
 				// Go to run
 				SYSTEM.systemState = SYSTEM_RUN;
+				LED_G_ON;
+				LED_R_OFF;
+				LED_Y_OFF;
 				// Enable regulators
 				PWM_ENABLED = 1;
 			}
@@ -1287,6 +1327,7 @@ Int16 SystemStateTransition()
 		}
 		case SYSTEM_FAULT:
 		{
+			ioctl(EFPWMA, EFPWM_SET_OUTPUTS_DISABLE, EFPWM_SUB0_PWM_A|EFPWM_SUB0_PWM_B|EFPWM_SUB1_PWM_A|EFPWM_SUB1_PWM_B|EFPWM_SUB2_PWM_A|EFPWM_SUB2_PWM_B);
 			break;
 		}
 		case SYSTEM_RESET:
@@ -1300,6 +1341,11 @@ Int16 SystemStateTransition()
 		}
 		case SYSTEM_FAULT_DRV8301:
 		{
+			SYSTEM.systemState = SYSTEM_FAULT_DRV8301;
+			// PWMs OFF
+			ioctl(EFPWMA, EFPWM_SET_OUTPUTS_DISABLE, EFPWM_SUB0_PWM_A|EFPWM_SUB0_PWM_B|EFPWM_SUB1_PWM_A|EFPWM_SUB1_PWM_B|EFPWM_SUB2_PWM_A|EFPWM_SUB2_PWM_B);
+			// Reset driver
+			SYSTEM.i16DriverRestartState = SYSTEM_RESTART_INIT;
 			break;
 		}
 		case SYSTEM_FAULT_RESET:

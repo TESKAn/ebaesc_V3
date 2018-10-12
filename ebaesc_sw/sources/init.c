@@ -331,6 +331,9 @@ void InitSysVars(Int16 initial)
 	//******************************************
 	SYSTEM.CAN.ui16CANInfoInterval = CAN_INFO_INTERVAL;
 	SYSTEM.CAN.ui16CANInfoTimer = 0;
+	
+	SYSTEM.DRIVERSTATE.i8DriverFaultCount = 0;
+	SYSTEM.DRIVERSTATE.i8DriverFault = 0;
 }
 
 // Store vars to EEPROM

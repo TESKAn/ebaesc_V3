@@ -174,6 +174,9 @@ void main (void)
 	
 	ioctl(ADC16, ADC16_WRITE_SC1_REG, 1);
 	*/
+    
+    LED_G_ON;
+    
     while(1)
     {
     	// Check freemaster

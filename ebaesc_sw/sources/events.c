@@ -37,7 +37,7 @@ void ADC_1_EOS_ISR(void)
 	// Phase currents
 	SYSTEM.ADC.m3IphUVWRaw.f16A = ioctl(ADC_1, ADC_READ_SAMPLE, 0);
 	SYSTEM.ADC.m3IphUVWRaw.f16B = ioctl(ADC_1, ADC_READ_SAMPLE, 8);
-	SYSTEM.ADC.m3IphUVWRaw.f16C = ioctl(ADC_1, ADC_READ_SAMPLE, 12);
+	SYSTEM.ADC.m3IphUVWRaw.f16C = ioctl(ADC_1, ADC_READ_SAMPLE, 9);
 	// Zero currents?
 	if(SYS_ZERO_CURRENT)
 	{
@@ -922,6 +922,8 @@ void PIT_0_ISR(void)
 	int i = 0;
 	int code = 0;
 	ioctl(PIT_0, PIT_CLEAR_ROLLOVER_INT, NULL);
+	// Check faults
+	CheckFaults();
 	// Check RS485
 	RS485_Timer();
 	// Check system states

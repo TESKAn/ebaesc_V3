@@ -31,5 +31,6 @@ UInt8 RB_pop(RING_BUFFER* rb);
 Int16 RB_flush(RING_BUFFER* rb);
 Int16 MCAT_Calculate();
 Int16 MCAT_Load();
+Int16 CheckFaults();
 
 #endif /* FUNCTIONS_H_ */

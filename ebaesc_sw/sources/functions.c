@@ -987,3 +987,23 @@ Int16 MCAT_Load()
 
 	return 0;
 }
+
+Int16 CheckFaults()
+{
+	// Check driver fault
+	if(0 == (ioctl(GPIO_C, GPIO_READ_DATA, NULL) & 0x0010))
+	{
+		SYSTEM.DRIVERSTATE.i8DriverFaultCount++;
+		if(100 < SYSTEM.DRIVERSTATE.i8DriverFaultCount)
+		{
+			SYSTEM.DRIVERSTATE.i8DriverFaultCount = 100;
+			SYSTEM.DRIVERSTATE.i8DriverFault = 1;
+		}
+	}
+	else if(0 < SYSTEM.DRIVERSTATE.i8DriverFaultCount)
+	{
+		SYSTEM.DRIVERSTATE.i8DriverFaultCount--;
+	}
+		
+	return 0;
+}
