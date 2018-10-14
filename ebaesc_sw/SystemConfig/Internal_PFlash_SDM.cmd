@@ -71,7 +71,7 @@ SECTIONS
 		# Store the application entry point
 		WRITEW(FStart); # write 4 bytes
 		# Boot loader start delay in seconds
-		WRITEH(4); # write 2 bytes
+		WRITEH(2); # write 2 bytes
 	} > .xBootCfg
 	
     # bounds for internal RAM checking (define before .x_internal_RAM is used!)

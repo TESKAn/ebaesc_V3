@@ -197,11 +197,15 @@
 
 #define LED_Y_ON					ioctl(GPIO_B, GPIO_SET_PIN, BIT_6)
 #define LED_Y_OFF					ioctl(GPIO_B, GPIO_CLEAR_PIN, BIT_6)
+#define LED_Y_TOGGLE				ioctl(GPIO_B, GPIO_TOGGLE_PIN, BIT_6)
 #define LED_R_ON					ioctl(GPIO_B, GPIO_SET_PIN, BIT_7)
 #define LED_R_OFF					ioctl(GPIO_B, GPIO_CLEAR_PIN, BIT_7)
+#define LED_R_TOGGLE				ioctl(GPIO_B, GPIO_TOGGLE_PIN, BIT_7)
 #define LED_G_ON					ioctl(GPIO_C, GPIO_SET_PIN, BIT_5)
 #define LED_G_OFF					ioctl(GPIO_C, GPIO_CLEAR_PIN, BIT_5)
+#define LED_G_TOGGLE				ioctl(GPIO_C, GPIO_TOGGLE_PIN, BIT_5)
 
+#define LED_TOGGLE_COUNT			500
 
 // System states
 #define SYSTEM_WAKEUP						0

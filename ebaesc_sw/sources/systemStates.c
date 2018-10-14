@@ -9,65 +9,103 @@
 
 Int16 checkSystemStates(void)
 {
+	i16LEDToggleCount++;
+	if(LED_TOGGLE_COUNT < i16LEDToggleCount) i16LEDToggleCount = 0;
 	switch(SYSTEM.systemState)
 	{
 		case SYSTEM_WAKEUP:
 		{
+			LED_G_OFF;
+			LED_R_OFF;
+			LED_Y_ON;
 			SystemWakeupState();	
 			break;
 		}
 		case SYSTEM_INIT:
 		{
+			if(0 == i16LEDToggleCount) LED_G_TOGGLE;			
+			LED_R_OFF;
+			LED_Y_ON;
 			SystemInitState();
 			break;
 		}
 		case SYSTEM_IDLE:
 		{
+			LED_G_ON;
+			LED_R_OFF;
+			if(0 == i16LEDToggleCount) LED_Y_TOGGLE;
 			SystemIdleState();
 			break;
 		}
 		case SYSTEM_RUN:
 		{
+			LED_G_ON;
+			LED_R_OFF;
+			LED_Y_OFF;
 			SystemRunState();
 			break;
 		}		
 		case SYSTEM_CALIBRATE:
 		{
+			if(0 == i16LEDToggleCount) LED_G_TOGGLE;
+			LED_R_OFF;
+			LED_Y_ON;
 			SystemCalibrateState();
 			break;
 		}
 		case SYSTEM_PARKROTOR:
 		{
+			if(0 == i16LEDToggleCount) LED_G_TOGGLE;
+			LED_R_OFF;
+			LED_Y_OFF;
 			SystemParkRotorState();
 			break;
 		}
 		case SYSTEM_FAULT:
 		{
+			LED_G_OFF;
+			LED_R_ON;
+			LED_Y_OFF;
 			SystemFaultState();
 			break;
 		}
 		case SYSTEM_RESET:
 		{
+			LED_G_OFF;
+			LED_R_OFF;
+			if(0 == i16LEDToggleCount) LED_Y_TOGGLE;
 			SystemResetState();
 			break;
 		}
 		case SYSTEM_FAULT_DRV8301:
 		{
+			LED_G_OFF;
+			LED_R_ON;
+			LED_Y_OFF;
 			SystemFaultDRV83xxState();
 			break;
 		}
 		case SYSTEM_MEAS_RPHA:
 		{
+			if(0 == i16LEDToggleCount) LED_G_TOGGLE;
+			LED_R_OFF;
+			LED_Y_ON;
 			SystemMeasureRPHAState();
 			break;
 		}
 		case SYSTEM_MEAS_LPHA:
 		{
+			if(0 == i16LEDToggleCount) LED_G_TOGGLE;
+			LED_R_OFF;
+			LED_Y_ON;
 			SystemMeasureLPHAState();
 			break;
 		}
 		default:
 		{
+			LED_G_OFF;
+			LED_R_OFF;
+			LED_Y_OFF;
 			SYSTEM.systemState = SYSTEM_WAKEUP;
 			break;
 		}
@@ -77,22 +115,140 @@ Int16 checkSystemStates(void)
 
 Int16 SystemWakeupState()
 {
-	// System has waken up
-	// Wait here until initialisation is done, last is MOSFET driver init
-	// If not in debug
-	if(!SYS_DEBUG_MODE)
+	// Try restarting driver
+	switch(SYSTEM.i16DriverRestartState)
 	{
-		// Set pwm input check state
-		//ui8PWMMeasureStates = PWM_MEAS_INIT;
-		//systemVariables.systemState = SYSTEM_INIT;
+		case SYSTEM_RESTART_INIT:
+		{
+			// Turn driver gate enable off
+			EN_GATE_OFF;
+			SYSTEM.i16DriverRestartState = SYSTEM_RESTART_WAIT_POWER_OFF;
+			break;
+		}
+		case SYSTEM_RESTART_WAIT_POWER_OFF:
+		{
+			// Turn driver gate enable on
+			EN_GATE_ON;
+			SYSTEM.i16DriverRestartState = SYSTEM_RESTART_WAIT_POWER_ON;
+			break;
+		}
+		case SYSTEM_RESTART_WAIT_POWER_ON:
+		{
+			/*
+			// Set values
+			REINIT_DRV8301 = 1;
+			// Reset time counter
+			SYSTEM.i16DriverRestartTimer = 0;
+			SYSTEM.i16DriverRestartState = SYSTEM_RESTART_WAIT_REINIT;*/
+			SYSTEM.i16DriverRestartState = SYSTEM_RESTART_GO;
+			break;
+		}
+		case SYSTEM_RESTART_WAIT_REINIT:
+		{
+			// Increase timer
+			SYSTEM.i16DriverRestartTimer++;
+			// Check - initialised?
+			if(DRV8301_CONFIGURED)
+			{
+				// Driver reconfiguration successful, read status
+				// Read reg 1
+				DRV8301.RegReq.RW = 1;								//we are initiating a read
+				DRV8301.RegReq.ADDR = DRV8301_STAT_REG_1_ADDR;		//load the address
+				DRV8301.RegReq.DATA = 0;							//dummy data;
+				// Send data
+				ioctl(SPI_0, SPI_WRITE_DATA, DRV8301.RegReq.reg);	
+				
+				SYSTEM.i16DriverRestartState = SYSTEM_RESTART_WAIT_READ_1;
+			}
+			else if(100 < SYSTEM.i16DriverRestartTimer)
+			{
+				// Something wrong, go to fault
+				SYSTEM.systemState = SYSTEM_FAULT;
+			}
+			break;
+		}
+		case SYSTEM_RESTART_WAIT_READ_1:
+		{
+			// Data ready?
+			if(ioctl(SPI_0, SPI_CAN_READ_DATA, null) == 0)
+			{
+				// Read to req reg
+				DRV8301.RegReq.reg = ioctl(SPI_0, SPI_READ_DATA, null);
+				// Read reg 2
+				DRV8301.RegReq.RW = 1;								//we are initiating a read
+				DRV8301.RegReq.ADDR = DRV8301_STAT_REG_2_ADDR;		//load the address
+				DRV8301.RegReq.DATA = 0;							//dummy data;
+				// Send data
+				ioctl(SPI_0, SPI_WRITE_DATA, DRV8301.RegReq.reg);
+				
+				SYSTEM.i16DriverRestartState = SYSTEM_RESTART_WAIT_READ_2;
+			}
+			break;
+		}
+		case SYSTEM_RESTART_WAIT_READ_2:
+		{
+			// Data ready?
+			if(ioctl(SPI_0, SPI_CAN_READ_DATA, null) == 0)
+			{
+				// Read to req reg
+				DRV8301.RegReq.reg = ioctl(SPI_0, SPI_READ_DATA, null);
+				// Store
+				DRV8301.StatReg1.reg = DRV8301.RegReq.reg; 
+				// Dummy read
+				DRV8301.RegReq.RW = 1;								//we are initiating a read
+				DRV8301.RegReq.ADDR = DRV8301_STAT_REG_2_ADDR;		//load the address
+				DRV8301.RegReq.DATA = 0;							//dummy data;
+				// Send data
+				ioctl(SPI_0, SPI_WRITE_DATA, DRV8301.RegReq.reg);
+				
+				SYSTEM.i16DriverRestartState = SYSTEM_RESTART_WAIT_READ_3;
+			}
+			break;
+		}
+		case SYSTEM_RESTART_WAIT_READ_3:
+		{
+			// Data ready?
+			if(ioctl(SPI_0, SPI_CAN_READ_DATA, null) == 0)
+			{
+				// Read to req reg
+				DRV8301.RegReq.reg = ioctl(SPI_0, SPI_READ_DATA, null);
+				// Store
+				DRV8301.StatReg2.reg = DRV8301.RegReq.reg; 
+				// Check data
+				if(0 == DRV8301.StatReg1.FAULT)
+				{
+					// Go to init
+					SYSTEM.systemState = SYSTEM_WAKEUP;
+				}
+				else
+				{
+					// Something wrong, go to fault
+					SYSTEM.systemState = SYSTEM_FAULT;
+				}
+			}
+			break;
+		}
+		case SYSTEM_RESTART_GO:
+		{
+			if(0 == SYSTEM.DRIVERSTATE.i8DriverFaultCount)
+			{
+				// Go to init
+				SYSTEM.i16StateTransition = SYSTEM_INIT;
+			}
+			break;
+		}
+		default:
+		{
+			SYSTEM.i16DriverRestartState = SYSTEM_RESTART_INIT;
+			break;
+		}
 	}
-	// Is MOSFET driver initialised?
-	//if(DRV8301_CONFIGURED)
+
+	// Transit out of?
+	if(SYSTEM.i16StateTransition != SYSTEM.systemState)
 	{
-		// If yes, go to init state
-		SYSTEM.systemState = SYSTEM_INIT;		
-		SYSTEM.i16StateTransition = SYSTEM_IDLE;
-	}	
+		SystemStateTransition();
+	}
 	return 0;
 }
 
@@ -195,6 +351,10 @@ Int16 SystemInitState()
 				break;
 			}
 		}				
+	}
+	else
+	{
+		SYSTEM.i16StateTransition = SYSTEM_IDLE;
 	}
 	
 	// Transit out of?
@@ -392,8 +552,6 @@ Int16 SystemRunState()
 		if(0 != DRV8301.StatReg1.FETLB_OC) RS485DataStruct.REGS.ui16Errors |= RS485ERROR_FETLB;
 		if(0 != DRV8301.StatReg1.FETHC_OC) RS485DataStruct.REGS.ui16Errors |= RS485ERROR_FETHC;
 		if(0 != DRV8301.StatReg1.FETLC_OC) RS485DataStruct.REGS.ui16Errors |= RS485ERROR_FETLC;
-		LED_G_OFF;
-		LED_R_ON;
 	}
 	
 	// Driver fault?
@@ -401,8 +559,6 @@ Int16 SystemRunState()
 	{
 		SYSTEM.i16StateTransition = SYSTEM_FAULT_DRV8301;
 		RS485DataStruct.REGS.ui8Armed = 0;
-		LED_G_OFF;
-		LED_R_ON;
 	}
 	
 	// Transit out of?
@@ -430,8 +586,6 @@ Int16 SystemRunState()
 				SYSTEM.SENSORLESS.ui8BemfObserverErrorCount = 0;
 				StopMotor();
 				SystemStateTransition();
-				LED_G_OFF;
-				LED_Y_ON;
 			}
 		}
 		else if(SYSTEM_FAULT_DRV8301 == SYSTEM.i16StateTransition)
@@ -1218,10 +1372,12 @@ Int16 SystemStateTransition()
 	{
 		case SYSTEM_WAKEUP:
 		{
+			SYSTEM.systemState = SYSTEM_WAKEUP;
 			break;
 		}
 		case SYSTEM_INIT:
 		{
+			SYSTEM.systemState = SYSTEM_INIT;
 			break;
 		}
 		case SYSTEM_IDLE:
@@ -1270,9 +1426,6 @@ Int16 SystemStateTransition()
 					SYSTEM_RUN_MANUAL_CCW = 0;
 				}
 				SYSTEM.systemState = SYSTEM_RUN;	
-				LED_G_ON;
-				LED_R_OFF;
-				LED_Y_OFF;
 				// Enable regulators
 				PWM_ENABLED = 1;
 			}
@@ -1288,9 +1441,6 @@ Int16 SystemStateTransition()
 				SENSORLESS_BEMF_ON = 0;
 				// Go to run
 				SYSTEM.systemState = SYSTEM_RUN;
-				LED_G_ON;
-				LED_R_OFF;
-				LED_Y_OFF;
 				// Enable regulators
 				PWM_ENABLED = 1;
 			}
@@ -1310,9 +1460,6 @@ Int16 SystemStateTransition()
 				SYSTEM_RUN_MANUAL_CCW = 0;
 				// Go to run
 				SYSTEM.systemState = SYSTEM_RUN;
-				LED_G_ON;
-				LED_R_OFF;
-				LED_Y_OFF;
 				// Enable regulators
 				PWM_ENABLED = 1;
 			}

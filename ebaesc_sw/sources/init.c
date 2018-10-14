@@ -299,26 +299,6 @@ void InitSysVars(Int16 initial)
 	SYSTEM.MEASUREPARAMS.f16LphaIset = FRAC16(0.05);			// ~16.48 A
 	SYSTEM.MEASUREPARAMS.i16TotalMeasurements = 8;
 	
-	//******************************************
-	// Other
-	//******************************************
-	if(0 != initial)
-	{
-		// Mark transition to idle state
-		SYSTEM.i16StateTransition = SYSTEM_IDLE;
-		
-		// Set driver restart state
-		SYSTEM.i16DriverRestartState = SYSTEM_RESTART_INIT;
-		
-		// If there is calibration data
-		if(0 != SYSTEM.CALIBRATION.i16PolePairArray[0])
-		{
-			// Calculate calibration values
-			CalculateCalibrationData();	
-			// Mark calibrated
-			SYSTEM_CALIBRATED = 1;	
-		}
-	}	
 	// Error log init
 	for(SYSTEM.i16ErrorIndex = 0; SYSTEM.i16ErrorIndex < 16; SYSTEM.i16ErrorIndex++)
 	{
@@ -334,6 +314,31 @@ void InitSysVars(Int16 initial)
 	
 	SYSTEM.DRIVERSTATE.i8DriverFaultCount = 0;
 	SYSTEM.DRIVERSTATE.i8DriverFault = 0;
+	
+	//******************************************
+	// Other
+	//******************************************
+	if(0 != initial)
+	{
+		// Mark transition to idle state
+		SYSTEM.i16StateTransition = SYSTEM_WAKEUP;
+
+		SYSTEM.systemState = SYSTEM_WAKEUP;
+		
+		// Set driver restart state
+		SYSTEM.i16DriverRestartState = SYSTEM_RESTART_INIT;
+		
+		// If there is calibration data
+		if(0 != SYSTEM.CALIBRATION.i16PolePairArray[0])
+		{
+			// Calculate calibration values
+			CalculateCalibrationData();	
+			// Mark calibrated
+			SYSTEM_CALIBRATED = 1;	
+		}
+	}	
+	
+	
 }
 
 // Store vars to EEPROM
