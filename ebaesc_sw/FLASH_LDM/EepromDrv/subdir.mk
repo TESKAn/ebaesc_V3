@@ -30,7 +30,7 @@ OBJS_OS_FORMAT += \
 # Each subdirectory must supply rules for building sources it contributes
 EepromDrv/EepromDrv_c.obj: ../EepromDrv/EepromDrv.c
 	@echo 'Building file: $<'
-	@echo 'Executing target #51 $<'
+	@echo 'Executing target #52 $<'
 	@echo 'Invoking: DSC Compiler'
 	"$(DSC_ToolsDirEnv)/mwcc56800e" -c @@"EepromDrv/EepromDrv.args" -o "EepromDrv/EepromDrv_c.obj" "$<" -MD -gccdep
 	@echo 'Finished building: $<'

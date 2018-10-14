@@ -83,7 +83,8 @@ void main (void)
     
     // Initialise SCI0 ring buffer
     RB_Init(&SCI0RXBuff, SCI0RXBuffer, 256);
-    /*
+    
+    
     // Check EEPROM
     UW32FlashResult = GetEepromInfo();
     UW32FlashResult = UW32FlashResult & 0x0000ffff;
@@ -91,15 +92,13 @@ void main (void)
     // If flash not partitioned, exec next function
     if(((uw16EEESize&0x00ff) == 0xff) && ((uw16EEBackUpFlashSize&0x00ff) == 0xff) && (UW32FlashResult == EEPROM_FLASHDRV_SUCCESS))
     {
-    	UW32FlashResult = DEFlashPartition(EEESIZE_2048B,DEPART_32K);
+    	UW32FlashResult = DEFlashPartition(EEESIZE_512B,DEPART_8K);
     }    
     else
     {
     	UW32FlashResult = SetEEEEnable();
     }    
-    
-    */
-    
+
     /* initialise interrupt controller and enable interrupts */
     ioctl(INTC, INTC_INIT, NULL);
     archEnableInt();

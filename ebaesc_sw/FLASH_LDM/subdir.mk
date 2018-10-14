@@ -30,7 +30,7 @@ OBJS_OS_FORMAT += \
 # Each subdirectory must supply rules for building sources it contributes
 main_c.obj: ../main.c
 	@echo 'Building file: $<'
-	@echo 'Executing target #47 $<'
+	@echo 'Executing target #48 $<'
 	@echo 'Invoking: DSC Compiler'
 	"$(DSC_ToolsDirEnv)/mwcc56800e" -c @@"main.args" -o "./main_c.obj" "$<" -MD -gccdep
 	@echo 'Finished building: $<'

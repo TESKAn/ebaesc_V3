@@ -79,7 +79,7 @@ OBJS_OS_FORMAT += \
 # Each subdirectory must supply rules for building sources it contributes
 sources/RS485comm_c.obj: ../sources/RS485comm.c
 	@echo 'Building file: $<'
-	@echo 'Executing target #39 $<'
+	@echo 'Executing target #40 $<'
 	@echo 'Invoking: DSC Compiler'
 	"$(DSC_ToolsDirEnv)/mwcc56800e" -c @@"sources/RS485comm.args" -o "sources/RS485comm_c.obj" "$<" -MD -gccdep
 	@echo 'Finished building: $<'
@@ -92,7 +92,7 @@ sources/%.d: ../sources/%.c
 
 sources/can_c.obj: ../sources/can.c
 	@echo 'Building file: $<'
-	@echo 'Executing target #40 $<'
+	@echo 'Executing target #41 $<'
 	@echo 'Invoking: DSC Compiler'
 	"$(DSC_ToolsDirEnv)/mwcc56800e" -c @@"sources/can.args" -o "sources/can_c.obj" "$<" -MD -gccdep
 	@echo 'Finished building: $<'
@@ -100,7 +100,7 @@ sources/can_c.obj: ../sources/can.c
 
 sources/drv8301_c.obj: ../sources/drv8301.c
 	@echo 'Building file: $<'
-	@echo 'Executing target #41 $<'
+	@echo 'Executing target #42 $<'
 	@echo 'Invoking: DSC Compiler'
 	"$(DSC_ToolsDirEnv)/mwcc56800e" -c @@"sources/drv8301.args" -o "sources/drv8301_c.obj" "$<" -MD -gccdep
 	@echo 'Finished building: $<'
@@ -108,7 +108,7 @@ sources/drv8301_c.obj: ../sources/drv8301.c
 
 sources/events_c.obj: ../sources/events.c
 	@echo 'Building file: $<'
-	@echo 'Executing target #42 $<'
+	@echo 'Executing target #43 $<'
 	@echo 'Invoking: DSC Compiler'
 	"$(DSC_ToolsDirEnv)/mwcc56800e" -c @@"sources/events.args" -o "sources/events_c.obj" "$<" -MD -gccdep
 	@echo 'Finished building: $<'
@@ -116,7 +116,7 @@ sources/events_c.obj: ../sources/events.c
 
 sources/functions_c.obj: ../sources/functions.c
 	@echo 'Building file: $<'
-	@echo 'Executing target #43 $<'
+	@echo 'Executing target #44 $<'
 	@echo 'Invoking: DSC Compiler'
 	"$(DSC_ToolsDirEnv)/mwcc56800e" -c @@"sources/functions.args" -o "sources/functions_c.obj" "$<" -MD -gccdep
 	@echo 'Finished building: $<'
@@ -124,7 +124,7 @@ sources/functions_c.obj: ../sources/functions.c
 
 sources/init_c.obj: ../sources/init.c
 	@echo 'Building file: $<'
-	@echo 'Executing target #44 $<'
+	@echo 'Executing target #45 $<'
 	@echo 'Invoking: DSC Compiler'
 	"$(DSC_ToolsDirEnv)/mwcc56800e" -c @@"sources/init.args" -o "sources/init_c.obj" "$<" -MD -gccdep
 	@echo 'Finished building: $<'
@@ -132,7 +132,7 @@ sources/init_c.obj: ../sources/init.c
 
 sources/systemStates_c.obj: ../sources/systemStates.c
 	@echo 'Building file: $<'
-	@echo 'Executing target #45 $<'
+	@echo 'Executing target #46 $<'
 	@echo 'Invoking: DSC Compiler'
 	"$(DSC_ToolsDirEnv)/mwcc56800e" -c @@"sources/systemStates.args" -o "sources/systemStates_c.obj" "$<" -MD -gccdep
 	@echo 'Finished building: $<'
@@ -140,7 +140,7 @@ sources/systemStates_c.obj: ../sources/systemStates.c
 
 sources/var_c.obj: ../sources/var.c
 	@echo 'Building file: $<'
-	@echo 'Executing target #46 $<'
+	@echo 'Executing target #47 $<'
 	@echo 'Invoking: DSC Compiler'
 	"$(DSC_ToolsDirEnv)/mwcc56800e" -c @@"sources/var.args" -o "sources/var_c.obj" "$<" -MD -gccdep
 	@echo 'Finished building: $<'
