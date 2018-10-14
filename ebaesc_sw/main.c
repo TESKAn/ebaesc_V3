@@ -84,7 +84,7 @@ void main (void)
     // Initialise SCI0 ring buffer
     RB_Init(&SCI0RXBuff, SCI0RXBuffer, 256);
     
-    
+    /*
     // Check EEPROM
     UW32FlashResult = GetEepromInfo();
     UW32FlashResult = UW32FlashResult & 0x0000ffff;
@@ -98,7 +98,7 @@ void main (void)
     {
     	UW32FlashResult = SetEEEEnable();
     }    
-
+*/
     /* initialise interrupt controller and enable interrupts */
     ioctl(INTC, INTC_INIT, NULL);
     archEnableInt();

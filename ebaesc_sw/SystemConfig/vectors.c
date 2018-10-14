@@ -446,7 +446,7 @@ static asm void pll_losslock(void)
  *
  ***************************/
 
-#define boot_start		0x0000D400
+#define boot_start		0x0000F400
 
 #pragma define_section interrupt_vectors "interrupt_vectors.text"  RX
 #pragma section interrupt_vectors begin

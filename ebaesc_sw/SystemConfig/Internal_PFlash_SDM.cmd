@@ -36,7 +36,7 @@
 MEMORY 
 {
     .p_flash_ROM_vect     (RX)  : ORIGIN = 0x0000,   LENGTH = 0x0200
-    .p_flash_ROM          (RX)  : ORIGIN = 0x0208,   LENGTH = 0xD1F5
+    .p_flash_ROM          (RX)  : ORIGIN = 0x0208,   LENGTH = 0xF1F5
 
     ###############################
     # The internal RAM is physically shared among P-RAM and X-RAM so the user 
@@ -57,7 +57,7 @@ MEMORY
     .x_onchip_far 			(RW)  : ORIGIN = 0x018000, LENGTH = 0x4798	# 18328 words 
     .x_EOnCE                (R)   : ORIGIN = 0xFFFF00, LENGTH = 0x0100
     
-    .xBootCfg 				(RWX) : ORIGIN = 0x0D3FD, LENGTH = 3
+    .xBootCfg 				(RWX) : ORIGIN = 0x0F3FD, LENGTH = 3
 }
 
 # we ensure the interrupt vector section is not deadstripped here
