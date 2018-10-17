@@ -808,6 +808,8 @@ void GPIO_F_ISR(void)
 			SYSTEM.PWMIN.i16PWMInFilterAcc -= SYSTEM.PWMIN.i16PWMFiltered;	
 			// Store to comm reg
 			RS485DataStruct.REGS.i16CurrentPWM = SYSTEM.PWMIN.i16PWMFiltered;
+			// Increase PWM values received
+			SYSTEM.PWMIN.ui32PWMSamplesReceived++;			
 			// Measuring min/max value?
 			if(1 == RS485DataStruct.REGS.ui8MeasurePWMMax)
 			{

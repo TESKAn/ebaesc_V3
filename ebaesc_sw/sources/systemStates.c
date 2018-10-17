@@ -10,7 +10,7 @@
 Int16 checkSystemStates(void)
 {
 	i16LEDToggleCount++;
-	if(LED_TOGGLE_COUNT < i16LEDToggleCount) i16LEDToggleCount = 0;
+	if(i16LEDToggles < i16LEDToggleCount) i16LEDToggleCount = 0;
 	switch(SYSTEM.systemState)
 	{
 		case SYSTEM_WAKEUP:
@@ -23,6 +23,30 @@ Int16 checkSystemStates(void)
 		}
 		case SYSTEM_INIT:
 		{
+			switch(SYSTEM.PWMIN.i16PWMMeasureStates)
+			{			
+				case PWM_MEAS_INIT:
+				{
+					i16LEDToggles = LED_TOGGLE_COUNT / 8;
+					break;
+				}
+				case PWM_MEAS_DECIDE:
+				{
+					i16LEDToggles = LED_TOGGLE_COUNT / 4;
+					break;
+				}
+				case PWM_MEAS_HIGH:
+				{
+					i16LEDToggles = LED_TOGGLE_COUNT / 2;
+					break;
+				}
+				case PWM_MEAS_LOW:
+				{
+					i16LEDToggles = LED_TOGGLE_COUNT;
+					break;
+				}		
+			}
+			
 			if(0 == i16LEDToggleCount) LED_G_TOGGLE;			
 			LED_R_OFF;
 			LED_Y_ON;
@@ -290,6 +314,7 @@ Int16 SystemInitState()
 				{
 					// Throttle is in max position
 					SYSTEM.PWMIN.i16PWMfullThrottle = SYSTEM.PWMIN.i16PWMFiltered;
+					RS485DataStruct.REGS.i16PWMMax = SYSTEM.PWMIN.i16PWMfullThrottle;
 					if(0 < SYSTEM.PWMIN.i16PWMMeasureTimer)
 					{
 						SYSTEM.PWMIN.i16PWMMeasureTimer--;
@@ -333,8 +358,12 @@ Int16 SystemInitState()
 							SYSTEM.PWMIN.i16PWMThrottleDifference = SYSTEM.PWMIN.i16PWMfullThrottle - SYSTEM.PWMIN.i16PWMoffThrottle;
 							// Calculate frac multiplier
 							SYSTEM.PWMIN.i16PWMFracMultiplier = (Int16)(32768 / SYSTEM.PWMIN.i16PWMThrottleDifference);
+							// Set right data
+							RS485DataStruct.REGS.i16PWMMin = SYSTEM.PWMIN.i16PWMinThrottle;
+							RS485DataStruct.REGS.i16ZeroSpeedPWM = SYSTEM.PWMIN.i16PWMInOffZone;
 							// Go to idle state
-							SYSTEM.systemState = SYSTEM_IDLE;	
+							SYSTEM.i16StateTransition = SYSTEM_IDLE;	
+							RS485DataStruct.REGS.ui8UsePWMIN = 1;
 						}
 					}
 				}
@@ -371,6 +400,7 @@ Int16 SystemIdleState()
 {
 	Int16 i16Temp0 = 0;
 	// If not in debug
+	/*
 	if(!SYS_DEBUG_MODE)
 	{
 		// Check throttle
@@ -383,7 +413,7 @@ Int16 SystemIdleState()
 		{
 			//SYSTEM_GOTO_ACTIVE = 0;
 		}
-	}
+	}*/
 	
 	// Use PWM?
 	if(1 == RS485DataStruct.REGS.ui8UsePWMIN)

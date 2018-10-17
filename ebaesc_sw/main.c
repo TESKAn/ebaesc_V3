@@ -84,7 +84,7 @@ void main (void)
     // Initialise SCI0 ring buffer
     RB_Init(&SCI0RXBuff, SCI0RXBuffer, 256);
     
-    /*
+    
     // Check EEPROM
     UW32FlashResult = GetEepromInfo();
     UW32FlashResult = UW32FlashResult & 0x0000ffff;
@@ -98,7 +98,7 @@ void main (void)
     {
     	UW32FlashResult = SetEEEEnable();
     }    
-*/
+
     /* initialise interrupt controller and enable interrupts */
     ioctl(INTC, INTC_INIT, NULL);
     archEnableInt();
@@ -112,7 +112,7 @@ void main (void)
     RS485_initData(&RS485DataStruct);
     
     // Set all flag values to initial value
-    SYS_DEBUG_MODE = 1;
+    SYS_DEBUG_MODE = 0;			// Set to 0 to enable PWM_IN control
     SYSTEM_CALIBRATED = 0;
     SYSTEM_RUN_SENSORED = 0;
     CONTROL_TORQUE = 0;
@@ -173,6 +173,8 @@ void main (void)
 	
 	ioctl(ADC16, ADC16_WRITE_SC1_REG, 1);
 	*/
+    
+    SYSTEM_CALIBRATED = 0;
     
     while(1)
     {

@@ -22,6 +22,7 @@ Int8 i8ParamTest = 0;
 // LED test
 Int8 i8LEDTest = 0;
 Int16 i16LEDToggleCount = 0;
+Int16 i16LEDToggles = LED_TOGGLE_COUNT;
 
 // Some flags
 FLAGBITS flag0;
