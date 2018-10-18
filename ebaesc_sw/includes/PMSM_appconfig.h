@@ -76,7 +76,7 @@
 //Loop sample time                      = 0.000125 [sec]
 //----------------------------------------------------------------------
 //Speed Controller - Parallel type      
-#define SPEED_PI_PROP_GAIN              FRAC16(0.3285)
+#define SPEED_PI_PROP_GAIN              FRAC16(0.9)
 #define SPEED_PI_PROP_SHIFT             (0)
 #define SPEED_PI_INTEG_GAIN             FRAC16(0.762935023406)
 #define SPEED_PI_INTEG_SHIFT            (-7)
@@ -158,8 +158,8 @@
 #define TO_KP_SHIFT 					(-2)  
 #define TO_KI_GAIN 						FRAC16(0.299988)  
 #define TO_KI_SHIFT 					(-10)  
-#define TO_THETA_GAIN 					FRAC16(0.5)  
-#define TO_THETA_SHIFT 					(0)  
+#define TO_THETA_GAIN 					FRAC16(0.4)  
+#define TO_THETA_SHIFT 					(1)  
 
 
 
