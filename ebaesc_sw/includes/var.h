@@ -487,8 +487,18 @@ typedef struct tagSYSVARS
 		Int8 i8DriverFault;
 	}DRIVERSTATE;
 
+	struct tagMEASUREWEL
+	{
+		Frac16 f16AngleDiff;
+		Int16 i16ADCycleCounter;
+		Int16 i16ADCycles;
+		Int16 i16WEl;
+		Int16 i16WMot;
+	}MEASUREWEL;
 	// Phase voltages
 	MCLIB_3_COOR_SYST_T m3UphUVW;
+	
+	Int16 i16ADInterruptCycleTime;
 
 
 	// PWM values

@@ -21,6 +21,9 @@ void ADC_1_EOS_ISR(void)
 	
 	// Clear EOSI flag
 	ioctl(ADC_1, ADC_CLEAR_STATUS_EOSI, NULL);
+	
+	// Reset timing timer
+	ioctl(QTIMER_A1, QT_WRITE_COUNTER_REG, 0);
 
 	// Calibration data readout
 	// Go through calibration data?
@@ -293,7 +296,21 @@ void ADC_1_EOS_ISR(void)
 	// Calculate phase error
 	// SYSTEM.POSITION.f16RotorAngle = calculated angle from previous iteration
 	// SYSTEM.POSITION.f16MeasuredRotorAngle = current measured angle
-	SYSTEM.POSITION.f16MeasuredAngleError = SYSTEM.POSITION.f16MeasuredRotorAngle - SYSTEM.POSITION.f16RotorAngle; 
+	SYSTEM.POSITION.f16MeasuredAngleError = SYSTEM.POSITION.f16MeasuredRotorAngle - SYSTEM.POSITION.f16RotorAngle;
+	// Check zero - cross
+	
+	SYSTEM.MEASUREWEL.f16AngleDiff = mult(SYSTEM.POSITION.f16RotorAngle_m,SYSTEM.POSITION.f16RotorAngle);
+	if(FRAC16(-0.5) > SYSTEM.MEASUREWEL.f16AngleDiff)
+	{
+		SYSTEM.MEASUREWEL.i16ADCycles = SYSTEM.MEASUREWEL.i16ADCycleCounter;
+		SYSTEM.MEASUREWEL.i16ADCycleCounter = 0;
+	}
+	else
+	{
+		SYSTEM.MEASUREWEL.i16ADCycleCounter++;
+	}
+	
+	
 	// Store to previous angle
 	SYSTEM.POSITION.f16RotorAngle_m = SYSTEM.POSITION.f16RotorAngle;
 	
@@ -648,7 +665,7 @@ void ADC_1_EOS_ISR(void)
 				SYSTEM.REGULATORS.m2IDQReq.f16Q = GFLIB_ControllerPIp(f16SpeedErrorK, &SYSTEM.REGULATORS.mudtControllerParamW, &SYSTEM.REGULATORS.mudtControllerParamIq.i16LimitFlag);
 				
 				// Set D value to 0
-				SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.0);
+				//SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.0);
 			}		
 			break;
 		}
@@ -759,6 +776,8 @@ void ADC_1_EOS_ISR(void)
 		// Load new PWM values	
 		ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);		
 	}
+	// Read timer counter
+	SYSTEM.i16ADInterruptCycleTime = ioctl(QTIMER_A1, QT_READ_COUNTER_REG, NULL);
 }
 /*
 #pragma interrupt saveall

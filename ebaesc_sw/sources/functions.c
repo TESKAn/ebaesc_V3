@@ -199,8 +199,11 @@ Int16 CalculateSIValues(void)
 	
 	// RPM
 	fTemp = (float)SYSTEM.POSITION.f16SpeedFiltered;
-	fTemp = fTemp * SI_RPM_FACTOR;
+	fTemp = fTemp * SYSTEM.POSITION.Kthactopos;
+	fTemp = fTemp * SI_WL_FACTOR;
 	SYSTEM.SIVALUES.fRPM = fTemp / 32768;
+	
+	SYSTEM.SIVALUES.fRPM = fTemp / (float)SYSTEM.CALIBRATION.i16MotorPolePairs;
 	
 	// Calculate angle error in deg, scaled to frac16
 	fTemp = SYSTEM.SIVALUES.fRPM * SYSTEM.POSITION.fOffsetCalcFactor;

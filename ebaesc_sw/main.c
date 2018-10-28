@@ -70,11 +70,11 @@ void main (void)
     ioctl(SPI_0, SPI_INIT, NULL);
     ioctl(SCI_0, SCI_INIT, NULL);
     ioctl(SCI_1, SCI_INIT, NULL);
-    //ioctl(QTIMER_A1, QT_INIT, NULL);
-    ioctl(QTIMER_B0, QT_INIT, NULL);
-    ioctl(QTIMER_B1, QT_INIT, NULL);
-    ioctl(QTIMER_B2, QT_INIT, NULL);
-    ioctl(QTIMER_B3, QT_INIT, NULL);
+    ioctl(QTIMER_A1, QT_INIT, NULL);
+    //ioctl(QTIMER_B0, QT_INIT, NULL);
+    //ioctl(QTIMER_B1, QT_INIT, NULL);
+    //ioctl(QTIMER_B2, QT_INIT, NULL);
+    ioctl(QTIMER_B3, QT_INIT, NULL);		// For input PWM
     //ioctl(HSCMP_A, HSCMP_INIT, NULL);
     ioctl(FCAN, FCAN_INIT, NULL);
     //ioctl(ADC16, ADC16_INIT, NULL);
@@ -92,7 +92,7 @@ void main (void)
     // If flash not partitioned, exec next function
     if(((uw16EEESize&0x00ff) == 0xff) && ((uw16EEBackUpFlashSize&0x00ff) == 0xff) && (UW32FlashResult == EEPROM_FLASHDRV_SUCCESS))
     {
-    	UW32FlashResult = DEFlashPartition(EEESIZE_512B,DEPART_8K);
+    	UW32FlashResult = DEFlashPartition(EEESIZE_2048B,DEPART_32K);
     }    
     else
     {
@@ -282,6 +282,11 @@ void main (void)
 				LoadEEPROM();
 				i8EEPROMOp = 0;
 				break;			
+			}
+			case 3:
+			{
+				i8EEPROMOp = 0;
+				break;
 			}
 			default:
 			{

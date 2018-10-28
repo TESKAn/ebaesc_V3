@@ -82,6 +82,7 @@
 #define SI_UIN_FACTOR		42.6191489f	// 42.6V max for mini
 //#define SI_IIN_FACTOR		329.6f		// 164.8A max
 #define SI_IIN_FACTOR		330.0f		// 330.0A max for mini
+#define SI_WL_FACTOR		492295.0f	
 #define SI_RPM_FACTOR		17142.8571f	//120.000/n pole pairs
 
 // Macros for calculating motor parameters
