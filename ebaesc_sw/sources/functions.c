@@ -219,7 +219,7 @@ Int16 CalculateSIValues(void)
 	fTemp = fTemp * 32768;
 	SYSTEM.REGULATORS.f16UqRemaining = (Frac16)fTemp;
 	
-	// Calculate phase current
+	// Calculate phase current for amplifier gain settings
 	// Id^2
 	fTemp = (float)SYSTEM.MCTRL.m2IDQ.f16D;
 	fTemp = fTemp / 32768;
