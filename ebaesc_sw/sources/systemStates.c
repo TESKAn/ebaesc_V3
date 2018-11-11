@@ -278,6 +278,7 @@ Int16 SystemWakeupState()
 
 Int16 SystemInitState()
 {
+	float fTemp;
 	// Do initialisation here - wait for input signal, measure input throttle value
 	// If not in debug
 	if(!SYS_DEBUG_MODE)
@@ -308,69 +309,81 @@ Int16 SystemInitState()
 				break;
 			}
 			case PWM_MEAS_HIGH:
-			{	
-				// If value over high ref, 
-				if(SYSTEM.PWMIN.i16PWMInHighValRef < SYSTEM.PWMIN.i16PWMFiltered)
+			{				
+				// If measuring less than measuring time
+				if(0 < SYSTEM.PWMIN.i16PWMMeasureTimer)
 				{
-					// Throttle is in max position
-					SYSTEM.PWMIN.i16PWMfullThrottle = SYSTEM.PWMIN.i16PWMFiltered;
-					RS485DataStruct.REGS.i16PWMMax = SYSTEM.PWMIN.i16PWMfullThrottle;
-					if(0 < SYSTEM.PWMIN.i16PWMMeasureTimer)
+					SYSTEM.PWMIN.i16PWMMeasureTimer--;
+					// If value over high ref, 
+					if(SYSTEM.PWMIN.i16PWMInHighValRef < SYSTEM.PWMIN.i16PWMFiltered)
 					{
-						SYSTEM.PWMIN.i16PWMMeasureTimer--;
+						// Throttle is in max position
+						SYSTEM.PWMIN.i16PWMfullThrottle = SYSTEM.PWMIN.i16PWMFiltered;
+						RS485DataStruct.REGS.i16PWMMax = SYSTEM.PWMIN.i16PWMfullThrottle;	
 					}
-				}
+					else
+					{
+						// Wait with countdown until throttle is above high val ref
+						SYSTEM.PWMIN.i16PWMMeasureTimer = SYSTEM.PWMIN.i16PWMInMeasureTime;						
+					}					
+				}				
 				else
 				{
-					// Throttle is below high ref
-					// Check timer
-					if(0 == SYSTEM.PWMIN.i16PWMMeasureTimer)
-					{
-						// Measure high is OK, go to measure low
-						// Go to measure low state
-						SYSTEM.PWMIN.i16PWMMeasureStates = PWM_MEAS_LOW;
-					}
-					// Measure for x ms
-					// Throttle has to stay in this position for specified amount of time
-					// Throttle not in high position for specified time, reset measurement
-					// OR set measurement time for low
+					SYSTEM.PWMIN.i16PWMMeasureStates = PWM_MEAS_LOW;
 					SYSTEM.PWMIN.i16PWMMeasureTimer = SYSTEM.PWMIN.i16PWMInMeasureTime;
 				}
-				
 				break;
 			}
 			case PWM_MEAS_LOW:
 			{
-				// If PWM under half value
-				if(SYSTEM.PWMIN.i16PWMInMiddleValue > SYSTEM.PWMIN.i16PWMFiltered)
+				// If measuring less than measuring time
+				if(0 < SYSTEM.PWMIN.i16PWMMeasureTimer)
 				{
-					// Throttle is in min position
-					SYSTEM.PWMIN.i16PWMinThrottle = SYSTEM.PWMIN.i16PWMFiltered;
-					if(0 < SYSTEM.PWMIN.i16PWMMeasureTimer)
+					SYSTEM.PWMIN.i16PWMMeasureTimer--;
+					if(SYSTEM.PWMIN.i16PWMInLowValRef > SYSTEM.PWMIN.i16PWMFiltered)
 					{
-						SYSTEM.PWMIN.i16PWMMeasureTimer--;
+						// Throttle is in min position
+						SYSTEM.PWMIN.i16PWMinThrottle = SYSTEM.PWMIN.i16PWMFiltered;
+
 						// Check if timer reached 0
 						if(0 == SYSTEM.PWMIN.i16PWMMeasureTimer)
 						{
-							// It did, calculate ON time
+							// It did, calculate ON value
 							SYSTEM.PWMIN.i16PWMoffThrottle = SYSTEM.PWMIN.i16PWMinThrottle + SYSTEM.PWMIN.i16PWMInOffZone;
 							// Calculate throttle difference
 							SYSTEM.PWMIN.i16PWMThrottleDifference = SYSTEM.PWMIN.i16PWMfullThrottle - SYSTEM.PWMIN.i16PWMoffThrottle;
-							// Calculate frac multiplier
-							SYSTEM.PWMIN.i16PWMFracMultiplier = (Int16)(32768 / SYSTEM.PWMIN.i16PWMThrottleDifference);
+							// Calculate factors for RPM
+							SYSTEM.PWMIN.fPWMFactor = (float)(RS485DataStruct.REGS.i16MaxRPM - RS485DataStruct.REGS.i16MinRPM);
+							SYSTEM.PWMIN.fPWMFactor = SYSTEM.PWMIN.fPWMFactor / (float)(SYSTEM.PWMIN.i16PWMThrottleDifference);
+							
+							SYSTEM.PWMIN.fPWMOffset = (float)(SYSTEM.PWMIN.i16PWMoffThrottle);
+							SYSTEM.PWMIN.fPWMOffset = SYSTEM.PWMIN.fPWMOffset * SYSTEM.PWMIN.fPWMFactor;
+							SYSTEM.PWMIN.fPWMOffset = SYSTEM.PWMIN.fPWMOffset + (float)(RS485DataStruct.REGS.i16MinRPM);
+							
+							// Set startup speed
+							fTemp = (float)RS485DataStruct.REGS.i16MinRPM * 0.06826666666666666666666666666667f;
+							SYSTEM.SENSORLESS.f16StartSpeed = (Frac16)fTemp;
+							
+							// Check BEMF ON speed
+							if(SYSTEM.SENSORLESS.f16MinSpeed > SYSTEM.SENSORLESS.f16StartSpeed)
+							{
+								SYSTEM.SENSORLESS.f16MinSpeed = SYSTEM.SENSORLESS.f16StartSpeed / 2;
+							}
+
 							// Set right data
 							RS485DataStruct.REGS.i16PWMMin = SYSTEM.PWMIN.i16PWMinThrottle;
 							RS485DataStruct.REGS.i16ZeroSpeedPWM = SYSTEM.PWMIN.i16PWMInOffZone;
 							// Go to idle state
 							SYSTEM.i16StateTransition = SYSTEM_IDLE;	
 							RS485DataStruct.REGS.ui8UsePWMIN = 1;
-						}
+							SYSTEM.PWMIN.i16PWMMeasureStates = PWM_MEAS_INIT;
+						}						
 					}
-				}
-				else
-				{
-					// Throttle is not on min value, reset timer
-					SYSTEM.PWMIN.i16PWMMeasureTimer = SYSTEM.PWMIN.i16PWMInMeasureTime;
+					else
+					{
+						// Throttle is not on min value, reset timer
+						SYSTEM.PWMIN.i16PWMMeasureTimer = SYSTEM.PWMIN.i16PWMInMeasureTime;						
+					}
 				}
 				break;
 			}
@@ -419,32 +432,23 @@ Int16 SystemIdleState()
 	if(1 == RS485DataStruct.REGS.ui8UsePWMIN)
 	{
 		// If PWM over zero speed, go to run mode.
-		i16Temp0 = RS485DataStruct.REGS.i16CurrentPWM - RS485DataStruct.REGS.i16PWMMin;
-
-		if(i16Temp0 > RS485DataStruct.REGS.i16ZeroSpeedPWM)
+		if(SYSTEM.PWMIN.i16PWMFiltered > SYSTEM.PWMIN.i16PWMoffThrottle)
 		{
 			RS485DataStruct.REGS.ui8Armed = 1;
 		}
-	}
-	
-	
+	}	
 	// Check comm regs
 	if(1 == RS485DataStruct.REGS.ui8Armed)
 	{
 		// Control system speed
 		CONTROL_SPEED = 1;
 		SYSTEM.i16StateTransition = SYSTEM_RUN;
-	}
-	
-	
+	}	
 	// Transit out of?
 	if(SYSTEM.i16StateTransition != SYSTEM.systemState)
 	{
 		SystemStateTransition();
 	}
-	
-	
-
 	return 0;
 }
 
@@ -454,46 +458,38 @@ Int16 SystemRunState()
 	Int16 i16Temp1 = 0;
 	Frac16 f16Temp0 = 0;
 	Int32 i32Temp0 = 0;
+	float fTemp;
 	// Running?
 	if(1 == RS485DataStruct.REGS.ui8Armed)
 	{
 		// Use PWM for speed?
 		if(1 == RS485DataStruct.REGS.ui8UsePWMIN)
 		{
-			// Calculate speed based on input PWM value
-			// Current value
-			i16Temp0 = RS485DataStruct.REGS.i16CurrentPWM - RS485DataStruct.REGS.i16PWMMin;
-			// Limit
-			if(0 > i16Temp0) i16Temp0 = 0;
-			// Full scale value
-			i16Temp1 = RS485DataStruct.REGS.i16PWMMax - RS485DataStruct.REGS.i16PWMMin;
-			if(0 > i16Temp1) i16Temp1 = 1;
-			if(i16Temp0 > RS485DataStruct.REGS.i16ZeroSpeedPWM)
+			// Current PWM over minimum (=OFF) PWM?
+			if(SYSTEM.PWMIN.i16PWMFiltered > SYSTEM.PWMIN.i16PWMoffThrottle)
 			{
-				// Calculate speed
-				i32Temp0 = (Int32)RS485DataStruct.REGS.i16MaxRPM * (Int32)i16Temp0;
-				i32Temp0 /= i16Temp1;
-				i16Temp0 = (Int16)i32Temp0;
-				
-				// Limit to min
-				if(i16Temp0 < RS485DataStruct.REGS.i16MinRPM)
-				{
-					i16Temp0 = 0;
-				}
-				else
-				{
+				// Do only if startup is complete
+				if(POSITION_SOURCE_MULTIPLE == SYSTEM.POSITION.i16PositionSource)
+				{				
+					// Calculate speed based on input PWM value
+					fTemp = (float)SYSTEM.PWMIN.i16PWMFiltered;
+					fTemp = fTemp * SYSTEM.PWMIN.fPWMFactor;
+					fTemp = fTemp - SYSTEM.PWMIN.fPWMOffset;
+					// fTemp = physical RPM that we want
+					// Calculate electrical RPM that we want
+					fTemp *= (float)SYSTEM.CALIBRATION.i16MotorPolePairs;
 					// Calculate frac value
-					i32Temp0 = (Frac32)i16Temp0 * 32768 * (Frac32)SYSTEM.CALIBRATION.i16MotorPolePairs;
-					i32Temp0 /= 120000;
+					// Divide by max el RPM for value 1, multiply with 32768 -> 32768/480000
+					fTemp *= 0.06826666666666666666666666666667f;				
 					// Check sign
 					if(0 == RS485DataStruct.REGS.ui8ReverseRotation)
 					{
-						SYSTEM.RAMPS.f16SpeedRampDesiredValue = (Frac16)i32Temp0;
+						SYSTEM.RAMPS.f16SpeedRampDesiredValue = (Frac16)fTemp;
 					}
 					else
 					{
-						SYSTEM.RAMPS.f16SpeedRampDesiredValue = -(Frac16)i32Temp0;
-					}		
+						SYSTEM.RAMPS.f16SpeedRampDesiredValue = -(Frac16)fTemp;
+					}	
 				}
 			}
 			else

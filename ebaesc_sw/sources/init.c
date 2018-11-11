@@ -258,7 +258,6 @@ void InitSysVars(Int16 initial)
 		SYSTEM.PWMIN.i16PWMoffThrottle = PWM_IN_LOW_VAL_REF + PWM_IN_OFF_ZONE;
 		SYSTEM.PWMIN.i16PWMinThrottle = PWM_IN_LOW_VAL_REF;
 		SYSTEM.PWMIN.i16PWMThrottleDifference = PWM_IN_HIGH_VAL_REF - PWM_IN_LOW_VAL_REF;
-		SYSTEM.PWMIN.i16PWMFracMultiplier = 32768 / (PWM_IN_HIGH_VAL_REF - PWM_IN_LOW_VAL_REF);	
 		
 		// PWM input parameters
 		SYSTEM.PWMIN.i16PWMInMiddleValue = PWM_IN_MIDDLE_VALUE;
@@ -652,7 +651,6 @@ Int16 LoadEEPROM()
 	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.PWMIN.i16PWMoffThrottle);
 	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.PWMIN.i16PWMinThrottle);
 	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.PWMIN.i16PWMThrottleDifference);
-	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.PWMIN.i16PWMFracMultiplier);
 	// PWM input parameters
 	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.PWMIN.i16PWMInMiddleValue);
 	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.PWMIN.i16PWMInHighValRef);
@@ -689,11 +687,13 @@ Int16 LoadEEPROM()
 	//******************************************
 		
 	// If there is calibration data
-	// Calculate calibration values
-	CalculateCalibrationData();	
-	// Mark calibrated
-	SYSTEM_CALIBRATED = 1;	
-	
+	if(0 != SYSTEM.CALIBRATION.i16PolePairArray[0])
+	{
+		// Calculate calibration values
+		CalculateCalibrationData();	
+		// Mark calibrated
+		SYSTEM_CALIBRATED = 1;	
+	}	
 
 	return 0;
 }
@@ -834,7 +834,6 @@ Int16 StoreEEPROM()
 	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.PWMIN.i16PWMoffThrottle);
 	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.PWMIN.i16PWMinThrottle);
 	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.PWMIN.i16PWMThrottleDifference);
-	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.PWMIN.i16PWMFracMultiplier);
 	// PWM input parameters
 	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.PWMIN.i16PWMInMiddleValue);
 	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.PWMIN.i16PWMInHighValRef);

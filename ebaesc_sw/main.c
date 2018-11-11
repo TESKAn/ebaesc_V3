@@ -119,9 +119,6 @@ void main (void)
     CONTROL_SPEED = 0;
     SENSORLESS_BEMF_ON = 0;
     
-
-    
-    
     // Enable gate driver
     EN_GATE_ON;
     delay(30000);
@@ -132,7 +129,7 @@ void main (void)
 	/*
     // Check EEPROM sys vars
     EEPROMReadi16(0, &SYSTEM.i16EEPROMStoreDone);
-    if(0 == SYSTEM.i16EEPROMStoreDone)
+    if(-1 == SYSTEM.i16EEPROMStoreDone)
     {
     	// Store to EEPROM
     	StoreEEPROM();
@@ -142,9 +139,7 @@ void main (void)
     	// Load from EEPROM
     	LoadEEPROM();
     }
-    */
-
-    
+*/
     // Calculate float values from parameters 
     calculateFloats();
     
@@ -154,8 +149,7 @@ void main (void)
     // Init CAN buffers
     CAN_Init();
     
-    // Gain = 40 (x20 DRV, x2 AD)
-    //SYSTEM.ADC.f16CurrentGainFactor = FRAC16(0.25);
+    // Gain = 20 (x20 DRV)
     SYSTEM.ADC.f16CurrentGainFactor = FRAC16(0.5);
     /*
     // Initialise MOSFET driver
@@ -180,15 +174,7 @@ void main (void)
     {
     	// Check freemaster
     	FMSTR_Poll();
-    	
-    	// Check RS485 comm
-    	/*
-    	if(0 != SCI0RXBuff.count)
-    	{
-			// Call RS485 state machine
-			RS485_States_slave(RB_pop(&SCI0RXBuff));    		
-    	}
-*/
+
 		switch(i8LEDTest)
 		{
 			case 0:
@@ -262,39 +248,39 @@ void main (void)
 				break;
 			}
     	}
-    	
-    	switch(i8EEPROMOp)
+    	// Change EEPROM only if in idle state
+    	if(SYSTEM_IDLE == SYSTEM.systemState)
     	{
-			case 0:
+			switch(i8EEPROMOp)
 			{
-				break;
-			}
-			case 1:
-			{
-				StoreEEPROM();
-				i8EEPROMOp = 0;
-				break;
-			}
-			case 2:
-			{
-				SYSTEM.i16MotorID = 0;
-				SYSTEM.REGULATORS.mudtControllerParamId.f16PropGain = 0;
-				LoadEEPROM();
-				i8EEPROMOp = 0;
-				break;			
-			}
-			case 3:
-			{
-				i8EEPROMOp = 0;
-				break;
-			}
-			default:
-			{
-				i8EEPROMOp = 0;
-				break;
+				case 0:
+				{
+					break;
+				}
+				case 1:
+				{
+					StoreEEPROM();
+					i8EEPROMOp = 0;
+					break;
+				}
+				case 2:
+				{
+					LoadEEPROM();
+					i8EEPROMOp = 0;
+					break;			
+				}
+				case 3:
+				{
+					i8EEPROMOp = 0;
+					break;
+				}
+				default:
+				{
+					i8EEPROMOp = 0;
+					break;
+				}
 			}
     	}
-    	
     	switch(i8CANTest)
     	{
     		case 0:    	

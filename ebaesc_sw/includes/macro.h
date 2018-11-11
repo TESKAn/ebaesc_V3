@@ -9,7 +9,27 @@
 #define MACRO_H_
 
 // Calibration parameters
-#define M_FR
+#define M_NONE
+
+#ifdef M_NONE
+#define M_ID				0x23
+#define M_MAXSENSORINDEX	0
+#define M_MINSENSORINDEX	0
+#define M_POLEPAIRS			7
+#define M_POLEARRAY_0		0
+#define M_POLEARRAY_1		0
+#define M_POLEARRAY_2		0
+#define M_POLEARRAY_3		0
+#define M_POLEARRAY_4		0
+#define M_POLEARRAY_5		0
+#define M_POLEARRAY_6		0
+#define M_POLEARRAY_7		0
+// This unit ID
+#define RS485_ID			0x23
+// Unit park position
+#define M_PARK_POSITION		0
+
+#endif
 
 #ifdef M_FR
 #define M_ID				0x23
@@ -255,7 +275,7 @@
 #define PWM_IN_MIDDLE_VALUE					2343	// 1.5625 MHz, 0.64 us/tick, ~1.5 ms
 #define PWM_IN_HIGH_VAL_REF					2967	// 1900 us
 #define PWM_IN_LOW_VAL_REF					1719	// 1100 us
-#define PWM_IN_MEASURE_TIME					1000	// Time (in ms) to measure throttle stick position
+#define PWM_IN_MEASURE_TIME					500		// Time (in ms) to measure throttle stick position
 #define PWM_IN_OFF_ZONE						15		// Deadzone from PWM in low to throttle OFF
 // Default PWM timeout
 #define PWM_IN_DEFAULT_TIMEOUT				1000	// 1000 ms

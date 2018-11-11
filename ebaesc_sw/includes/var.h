@@ -373,7 +373,6 @@ typedef struct tagSYSVARS
 		Int16 i16PWMoffThrottle;
 		Int16 i16PWMinThrottle;
 		Int16 i16PWMThrottleDifference;
-		Int16 i16PWMFracMultiplier;
 		// States for measuring PWM input parameters
 		Int16 i16PWMMeasureStates;
 		// PWM measure state timer
@@ -397,6 +396,11 @@ typedef struct tagSYSVARS
 		Int16 i16PWMLow;
 		// PWM samples received
 		UInt32 ui32PWMSamplesReceived;
+		// Factors
+		float fPWMFactor;
+		float fPWMOffset;
+		
+		
 	}PWMIN;
 	
 	struct tagSIVALUES

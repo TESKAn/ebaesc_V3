@@ -33,8 +33,6 @@ Int16 RS485_initData(RS485MOTOR* dataStruct)
 	RS485Data->REGS.ui8ReturnDelayTime = 1;
 	// Park position
 	RS485Data->REGS.i16ParkPosition = M_PARK_POSITION;
-	//RS485Data->REGS.f32MinRPM = 1000;
-	//RS485Data->REGS.f32MaxRPM = 9000;	
 	
 	RS485Data->ui16RegsBytes = 64;
 	RS485Data->errStatus = 0;
@@ -48,8 +46,8 @@ Int16 RS485_initData(RS485MOTOR* dataStruct)
 	RS485Data->REGS.i16PWMMax = 2000;
 	RS485Data->REGS.i16PWMMin = 1000;
 	
-	RS485Data->REGS.i16MaxRPM = 12000;
-	RS485Data->REGS.i16MinRPM = 1000;
+	RS485Data->REGS.i16MaxRPM = 30000;
+	RS485Data->REGS.i16MinRPM = 5000;
 	RS485Data->REGS.i16CurrentPWM = 1000;
 	RS485Data->REGS.i16ParkPosition = 2048;
 	
