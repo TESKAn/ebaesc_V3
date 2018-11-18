@@ -15,7 +15,7 @@
 #define M_ID				0x23
 #define M_MAXSENSORINDEX	0
 #define M_MINSENSORINDEX	0
-#define M_POLEPAIRS			7
+#define M_POLEPAIRS			2
 #define M_POLEARRAY_0		0
 #define M_POLEARRAY_1		0
 #define M_POLEARRAY_2		0

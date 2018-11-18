@@ -358,10 +358,11 @@ Int16 SystemInitState()
 							
 							SYSTEM.PWMIN.fPWMOffset = (float)(SYSTEM.PWMIN.i16PWMoffThrottle);
 							SYSTEM.PWMIN.fPWMOffset = SYSTEM.PWMIN.fPWMOffset * SYSTEM.PWMIN.fPWMFactor;
-							SYSTEM.PWMIN.fPWMOffset = SYSTEM.PWMIN.fPWMOffset + (float)(RS485DataStruct.REGS.i16MinRPM);
+							SYSTEM.PWMIN.fPWMOffset = SYSTEM.PWMIN.fPWMOffset - (float)(RS485DataStruct.REGS.i16MinRPM);
 							
 							// Set startup speed
 							fTemp = (float)RS485DataStruct.REGS.i16MinRPM * 0.06826666666666666666666666666667f;
+							fTemp = fTemp * (float)SYSTEM.CALIBRATION.i16MotorPolePairs;
 							SYSTEM.SENSORLESS.f16StartSpeed = (Frac16)fTemp;
 							
 							// Check BEMF ON speed
