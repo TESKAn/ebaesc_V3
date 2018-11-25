@@ -25,5 +25,6 @@ UWord32 EEPROMReadw16(UWord32 uw32CurrIndex, Word16 *w16Data);
 UWord32 EEPROMReadf(UWord32 uw32CurrIndex, float *fData);
 Int16 LoadEEPROM();
 Int16 StoreEEPROM();
+Int16 CheckEEPROM();
 
 #endif /* INIT_H_ */

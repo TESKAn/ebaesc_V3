@@ -284,6 +284,8 @@ typedef struct tagSYSVARS
 		Frac16 f16SensorValueBFiltered;
 		// Factor to account for different current amplifications
 		Frac16 f16CurrentGainFactor;
+		// Count number of cycles for offset measurement
+		Int16 i16ADCOffsetMeasurements;
 	}ADC;
 	
 	// Input capture PWM values

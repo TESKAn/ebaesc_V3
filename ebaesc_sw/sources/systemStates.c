@@ -594,13 +594,13 @@ Int16 SystemRunState()
 		// Stop if spinning
 		if((FRAC16(0.01) < SYSTEM.POSITION.f16SpeedFiltered)||(FRAC16(-0.01) > SYSTEM.POSITION.f16SpeedFiltered))
 		{
+			SYSTEM.RAMPS.f16SpeedRampDesiredValue = FRAC16(0.0);
+			SYSTEM.RAMPS.f16TorqueRampDesiredValue = FRAC16(0.0);			
 			if(SYSTEM_FAULT_DRV8301 == SYSTEM.i16StateTransition)
 			{
 				StopMotor();
 				SystemStateTransition();
-			}
-			SYSTEM.RAMPS.f16SpeedRampDesiredValue = FRAC16(0.0);
-			SYSTEM.RAMPS.f16TorqueRampDesiredValue = FRAC16(0.0);		
+			}		
 			if(2 == RS485DataStruct.REGS.ui8Armed)
 			{
 				RS485DataStruct.REGS.ui8Armed = 0;
@@ -622,6 +622,7 @@ Int16 SystemRunState()
 		}
 		else
 		{
+			StopMotor();
 			SystemStateTransition();
 		}
 	}
@@ -1399,16 +1400,34 @@ Int16 SystemStateTransition()
 	{
 		case SYSTEM_WAKEUP:
 		{
+			SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = FRAC16(0.5);
+			SYSTEM.PWMValues.pwmSub_1_Channel_23_Value = FRAC16(0.5);
+			SYSTEM.PWMValues.pwmSub_2_Channel_23_Value = FRAC16(0.5);
+			// Load new PWM values	
+			ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);	
+			
 			SYSTEM.systemState = SYSTEM_WAKEUP;
 			break;
 		}
 		case SYSTEM_INIT:
 		{
+			SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = FRAC16(0.5);
+			SYSTEM.PWMValues.pwmSub_1_Channel_23_Value = FRAC16(0.5);
+			SYSTEM.PWMValues.pwmSub_2_Channel_23_Value = FRAC16(0.5);
+			// Load new PWM values	
+			ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);	
+			
 			SYSTEM.systemState = SYSTEM_INIT;
 			break;
 		}
 		case SYSTEM_IDLE:
 		{
+			SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = FRAC16(0.5);
+			SYSTEM.PWMValues.pwmSub_1_Channel_23_Value = FRAC16(0.5);
+			SYSTEM.PWMValues.pwmSub_2_Channel_23_Value = FRAC16(0.5);
+			// Load new PWM values	
+			ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);	
+			
 			// Go to idle state
 			SYSTEM.systemState = SYSTEM_IDLE;	
 			break;
@@ -1493,6 +1512,11 @@ Int16 SystemStateTransition()
 			else
 			{
 				// No option, abort
+				SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = FRAC16(0.5);
+				SYSTEM.PWMValues.pwmSub_1_Channel_23_Value = FRAC16(0.5);
+				SYSTEM.PWMValues.pwmSub_2_Channel_23_Value = FRAC16(0.5);
+				// Load new PWM values	
+				ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);	
 				// Turn off PWMs
 				ioctl(EFPWMA, EFPWM_SET_OUTPUTS_DISABLE, EFPWM_SUB0_PWM_A|EFPWM_SUB0_PWM_B|EFPWM_SUB1_PWM_A|EFPWM_SUB1_PWM_B|EFPWM_SUB2_PWM_A|EFPWM_SUB2_PWM_B);
 				
@@ -1501,11 +1525,22 @@ Int16 SystemStateTransition()
 		}
 		case SYSTEM_FAULT:
 		{
+			SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = FRAC16(0.5);
+			SYSTEM.PWMValues.pwmSub_1_Channel_23_Value = FRAC16(0.5);
+			SYSTEM.PWMValues.pwmSub_2_Channel_23_Value = FRAC16(0.5);
+			// Load new PWM values	
+			ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);	
 			ioctl(EFPWMA, EFPWM_SET_OUTPUTS_DISABLE, EFPWM_SUB0_PWM_A|EFPWM_SUB0_PWM_B|EFPWM_SUB1_PWM_A|EFPWM_SUB1_PWM_B|EFPWM_SUB2_PWM_A|EFPWM_SUB2_PWM_B);
 			break;
 		}
 		case SYSTEM_RESET:
 		{
+			SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = FRAC16(0.5);
+			SYSTEM.PWMValues.pwmSub_1_Channel_23_Value = FRAC16(0.5);
+			SYSTEM.PWMValues.pwmSub_2_Channel_23_Value = FRAC16(0.5);
+			// Load new PWM values	
+			ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);	
+			ioctl(EFPWMA, EFPWM_SET_OUTPUTS_DISABLE, EFPWM_SUB0_PWM_A|EFPWM_SUB0_PWM_B|EFPWM_SUB1_PWM_A|EFPWM_SUB1_PWM_B|EFPWM_SUB2_PWM_A|EFPWM_SUB2_PWM_B);
 			SYSTEM.systemState = SYSTEM_RESET;
 			break;
 		}
@@ -1516,6 +1551,11 @@ Int16 SystemStateTransition()
 		case SYSTEM_FAULT_DRV8301:
 		{
 			SYSTEM.systemState = SYSTEM_FAULT_DRV8301;
+			SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = FRAC16(0.5);
+			SYSTEM.PWMValues.pwmSub_1_Channel_23_Value = FRAC16(0.5);
+			SYSTEM.PWMValues.pwmSub_2_Channel_23_Value = FRAC16(0.5);
+			// Load new PWM values	
+			ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);	
 			// PWMs OFF
 			ioctl(EFPWMA, EFPWM_SET_OUTPUTS_DISABLE, EFPWM_SUB0_PWM_A|EFPWM_SUB0_PWM_B|EFPWM_SUB1_PWM_A|EFPWM_SUB1_PWM_B|EFPWM_SUB2_PWM_A|EFPWM_SUB2_PWM_B);
 			// Reset driver

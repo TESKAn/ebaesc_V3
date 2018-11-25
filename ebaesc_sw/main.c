@@ -143,14 +143,20 @@ void main (void)
     // Calculate float values from parameters 
     calculateFloats();
     
-    // Set current offsets
-    SYS_ZERO_CURRENT = 1;
-    
     // Init CAN buffers
     CAN_Init();
     
     // Gain = 20 (x20 DRV)
     SYSTEM.ADC.f16CurrentGainFactor = FRAC16(0.5);
+    
+    // Set current offsets
+    SYSTEM.ADC.i16ADCOffsetMeasurements = 200;
+    SYS_ZERO_CURRENT = 1;
+    while(SYS_ZERO_CURRENT)
+    {
+    	asm(nop);
+    }    
+    
     /*
     // Initialise MOSFET driver
 	if(0 != InitDRV8301(0,31,1))
@@ -271,6 +277,7 @@ void main (void)
 				}
 				case 3:
 				{
+					CheckEEPROM();
 					i8EEPROMOp = 0;
 					break;
 				}

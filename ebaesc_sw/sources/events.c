@@ -44,10 +44,26 @@ void ADC_1_EOS_ISR(void)
 	// Zero currents?
 	if(SYS_ZERO_CURRENT)
 	{
-		SYS_ZERO_CURRENT = 0;
-		SYSTEM.ADC.f16OffsetU = SYSTEM.ADC.m3IphUVWRaw.f16A;
-		SYSTEM.ADC.f16OffsetV = SYSTEM.ADC.m3IphUVWRaw.f16B;
-		SYSTEM.ADC.f16OffsetW = SYSTEM.ADC.m3IphUVWRaw.f16C;
+		if(0 < SYSTEM.ADC.i16ADCOffsetMeasurements)
+		{
+			SYSTEM.ADC.i16ADCOffsetMeasurements--;
+			if((0 == SYSTEM.ADC.f16OffsetU)&&(0 == SYSTEM.ADC.f16OffsetU)&&(0 == SYSTEM.ADC.f16OffsetU))
+			{
+				SYSTEM.ADC.f16OffsetU = SYSTEM.ADC.m3IphUVWRaw.f16A;
+				SYSTEM.ADC.f16OffsetV = SYSTEM.ADC.m3IphUVWRaw.f16B;
+				SYSTEM.ADC.f16OffsetW = SYSTEM.ADC.m3IphUVWRaw.f16C;				
+			}
+			SYSTEM.ADC.f16OffsetU += SYSTEM.ADC.m3IphUVWRaw.f16A;
+			SYSTEM.ADC.f16OffsetV += SYSTEM.ADC.m3IphUVWRaw.f16B;
+			SYSTEM.ADC.f16OffsetW += SYSTEM.ADC.m3IphUVWRaw.f16C;
+			SYSTEM.ADC.f16OffsetU = SYSTEM.ADC.f16OffsetU / 2;
+			SYSTEM.ADC.f16OffsetV = SYSTEM.ADC.f16OffsetV / 2;
+			SYSTEM.ADC.f16OffsetW = SYSTEM.ADC.f16OffsetW / 2;
+		}
+		else
+		{
+			SYS_ZERO_CURRENT = 0;
+		}
 	}
 	
 	// Remove offsets
