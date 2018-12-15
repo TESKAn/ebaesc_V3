@@ -8,6 +8,7 @@
 C_SRCS_QUOTED += \
 "../sources/Comm.c" \
 "../sources/can.c" \
+"../sources/canard.c" \
 "../sources/drv8301.c" \
 "../sources/events.c" \
 "../sources/functions.c" \
@@ -18,6 +19,7 @@ C_SRCS_QUOTED += \
 C_SRCS += \
 ../sources/Comm.c \
 ../sources/can.c \
+../sources/canard.c \
 ../sources/drv8301.c \
 ../sources/events.c \
 ../sources/functions.c \
@@ -28,6 +30,7 @@ C_SRCS += \
 OBJS += \
 ./sources/Comm_c.obj \
 ./sources/can_c.obj \
+./sources/canard_c.obj \
 ./sources/drv8301_c.obj \
 ./sources/events_c.obj \
 ./sources/functions_c.obj \
@@ -38,6 +41,7 @@ OBJS += \
 OBJS_QUOTED += \
 "./sources/Comm_c.obj" \
 "./sources/can_c.obj" \
+"./sources/canard_c.obj" \
 "./sources/drv8301_c.obj" \
 "./sources/events_c.obj" \
 "./sources/functions_c.obj" \
@@ -48,6 +52,7 @@ OBJS_QUOTED += \
 C_DEPS += \
 ./sources/Comm_c.d \
 ./sources/can_c.d \
+./sources/canard_c.d \
 ./sources/drv8301_c.d \
 ./sources/events_c.d \
 ./sources/functions_c.d \
@@ -58,6 +63,7 @@ C_DEPS += \
 C_DEPS_QUOTED += \
 "./sources/Comm_c.d" \
 "./sources/can_c.d" \
+"./sources/canard_c.d" \
 "./sources/drv8301_c.d" \
 "./sources/events_c.d" \
 "./sources/functions_c.d" \
@@ -68,6 +74,7 @@ C_DEPS_QUOTED += \
 OBJS_OS_FORMAT += \
 ./sources/Comm_c.obj \
 ./sources/can_c.obj \
+./sources/canard_c.obj \
 ./sources/drv8301_c.obj \
 ./sources/events_c.obj \
 ./sources/functions_c.obj \
@@ -98,9 +105,17 @@ sources/can_c.obj: ../sources/can.c
 	@echo 'Finished building: $<'
 	@echo ' '
 
-sources/drv8301_c.obj: ../sources/drv8301.c
+sources/canard_c.obj: ../sources/canard.c
 	@echo 'Building file: $<'
 	@echo 'Executing target #42 $<'
+	@echo 'Invoking: DSC Compiler'
+	"$(DSC_ToolsDirEnv)/mwcc56800e" -c @@"sources/canard.args" -o "sources/canard_c.obj" "$<" -MD -gccdep
+	@echo 'Finished building: $<'
+	@echo ' '
+
+sources/drv8301_c.obj: ../sources/drv8301.c
+	@echo 'Building file: $<'
+	@echo 'Executing target #43 $<'
 	@echo 'Invoking: DSC Compiler'
 	"$(DSC_ToolsDirEnv)/mwcc56800e" -c @@"sources/drv8301.args" -o "sources/drv8301_c.obj" "$<" -MD -gccdep
 	@echo 'Finished building: $<'
@@ -108,7 +123,7 @@ sources/drv8301_c.obj: ../sources/drv8301.c
 
 sources/events_c.obj: ../sources/events.c
 	@echo 'Building file: $<'
-	@echo 'Executing target #43 $<'
+	@echo 'Executing target #44 $<'
 	@echo 'Invoking: DSC Compiler'
 	"$(DSC_ToolsDirEnv)/mwcc56800e" -c @@"sources/events.args" -o "sources/events_c.obj" "$<" -MD -gccdep
 	@echo 'Finished building: $<'
@@ -116,7 +131,7 @@ sources/events_c.obj: ../sources/events.c
 
 sources/functions_c.obj: ../sources/functions.c
 	@echo 'Building file: $<'
-	@echo 'Executing target #44 $<'
+	@echo 'Executing target #45 $<'
 	@echo 'Invoking: DSC Compiler'
 	"$(DSC_ToolsDirEnv)/mwcc56800e" -c @@"sources/functions.args" -o "sources/functions_c.obj" "$<" -MD -gccdep
 	@echo 'Finished building: $<'
@@ -124,7 +139,7 @@ sources/functions_c.obj: ../sources/functions.c
 
 sources/init_c.obj: ../sources/init.c
 	@echo 'Building file: $<'
-	@echo 'Executing target #45 $<'
+	@echo 'Executing target #46 $<'
 	@echo 'Invoking: DSC Compiler'
 	"$(DSC_ToolsDirEnv)/mwcc56800e" -c @@"sources/init.args" -o "sources/init_c.obj" "$<" -MD -gccdep
 	@echo 'Finished building: $<'
@@ -132,7 +147,7 @@ sources/init_c.obj: ../sources/init.c
 
 sources/systemStates_c.obj: ../sources/systemStates.c
 	@echo 'Building file: $<'
-	@echo 'Executing target #46 $<'
+	@echo 'Executing target #47 $<'
 	@echo 'Invoking: DSC Compiler'
 	"$(DSC_ToolsDirEnv)/mwcc56800e" -c @@"sources/systemStates.args" -o "sources/systemStates_c.obj" "$<" -MD -gccdep
 	@echo 'Finished building: $<'
@@ -140,7 +155,7 @@ sources/systemStates_c.obj: ../sources/systemStates.c
 
 sources/var_c.obj: ../sources/var.c
 	@echo 'Building file: $<'
-	@echo 'Executing target #47 $<'
+	@echo 'Executing target #48 $<'
 	@echo 'Invoking: DSC Compiler'
 	"$(DSC_ToolsDirEnv)/mwcc56800e" -c @@"sources/var.args" -o "sources/var_c.obj" "$<" -MD -gccdep
 	@echo 'Finished building: $<'

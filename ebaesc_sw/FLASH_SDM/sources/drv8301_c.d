@@ -115,4 +115,18 @@ sources/drv8301_c.obj: C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\sources\drv8301.c 
 	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\includes\init.h \
 	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\includes\systemStates.h \
 	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\EepromDrv\EepromDrv.h \
-	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\EepromDrv\EepromDrv_cfg.h 
+	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\EepromDrv\EepromDrv_cfg.h \
+	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\includes\canard.h \
+	C:\Freescale\CW\ MCU\ v10.6\MCU\M56800E\ Support\msl\MSL_C\MSL_Common\Include\stdint.h \
+	C:\Freescale\CW\ MCU\ v10.6\MCU\M56800E\ Support\msl\MSL_C\MSL_Common\Include\cstdint \
+	C:\Freescale\CW\ MCU\ v10.6\MCU\M56800E\ Support\msl\MSL_C\MSL_Common\Include\limits_api.h \
+	C:\Freescale\CW\ MCU\ v10.6\MCU\M56800E\ Support\msl\MSL_C\MSL_Common\Include\stddef.h \
+	C:\Freescale\CW\ MCU\ v10.6\MCU\M56800E\ Support\msl\MSL_C\MSL_Common\Include\cstddef \
+	C:\Freescale\CW\ MCU\ v10.6\MCU\M56800E\ Support\msl\MSL_C\MSL_Common\Include\null.h \
+	C:\Freescale\CW\ MCU\ v10.6\MCU\M56800E\ Support\msl\MSL_C\MSL_Common\Include\size_t.h \
+	C:\Freescale\CW\ MCU\ v10.6\MCU\M56800E\ Support\msl\MSL_C\MSL_Common\Include\wchar_t.h \
+	C:\Freescale\CW\ MCU\ v10.6\MCU\M56800E\ Support\msl\MSL_C\MSL_Common\Include\msl_rsize_t.h \
+	C:\Freescale\CW\ MCU\ v10.6\MCU\M56800E\ Support\msl\MSL_C\MSL_Common\Include\stdbool.h \
+	C:\Freescale\CW\ MCU\ v10.6\MCU\M56800E\ Support\msl\MSL_C\MSL_Common\Include\assert.h \
+	C:\Freescale\CW\ MCU\ v10.6\MCU\M56800E\ Support\msl\MSL_C\MSL_Common\Include\cassert \
+	C:\Freescale\CW\ MCU\ v10.6\MCU\M56800E\ Support\msl\MSL_C\MSL_Common\Include\assert_api.h 
