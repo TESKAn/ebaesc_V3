@@ -584,7 +584,7 @@ extern UInt8 ui8RS485RcvdByte;
 extern RING_BUFFER SCI0RXBuff;
 extern UInt8 SCI0RXBuffer[256];
 
-extern RS485MOTOR RS485DataStruct;
+extern COMMDATA COMMDataStruct;
 
 extern Int32 i32Var;
 

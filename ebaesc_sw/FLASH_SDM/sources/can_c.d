@@ -108,7 +108,7 @@ sources/can_c.obj: C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\sources\can.c \
 	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\includes\can.h \
 	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\includes\drv8301.h \
 	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\includes\macro.h \
-	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\includes\RS485comm.h \
+	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\includes\Comm.h \
 	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\includes\var.h \
 	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\includes\functions.h \
 	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\includes\events.h \

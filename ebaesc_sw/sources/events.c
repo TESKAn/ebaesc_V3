@@ -119,9 +119,9 @@ void ADC_1_EOS_ISR(void)
 	SYSTEM.ADC.f16SensorValueBFiltered = GDFLIB_FilterMA32(SYSTEM.ADC.f16SensorValueB, &SYSTEM.ADC.FilterMA32SensorB);
 	
 	// Calculate values
-	RS485DataStruct.REGS.i16UIn = mult(SYSTEM.ADC.f16DCLinkVoltage, 6087);
+	COMMDataStruct.REGS.i16UIn = mult(SYSTEM.ADC.f16DCLinkVoltage, 6087);
 	
-	RS485DataStruct.REGS.i16RPM = mult(SYSTEM.POSITION.f16SpeedFiltered, 17142);
+	COMMDataStruct.REGS.i16RPM = mult(SYSTEM.POSITION.f16SpeedFiltered, 17142);
 	
 	/*
 	// Change phase current amplification if necessary
@@ -280,7 +280,7 @@ void ADC_1_EOS_ISR(void)
 	// Get filtered current position
 	SYSTEM.POSITION.i16SensorIndexFiltered = (Int16)(SYSTEM.ADC.f16SensorValueBFiltered >> 3);
 	// Store position
-	RS485DataStruct.REGS.i16Position = SYSTEM.POSITION.i16SensorIndexFiltered;
+	COMMDataStruct.REGS.i16Position = SYSTEM.POSITION.i16SensorIndexFiltered;
 	// Add offset to index
 	//SYSTEM.POSITION.i16SensorIndex += SYSTEM.POSITION.i16SensorIndexOffset;
 	// Add phase delay
@@ -457,7 +457,7 @@ void ADC_1_EOS_ISR(void)
 			}
 			else if(SYSTEM_PARK_ROTOR)
 			{
-				i16Temp = RS485DataStruct.REGS.i16ParkPosition - SYSTEM.POSITION.i16SensorIndex;
+				i16Temp = COMMDataStruct.REGS.i16ParkPosition - SYSTEM.POSITION.i16SensorIndex;
 				
 				if(20 < i16Temp)
 				{
@@ -842,21 +842,21 @@ void GPIO_F_ISR(void)
 			// Subtract from storage
 			SYSTEM.PWMIN.i16PWMInFilterAcc -= SYSTEM.PWMIN.i16PWMFiltered;	
 			// Store to comm reg
-			RS485DataStruct.REGS.i16CurrentPWM = SYSTEM.PWMIN.i16PWMFiltered;
+			COMMDataStruct.REGS.i16CurrentPWM = SYSTEM.PWMIN.i16PWMFiltered;
 			// Increase PWM values received
 			SYSTEM.PWMIN.ui32PWMSamplesReceived++;			
 			// Measuring min/max value?
-			if(1 == RS485DataStruct.REGS.ui8MeasurePWMMax)
+			if(1 == COMMDataStruct.REGS.ui8MeasurePWMMax)
 			{
-				RS485DataStruct.REGS.i16PWMMax = SYSTEM.PWMIN.i16PWMFiltered;
+				COMMDataStruct.REGS.i16PWMMax = SYSTEM.PWMIN.i16PWMFiltered;
 				// Do not use PWM for input
-				 RS485DataStruct.REGS.ui8UsePWMIN = 0;
+				 COMMDataStruct.REGS.ui8UsePWMIN = 0;
 			}
-			else if(1 == RS485DataStruct.REGS.ui8MeasurePWMMin)
+			else if(1 == COMMDataStruct.REGS.ui8MeasurePWMMin)
 			{
-				RS485DataStruct.REGS.i16PWMMin = SYSTEM.PWMIN.i16PWMFiltered;
+				COMMDataStruct.REGS.i16PWMMin = SYSTEM.PWMIN.i16PWMFiltered;
 				// Do not use PWM for input
-				 RS485DataStruct.REGS.ui8UsePWMIN = 0;
+				 COMMDataStruct.REGS.ui8UsePWMIN = 0;
 			}			
 		}
 	}
@@ -905,42 +905,9 @@ void SPI_0_RX_FULL_ISR(void)
 void RX0_Full_ISR(void)
 {
 	unsigned int data;
-	// Check for errors
-	// Check overrun flag
-	if(0 != ioctl(SCI_0, SCI_GET_RX_OVERRUN, NULL))
-	{
-		data = ioctl(SCI_0, SCI_GET_STATUS_REG, NULL);
-		ioctl(SCI_0, SCI_CLEAR_STATUS_REG, NULL);		
-	}
-	else if(0 != ioctl(SCI_0, SCI_GET_RX_NOISE_ERROR, NULL))
-	{
-		data = ioctl(SCI_0, SCI_GET_STATUS_REG, NULL);
-		ioctl(SCI_0, SCI_CLEAR_STATUS_REG, NULL);	
-	}
-	else if(0 != ioctl(SCI_0, SCI_GET_ERROR, NULL))
-	{
-		data = ioctl(SCI_0, SCI_GET_STATUS_REG, NULL);
-		ioctl(SCI_0, SCI_CLEAR_STATUS_REG, NULL);	
-	}
-	else
-	{
-		while(0 != ioctl(SCI_0, SCI_GET_RX_FULL, NULL))
-		{
-			data = ioctl(SCI_0, SCI_GET_STATUS_REG, NULL);		// Clear RDRF flag
-			data = ioctl(SCI_0, SCI_READ_DATA, NULL);			// Read data
-			RS485_States_slave((UInt8)data);  
-			// Buffer empty?
-			/*
-			if(0 == SCI0RXBuff.count)
-			{
-				// Reset RX buffer
-				SCI0RXBuff.data_start = SCI0RXBuff.buffer;
-				SCI0RXBuff.data_end = SCI0RXBuff.buffer;
-			}
-			// Store data in ring buffer
-			RB_push(&SCI0RXBuff, (UInt8)data);	*/
-		}		
-	}	
+
+	data = ioctl(SCI_0, SCI_GET_STATUS_REG, NULL);		// Clear RDRF flag
+	data = ioctl(SCI_0, SCI_READ_DATA, NULL);			// Read data
 }
 
 #pragma interrupt saveall
@@ -948,8 +915,6 @@ void TX0_Empty_ISR(void)
 {
 	unsigned int data;
 	data = ioctl(SCI_0, SCI_GET_STATUS_REG, NULL);		// Clear flag
-	ui8RS485RXVal = 1;
-	RS485_writeByte();
 }
 
 #pragma interrupt saveall
@@ -961,8 +926,6 @@ void PIT_0_ISR(void)
 	ioctl(PIT_0, PIT_CLEAR_ROLLOVER_INT, NULL);
 	// Check faults
 	CheckFaults();
-	// Check RS485
-	RS485_Timer();
 	// Check system states
 	checkSystemStates();
 	// Recalculate SI values
@@ -970,7 +933,7 @@ void PIT_0_ISR(void)
 	// Call 1 ms event
 	OneMsEvent();
 	// Calculate output temperature
-	RS485DataStruct.REGS.ui8PresentTemperature = (UInt8)CalculateTemperature(SYSTEM.ADC.f16TemperatureFiltered);
+	COMMDataStruct.REGS.ui8PresentTemperature = (UInt8)CalculateTemperature(SYSTEM.ADC.f16TemperatureFiltered);
 	// Decrease counters
 	if(0 < SYSTEM.SENSORLESS.i16Counter)
 	{

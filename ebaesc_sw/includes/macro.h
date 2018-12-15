@@ -15,7 +15,7 @@
 #define M_ID				0x23
 #define M_MAXSENSORINDEX	0
 #define M_MINSENSORINDEX	0
-#define M_POLEPAIRS			2
+#define M_POLEPAIRS			7
 #define M_POLEARRAY_0		0
 #define M_POLEARRAY_1		0
 #define M_POLEARRAY_2		0
@@ -25,7 +25,7 @@
 #define M_POLEARRAY_6		0
 #define M_POLEARRAY_7		0
 // This unit ID
-#define RS485_ID			0x23
+#define COMM_ID				0x23
 // Unit park position
 #define M_PARK_POSITION		0
 
@@ -45,7 +45,7 @@
 #define M_POLEARRAY_6		3459
 #define M_POLEARRAY_7		643
 // This unit ID
-#define RS485_ID			0x23
+#define COMM_ID				0x23
 // Unit park position
 #define M_PARK_POSITION		1000
 
@@ -65,7 +65,7 @@
 #define M_POLEARRAY_6		3310
 #define M_POLEARRAY_7		494
 // This unit ID
-#define RS485_ID			0x22
+#define COMM_ID				0x23
 // Unit park position
 #define M_PARK_POSITION		1000
 
@@ -85,7 +85,7 @@
 #define M_POLEARRAY_6		3332
 #define M_POLEARRAY_7		517
 // This unit ID
-#define RS485_ID			0x21
+#define COMM_ID				0x23
 // Unit park position
 #define M_PARK_POSITION		1000
 
@@ -95,7 +95,7 @@
 #define ERROR_DRV8301_READ		1
 #define ERROR_DRV8301_STAT1		2
 
-#define RS485BROADCAST_ID		0xfe
+#define COMMBROADCAST_ID		0xfe
 
 // Macros for calculating SI values
 //#define SI_UIN_FACTOR		60.87f		// 60.87V max for normal

@@ -183,12 +183,12 @@ Int16 CalculateSIValues(void)
 	// P is in 0,001 W scale
 	// U voltage in 0,01 V scale
 	// I is in 0,1 A scale
-	i32Temp1 = i32Temp / (Int32)RS485DataStruct.REGS.i16UIn;
-	RS485DataStruct.REGS.i16IIn = (Int16)i32Temp1;	
+	i32Temp1 = i32Temp / (Int32)COMMDataStruct.REGS.i16UIn;
+	COMMDataStruct.REGS.i16IIn = (Int16)i32Temp1;	
 	// Scale is 1 mW, decrease to 1W
 	i32Temp /= 1000;
 	// Store to RS485 reg
-	RS485DataStruct.REGS.i16PIn = (Int16)i32Temp;
+	COMMDataStruct.REGS.i16PIn = (Int16)i32Temp;
 
 	// IIn
 	SYSTEM.SIVALUES.fIIn = SYSTEM.SIVALUES.fPIn / SYSTEM.SIVALUES.fUIn;

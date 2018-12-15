@@ -109,7 +109,7 @@ void main (void)
      */
     
     // RS485 communication setup
-    RS485_initData(&RS485DataStruct);
+    Comm_initData(&COMMDataStruct);
     
     // Set all flag values to initial value
     SYS_DEBUG_MODE = 0;			// Set to 0 to enable PWM_IN control

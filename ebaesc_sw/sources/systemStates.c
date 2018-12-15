@@ -319,7 +319,7 @@ Int16 SystemInitState()
 					{
 						// Throttle is in max position
 						SYSTEM.PWMIN.i16PWMfullThrottle = SYSTEM.PWMIN.i16PWMFiltered;
-						RS485DataStruct.REGS.i16PWMMax = SYSTEM.PWMIN.i16PWMfullThrottle;	
+						COMMDataStruct.REGS.i16PWMMax = SYSTEM.PWMIN.i16PWMfullThrottle;	
 					}
 					else
 					{
@@ -353,15 +353,15 @@ Int16 SystemInitState()
 							// Calculate throttle difference
 							SYSTEM.PWMIN.i16PWMThrottleDifference = SYSTEM.PWMIN.i16PWMfullThrottle - SYSTEM.PWMIN.i16PWMoffThrottle;
 							// Calculate factors for RPM
-							SYSTEM.PWMIN.fPWMFactor = (float)(RS485DataStruct.REGS.i16MaxRPM - RS485DataStruct.REGS.i16MinRPM);
+							SYSTEM.PWMIN.fPWMFactor = (float)(COMMDataStruct.REGS.i16MaxRPM - COMMDataStruct.REGS.i16MinRPM);
 							SYSTEM.PWMIN.fPWMFactor = SYSTEM.PWMIN.fPWMFactor / (float)(SYSTEM.PWMIN.i16PWMThrottleDifference);
 							
 							SYSTEM.PWMIN.fPWMOffset = (float)(SYSTEM.PWMIN.i16PWMoffThrottle);
 							SYSTEM.PWMIN.fPWMOffset = SYSTEM.PWMIN.fPWMOffset * SYSTEM.PWMIN.fPWMFactor;
-							SYSTEM.PWMIN.fPWMOffset = SYSTEM.PWMIN.fPWMOffset - (float)(RS485DataStruct.REGS.i16MinRPM);
+							SYSTEM.PWMIN.fPWMOffset = SYSTEM.PWMIN.fPWMOffset - (float)(COMMDataStruct.REGS.i16MinRPM);
 							
 							// Set startup speed
-							fTemp = (float)RS485DataStruct.REGS.i16MinRPM * 0.06826666666666666666666666666667f;
+							fTemp = (float)COMMDataStruct.REGS.i16MinRPM * 0.06826666666666666666666666666667f;
 							fTemp = fTemp * (float)SYSTEM.CALIBRATION.i16MotorPolePairs;
 							SYSTEM.SENSORLESS.f16StartSpeed = (Frac16)fTemp;
 							
@@ -372,11 +372,11 @@ Int16 SystemInitState()
 							}
 
 							// Set right data
-							RS485DataStruct.REGS.i16PWMMin = SYSTEM.PWMIN.i16PWMinThrottle;
-							RS485DataStruct.REGS.i16ZeroSpeedPWM = SYSTEM.PWMIN.i16PWMInOffZone;
+							COMMDataStruct.REGS.i16PWMMin = SYSTEM.PWMIN.i16PWMinThrottle;
+							COMMDataStruct.REGS.i16ZeroSpeedPWM = SYSTEM.PWMIN.i16PWMInOffZone;
 							// Go to idle state
 							SYSTEM.i16StateTransition = SYSTEM_IDLE;	
-							RS485DataStruct.REGS.ui8UsePWMIN = 1;
+							COMMDataStruct.REGS.ui8UsePWMIN = 1;
 							SYSTEM.PWMIN.i16PWMMeasureStates = PWM_MEAS_INIT;
 						}						
 					}
@@ -430,16 +430,16 @@ Int16 SystemIdleState()
 	}*/
 	
 	// Use PWM?
-	if(1 == RS485DataStruct.REGS.ui8UsePWMIN)
+	if(1 == COMMDataStruct.REGS.ui8UsePWMIN)
 	{
 		// If PWM over zero speed, go to run mode.
 		if(SYSTEM.PWMIN.i16PWMFiltered > SYSTEM.PWMIN.i16PWMoffThrottle)
 		{
-			RS485DataStruct.REGS.ui8Armed = 1;
+			COMMDataStruct.REGS.ui8Armed = 1;
 		}
 	}	
 	// Check comm regs
-	if(1 == RS485DataStruct.REGS.ui8Armed)
+	if(1 == COMMDataStruct.REGS.ui8Armed)
 	{
 		// Control system speed
 		CONTROL_SPEED = 1;
@@ -461,10 +461,10 @@ Int16 SystemRunState()
 	Int32 i32Temp0 = 0;
 	float fTemp;
 	// Running?
-	if(1 == RS485DataStruct.REGS.ui8Armed)
+	if(1 == COMMDataStruct.REGS.ui8Armed)
 	{
 		// Use PWM for speed?
-		if(1 == RS485DataStruct.REGS.ui8UsePWMIN)
+		if(1 == COMMDataStruct.REGS.ui8UsePWMIN)
 		{
 			// Current PWM over minimum (=OFF) PWM?
 			if(SYSTEM.PWMIN.i16PWMFiltered > SYSTEM.PWMIN.i16PWMoffThrottle)
@@ -483,7 +483,7 @@ Int16 SystemRunState()
 					// Divide by max el RPM for value 1, multiply with 32768 -> 32768/480000
 					fTemp *= 0.06826666666666666666666666666667f;				
 					// Check sign
-					if(0 == RS485DataStruct.REGS.ui8ReverseRotation)
+					if(0 == COMMDataStruct.REGS.ui8ReverseRotation)
 					{
 						SYSTEM.RAMPS.f16SpeedRampDesiredValue = (Frac16)fTemp;
 					}
@@ -497,25 +497,25 @@ Int16 SystemRunState()
 			{
 				// Go out of run mode
 				SYSTEM.RAMPS.f16SpeedRampDesiredValue = FRAC16(0.0);
-				RS485DataStruct.REGS.ui8Armed = 0;
+				COMMDataStruct.REGS.ui8Armed = 0;
 			}
 		}
 		else
 		{
 			// Limit
-			if(RS485DataStruct.REGS.i16SetRPM > RS485DataStruct.REGS.i16MaxRPM)
+			if(COMMDataStruct.REGS.i16SetRPM > COMMDataStruct.REGS.i16MaxRPM)
 			{
-				RS485DataStruct.REGS.i16SetRPM = RS485DataStruct.REGS.i16MaxRPM;
+				COMMDataStruct.REGS.i16SetRPM = COMMDataStruct.REGS.i16MaxRPM;
 			}
-			else if(RS485DataStruct.REGS.i16SetRPM < RS485DataStruct.REGS.i16MinRPM)
+			else if(COMMDataStruct.REGS.i16SetRPM < COMMDataStruct.REGS.i16MinRPM)
 			{
-				RS485DataStruct.REGS.i16SetRPM = 0;
+				COMMDataStruct.REGS.i16SetRPM = 0;
 			}
 			// Convert to frac16
-			i32Var = RS485DataStruct.REGS.i16SetRPM * 229376;// 32768 * (Frac32)SYSTEM.CALIBRATION.i16MotorPolePairs;
+			i32Var = COMMDataStruct.REGS.i16SetRPM * 229376;// 32768 * (Frac32)SYSTEM.CALIBRATION.i16MotorPolePairs;
 			i32Var /= 120000;
 			// Check sign
-			if(0 == RS485DataStruct.REGS.ui8ReverseRotation)
+			if(0 == COMMDataStruct.REGS.ui8ReverseRotation)
 			{
 				SYSTEM.RAMPS.f16SpeedRampDesiredValue = (Frac16)i32Var;
 			}
@@ -526,7 +526,7 @@ Int16 SystemRunState()
 		}
 	
 		// Park rotor?
-		if(1 == RS485DataStruct.REGS.ui8Park)
+		if(1 == COMMDataStruct.REGS.ui8Park)
 		{
 			if(FRAC16(0.0) > SYSTEM.POSITION.f16SpeedFiltered)
 			{
@@ -560,8 +560,8 @@ Int16 SystemRunState()
 		// Go out of run mode
 		SYSTEM.i16StateTransition = SYSTEM_RESET;
 		SYSTEM.RAMPS.f16SpeedRampDesiredValue = FRAC16(0.0);
-		RS485DataStruct.REGS.ui8Armed = 3;
-		RS485DataStruct.REGS.i16SetRPM = RS485DataStruct.REGS.i16MinRPM; 
+		COMMDataStruct.REGS.ui8Armed = 3;
+		COMMDataStruct.REGS.i16SetRPM = COMMDataStruct.REGS.i16MinRPM; 
 	}
 	
 	// When in run mode, check driver status for errors
@@ -569,23 +569,25 @@ Int16 SystemRunState()
 	{
 		// Shut down PWMs, go out of run mode into fault mode
 		SYSTEM.i16StateTransition = SYSTEM_FAULT_DRV8301;
-		RS485DataStruct.REGS.ui8Armed = 0;
+		COMMDataStruct.REGS.ui8Armed = 0;
+		/*
 		// Mark fault
-		RS485DataStruct.REGS.ui16Errors |= RS485ERROR_FAULT;
+		COMMDataStruct.REGS.ui16Errors |= RS485ERROR_FAULT;
 		// Check FETs
-		if(0 != DRV8301.StatReg1.FETHA_OC) RS485DataStruct.REGS.ui16Errors |= RS485ERROR_FETHA;
-		if(0 != DRV8301.StatReg1.FETLA_OC) RS485DataStruct.REGS.ui16Errors |= RS485ERROR_FETLA;
-		if(0 != DRV8301.StatReg1.FETHB_OC) RS485DataStruct.REGS.ui16Errors |= RS485ERROR_FETHB;
-		if(0 != DRV8301.StatReg1.FETLB_OC) RS485DataStruct.REGS.ui16Errors |= RS485ERROR_FETLB;
-		if(0 != DRV8301.StatReg1.FETHC_OC) RS485DataStruct.REGS.ui16Errors |= RS485ERROR_FETHC;
-		if(0 != DRV8301.StatReg1.FETLC_OC) RS485DataStruct.REGS.ui16Errors |= RS485ERROR_FETLC;
+		if(0 != DRV8301.StatReg1.FETHA_OC) COMMDataStruct.REGS.ui16Errors |= RS485ERROR_FETHA;
+		if(0 != DRV8301.StatReg1.FETLA_OC) COMMDataStruct.REGS.ui16Errors |= RS485ERROR_FETLA;
+		if(0 != DRV8301.StatReg1.FETHB_OC) COMMDataStruct.REGS.ui16Errors |= RS485ERROR_FETHB;
+		if(0 != DRV8301.StatReg1.FETLB_OC) COMMDataStruct.REGS.ui16Errors |= RS485ERROR_FETLB;
+		if(0 != DRV8301.StatReg1.FETHC_OC) COMMDataStruct.REGS.ui16Errors |= RS485ERROR_FETHC;
+		if(0 != DRV8301.StatReg1.FETLC_OC) COMMDataStruct.REGS.ui16Errors |= RS485ERROR_FETLC;
+		*/
 	}
 	
 	// Driver fault?
 	if(0 != SYSTEM.DRIVERSTATE.i8DriverFault)
 	{
 		SYSTEM.i16StateTransition = SYSTEM_FAULT_DRV8301;
-		RS485DataStruct.REGS.ui8Armed = 0;
+		COMMDataStruct.REGS.ui8Armed = 0;
 	}
 	
 	// Transit out of?
@@ -601,15 +603,15 @@ Int16 SystemRunState()
 				StopMotor();
 				SystemStateTransition();
 			}		
-			if(2 == RS485DataStruct.REGS.ui8Armed)
+			if(2 == COMMDataStruct.REGS.ui8Armed)
 			{
-				RS485DataStruct.REGS.ui8Armed = 0;
+				COMMDataStruct.REGS.ui8Armed = 0;
 				StopMotor();
 				SystemStateTransition();
 			}
-			else if(3 == RS485DataStruct.REGS.ui8Armed)
+			else if(3 == COMMDataStruct.REGS.ui8Armed)
 			{
-				RS485DataStruct.REGS.ui8Armed = 1;
+				COMMDataStruct.REGS.ui8Armed = 1;
 				SYSTEM.SENSORLESS.ui8BemfObserverErrorCount = 0;
 				StopMotor();
 				SystemStateTransition();
@@ -947,19 +949,19 @@ Int16 SystemParkRotorState()
 	SYSTEM_RUN_MANUAL_CCW = 0;
 	
 	// Use PWM?
-	if(1 == RS485DataStruct.REGS.ui8UsePWMIN)
+	if(1 == COMMDataStruct.REGS.ui8UsePWMIN)
 	{
 		// If PWM under zero speed, go to idle mode
-		i16Temp0 = RS485DataStruct.REGS.i16CurrentPWM - RS485DataStruct.REGS.i16PWMMin;
+		i16Temp0 = COMMDataStruct.REGS.i16CurrentPWM - COMMDataStruct.REGS.i16PWMMin;
 
-		if(i16Temp0 < RS485DataStruct.REGS.i16ZeroSpeedPWM)
+		if(i16Temp0 < COMMDataStruct.REGS.i16ZeroSpeedPWM)
 		{
-			RS485DataStruct.REGS.ui8Armed = 0;
+			COMMDataStruct.REGS.ui8Armed = 0;
 		}
 	}
 
 	// Go out of park?
-	if(0 == RS485DataStruct.REGS.ui8Park)
+	if(0 == COMMDataStruct.REGS.ui8Park)
 	{
 		// Control system speed
 		CONTROL_SPEED = 1;
@@ -967,7 +969,7 @@ Int16 SystemParkRotorState()
 	}
 	
 	// Stop motor?
-	if(0 == RS485DataStruct.REGS.ui8Armed)
+	if(0 == COMMDataStruct.REGS.ui8Armed)
 	{
 		// Go out of run mode
 		SYSTEM.i16StateTransition = SYSTEM_RESET;

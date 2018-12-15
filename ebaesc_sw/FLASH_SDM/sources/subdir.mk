@@ -6,7 +6,7 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS_QUOTED += \
-"../sources/RS485comm.c" \
+"../sources/Comm.c" \
 "../sources/can.c" \
 "../sources/drv8301.c" \
 "../sources/events.c" \
@@ -16,7 +16,7 @@ C_SRCS_QUOTED += \
 "../sources/var.c" \
 
 C_SRCS += \
-../sources/RS485comm.c \
+../sources/Comm.c \
 ../sources/can.c \
 ../sources/drv8301.c \
 ../sources/events.c \
@@ -26,7 +26,7 @@ C_SRCS += \
 ../sources/var.c \
 
 OBJS += \
-./sources/RS485comm_c.obj \
+./sources/Comm_c.obj \
 ./sources/can_c.obj \
 ./sources/drv8301_c.obj \
 ./sources/events_c.obj \
@@ -36,7 +36,7 @@ OBJS += \
 ./sources/var_c.obj \
 
 OBJS_QUOTED += \
-"./sources/RS485comm_c.obj" \
+"./sources/Comm_c.obj" \
 "./sources/can_c.obj" \
 "./sources/drv8301_c.obj" \
 "./sources/events_c.obj" \
@@ -46,7 +46,7 @@ OBJS_QUOTED += \
 "./sources/var_c.obj" \
 
 C_DEPS += \
-./sources/RS485comm_c.d \
+./sources/Comm_c.d \
 ./sources/can_c.d \
 ./sources/drv8301_c.d \
 ./sources/events_c.d \
@@ -56,7 +56,7 @@ C_DEPS += \
 ./sources/var_c.d \
 
 C_DEPS_QUOTED += \
-"./sources/RS485comm_c.d" \
+"./sources/Comm_c.d" \
 "./sources/can_c.d" \
 "./sources/drv8301_c.d" \
 "./sources/events_c.d" \
@@ -66,7 +66,7 @@ C_DEPS_QUOTED += \
 "./sources/var_c.d" \
 
 OBJS_OS_FORMAT += \
-./sources/RS485comm_c.obj \
+./sources/Comm_c.obj \
 ./sources/can_c.obj \
 ./sources/drv8301_c.obj \
 ./sources/events_c.obj \
@@ -77,11 +77,11 @@ OBJS_OS_FORMAT += \
 
 
 # Each subdirectory must supply rules for building sources it contributes
-sources/RS485comm_c.obj: ../sources/RS485comm.c
+sources/Comm_c.obj: ../sources/Comm.c
 	@echo 'Building file: $<'
 	@echo 'Executing target #40 $<'
 	@echo 'Invoking: DSC Compiler'
-	"$(DSC_ToolsDirEnv)/mwcc56800e" -c @@"sources/RS485comm.args" -o "sources/RS485comm_c.obj" "$<" -MD -gccdep
+	"$(DSC_ToolsDirEnv)/mwcc56800e" -c @@"sources/Comm.args" -o "sources/Comm_c.obj" "$<" -MD -gccdep
 	@echo 'Finished building: $<'
 	@echo ' '
 

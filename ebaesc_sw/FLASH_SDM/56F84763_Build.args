@@ -10,7 +10,7 @@
 "./sources/events_c.obj"
 "./sources/drv8301_c.obj"
 "./sources/can_c.obj"
-"./sources/RS485comm_c.obj"
+"./sources/Comm_c.obj"
 "./src/MC56F84763/peripherals/xbar_c.obj"
 "./src/MC56F84763/peripherals/sys_c.obj"
 "./src/MC56F84763/peripherals/spibl_c.obj"

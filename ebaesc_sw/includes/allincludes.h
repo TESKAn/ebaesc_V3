@@ -56,7 +56,7 @@
 
 #include "macro.h"
 
-#include "RS485comm.h"
+#include "Comm.h"
 
 
 

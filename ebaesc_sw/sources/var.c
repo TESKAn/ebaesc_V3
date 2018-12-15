@@ -54,7 +54,7 @@ UInt8 ui8RS485RcvdByte = 0;
 RING_BUFFER SCI0RXBuff;
 UInt8 SCI0RXBuffer[256];
 
-RS485MOTOR RS485DataStruct;
+COMMDATA COMMDataStruct;
 
 Int32 i32Var = 0;
 
