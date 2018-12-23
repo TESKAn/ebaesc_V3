@@ -924,6 +924,8 @@ void PIT_0_ISR(void)
 	int i = 0;
 	int code = 0;
 	ioctl(PIT_0, PIT_CLEAR_ROLLOVER_INT, NULL);
+	// Increase system time 
+	SYSTEM.ui32SystemTime++;
 	// Check faults
 	CheckFaults();
 	// Check system states
@@ -944,11 +946,18 @@ void PIT_0_ISR(void)
 	if(SEND_CAN_INFO)
 	{
 		SYSTEM.CAN.ui16CANInfoTimer++;
+		SYSTEM.CAN.ui16CANStatusTimer++;
 		if(SYSTEM.CAN.ui16CANInfoInterval < SYSTEM.CAN.ui16CANInfoTimer)
 		{
-			CAN_TXStatus();
+			CAN_TXVoltage();
 			SYSTEM.CAN.ui16CANInfoTimer = 0;
 		}
+		if(SYSTEM.CAN.ui16CANStatusInterval < SYSTEM.CAN.ui16CANStatusTimer)
+		{
+			CAN_TXStatus();
+			SYSTEM.CAN.ui16CANStatusTimer = 0;
+		}
+		
 	}
 }
 #pragma interrupt saveall

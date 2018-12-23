@@ -294,13 +294,15 @@
 #define POS_SENS_HIGH						3900
 
 // CAN macros
-#define CAN_DEVID							1
+#define CAN_MID_STATUS						341
 #define CAN_MID_UIN							20001
 #define CAN_PRIO_UIN						0x1f
+#define CAN_PRIO_STATUS						0x15
 // CAN RX message ID
 #define CAN_MID_RX							
 
 
 #define CAN_INFO_INTERVAL					100
+#define CAN_STATUS_INTERVAL					500
 
 #endif /* MACRO_H_ */

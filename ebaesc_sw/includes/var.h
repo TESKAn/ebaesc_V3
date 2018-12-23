@@ -423,6 +423,9 @@ typedef struct tagSYSVARS
 	{
 		UInt16 ui16CANInfoTimer;
 		UInt16 ui16CANInfoInterval;
+		
+		UInt16 ui16CANStatusTimer;
+		UInt16 ui16CANStatusInterval;
 	}CAN;
 	
 	// Measure motor parameters
@@ -532,6 +535,7 @@ typedef struct tagSYSVARS
 	
 	Int16 i16EEPROMStoreDone;
 	
+	UInt32 ui32SystemTime;
 	
 	
 }SYSTEMVARIABLES;

@@ -112,7 +112,9 @@ void main (void)
     Comm_initData(&COMMDataStruct);
     
     // Set all flag values to initial value
-    SYS_DEBUG_MODE = 0;			// Set to 0 to enable PWM_IN control
+    SYS_DEBUG_MODE = 1;			// Set to 0 to enable PWM_IN control
+    COMMDataStruct.REGS.ui8UsePWMIN = 0;
+    COMMDataStruct.REGS.i16SetRPM = 0;
     SYSTEM_CALIBRATED = 0;
     SYSTEM_RUN_SENSORED = 0;
     CONTROL_TORQUE = 0;
@@ -175,6 +177,8 @@ void main (void)
 	*/
     
     SYSTEM_CALIBRATED = 0;
+    
+    SEND_CAN_INFO = 1;
     
     while(1)
     {
@@ -307,7 +311,7 @@ void main (void)
     					if(code == 0b1000)
     					{
     						// Write ID
-    						//MB->id = 0xff4e2123;
+    						MB->id = 0xff4e2123;
     						// Write message
     						MB->data[0] = 0xaaaa;
     						MB->data[1] = 0x5555;
@@ -361,8 +365,13 @@ void main (void)
     		}
     		case 4:
     		{
-    			//CAN_TXVoltage();
     			CAN_TXStatus();
+    			i8CANTest = 0;
+    			break;
+    		}
+    		case 5:
+    		{
+    			CAN_TXVoltage();
     			i8CANTest = 0;
     			break;
     		}

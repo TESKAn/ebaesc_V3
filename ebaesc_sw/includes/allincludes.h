@@ -68,7 +68,5 @@
 #include "systemStates.h"
 #include "EepromDrv.h"
 
-#include "canard.h"
-
 
 #endif /* ALLINCLUDES_H_ */

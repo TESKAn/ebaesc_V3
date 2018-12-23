@@ -44,7 +44,7 @@ OBJS_OS_FORMAT += \
 # Each subdirectory must supply rules for building sources it contributes
 SystemConfig/appconfig_c.obj: ../SystemConfig/appconfig.c
 	@echo 'Building file: $<'
-	@echo 'Executing target #50 $<'
+	@echo 'Executing target #49 $<'
 	@echo 'Invoking: DSC Compiler'
 	"$(DSC_ToolsDirEnv)/mwcc56800e" -c @@"SystemConfig/appconfig.args" -o "SystemConfig/appconfig_c.obj" "$<" -MD -gccdep
 	@echo 'Finished building: $<'
@@ -57,7 +57,7 @@ SystemConfig/%.d: ../SystemConfig/%.c
 
 SystemConfig/startup_c.obj: ../SystemConfig/startup.c
 	@echo 'Building file: $<'
-	@echo 'Executing target #51 $<'
+	@echo 'Executing target #50 $<'
 	@echo 'Invoking: DSC Compiler'
 	"$(DSC_ToolsDirEnv)/mwcc56800e" -c @@"SystemConfig/startup.args" -o "SystemConfig/startup_c.obj" "$<" -MD -gccdep
 	@echo 'Finished building: $<'
@@ -65,7 +65,7 @@ SystemConfig/startup_c.obj: ../SystemConfig/startup.c
 
 SystemConfig/vectors_c.obj: ../SystemConfig/vectors.c
 	@echo 'Building file: $<'
-	@echo 'Executing target #52 $<'
+	@echo 'Executing target #51 $<'
 	@echo 'Invoking: DSC Compiler'
 	"$(DSC_ToolsDirEnv)/mwcc56800e" -c @@"SystemConfig/vectors.args" -o "SystemConfig/vectors_c.obj" "$<" -MD -gccdep
 	@echo 'Finished building: $<'

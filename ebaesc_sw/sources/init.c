@@ -311,6 +311,9 @@ void InitSysVars(Int16 initial)
 	SYSTEM.CAN.ui16CANInfoInterval = CAN_INFO_INTERVAL;
 	SYSTEM.CAN.ui16CANInfoTimer = 0;
 	
+	SYSTEM.CAN.ui16CANStatusInterval = CAN_STATUS_INTERVAL;
+	SYSTEM.CAN.ui16CANStatusTimer = 0;
+	
 	SYSTEM.DRIVERSTATE.i8DriverFaultCount = 0;
 	SYSTEM.DRIVERSTATE.i8DriverFault = 0;
 	
@@ -336,7 +339,7 @@ void InitSysVars(Int16 initial)
 			SYSTEM_CALIBRATED = 1;	
 		}
 	}	
-	
+	SYSTEM.ui32SystemTime = 0;
 	
 }
 

@@ -403,6 +403,8 @@ Int16 SystemInitState()
 	// Transit out of?
 	if(SYSTEM.i16StateTransition != SYSTEM.systemState)
 	{
+		// Reset diode PWM timer
+		i16LEDToggles = LED_TOGGLE_COUNT;
 		SystemStateTransition();
 	}
 	
@@ -511,18 +513,21 @@ Int16 SystemRunState()
 			{
 				COMMDataStruct.REGS.i16SetRPM = 0;
 			}
-			// Convert to frac16
-			i32Var = COMMDataStruct.REGS.i16SetRPM * 229376;// 32768 * (Frac32)SYSTEM.CALIBRATION.i16MotorPolePairs;
-			i32Var /= 120000;
+			fTemp = (float)COMMDataStruct.REGS.i16SetRPM;			
+			fTemp *= (float)SYSTEM.CALIBRATION.i16MotorPolePairs;
+			
+			// Calculate frac value
+			// Divide by max el RPM for value 1, multiply with 32768 -> 32768/480000
+			fTemp *= 0.06826666666666666666666666666667f;				
 			// Check sign
 			if(0 == COMMDataStruct.REGS.ui8ReverseRotation)
 			{
-				SYSTEM.RAMPS.f16SpeedRampDesiredValue = (Frac16)i32Var;
+				SYSTEM.RAMPS.f16SpeedRampDesiredValue = (Frac16)fTemp;
 			}
 			else
 			{
-				SYSTEM.RAMPS.f16SpeedRampDesiredValue = -(Frac16)i32Var;
-			}		
+				SYSTEM.RAMPS.f16SpeedRampDesiredValue = -(Frac16)fTemp;
+			}	
 		}
 	
 		// Park rotor?

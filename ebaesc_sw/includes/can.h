@@ -66,6 +66,7 @@ typedef struct
 } CanRxMsg;
 
 Int16 CAN_Init();
+Int16 CAN_CRCAdd(FCAN_MB *MB);
 Int16 CAN_TXStatus();
 Int16 CAN_TXVoltage();
 
