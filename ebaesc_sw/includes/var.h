@@ -542,7 +542,9 @@ typedef struct tagSYSVARS
 
 // EEPROM test
 extern Int8 i8EEPROMOp;
+extern Int16 i16EEPROMReadErrors;
 extern UWord32 uw32EEPROMAddress;
+extern UWord32 uw32ErrorIndex;
 extern UWord16 uw16EEPROMData;
 // End eeprom test
 

@@ -109,7 +109,7 @@ void main (void)
      */
     
     // RS485 communication setup
-    Comm_initData(&COMMDataStruct);
+    //Comm_initData(&COMMDataStruct);
     
     // Set all flag values to initial value
     SYS_DEBUG_MODE = 1;			// Set to 0 to enable PWM_IN control
@@ -128,20 +128,15 @@ void main (void)
     
 	// Initialise system variables to default values
 	InitSysVars(1);      
-	/*
+	
     // Check EEPROM sys vars
     EEPROMReadi16(0, &SYSTEM.i16EEPROMStoreDone);
-    if(-1 == SYSTEM.i16EEPROMStoreDone)
-    {
-    	// Store to EEPROM
-    	StoreEEPROM();
-    }
-    else
-    {
+    if(1 == SYSTEM.i16EEPROMStoreDone)
+    {    	
     	// Load from EEPROM
     	LoadEEPROM();
     }
-*/
+
     // Calculate float values from parameters 
     calculateFloats();
     
@@ -281,7 +276,9 @@ void main (void)
 				}
 				case 3:
 				{
-					CheckEEPROM();
+					i16EEPROMReadErrors = 0;
+					uw32ErrorIndex = 0;
+					i16EEPROMReadErrors = CheckEEPROM();
 					i8EEPROMOp = 0;
 					break;
 				}

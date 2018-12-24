@@ -969,32 +969,23 @@ void FCAN_MB_ISR(void)
 	UWord32 uw32Test = 0;
 	UWord32 *uw32CANDataPtr;
 	
-	for(i=0;i<16;i++)
+	// Check RX mailboxes
+	for(i=8;i<16;i++)
 	{
 		MB = ioctl(FCAN, FCAN_GET_MB_MODULE, i);
 		
 		code = ioctl(MB, FCANMB_GET_CODE, null);
-		// Keep checking MB busy
-		while(0b1 == ioctl(MB, FCANMB_GET_CODE, null))
+		
+		if(0b10 == code)
 		{
+			// Get data
+			uw32CANDataPtr = ioctl(MB, FCANMB_GET_DATAPTR32, null);
+			uw32Test = *uw32CANDataPtr;
 			
+			uw32Test = MB->data[0];
+			uw32Test = MB->data[1];					
 		}
-		
-		// Get data
-		uw32CANDataPtr = ioctl(MB, FCANMB_GET_DATAPTR32, null);
-		uw32Test = *uw32CANDataPtr;
-		
-		uw32Test = MB->data[0];
-		uw32Test = MB->data[1];		
 	}
-	ioctl(FCAN, FCAN_CLEAR_MBINT_FLAGS, FCAN_MBINT_0);
-	ioctl(FCAN, FCAN_CLEAR_MBINT_FLAGS, FCAN_MBINT_1);
-	ioctl(FCAN, FCAN_CLEAR_MBINT_FLAGS, FCAN_MBINT_2);
-	ioctl(FCAN, FCAN_CLEAR_MBINT_FLAGS, FCAN_MBINT_3);
-	ioctl(FCAN, FCAN_CLEAR_MBINT_FLAGS, FCAN_MBINT_4);
-	ioctl(FCAN, FCAN_CLEAR_MBINT_FLAGS, FCAN_MBINT_5);
-	ioctl(FCAN, FCAN_CLEAR_MBINT_FLAGS, FCAN_MBINT_6);
-	ioctl(FCAN, FCAN_CLEAR_MBINT_FLAGS, FCAN_MBINT_7);
 	ioctl(FCAN, FCAN_CLEAR_MBINT_FLAGS, FCAN_MBINT_8);
 	ioctl(FCAN, FCAN_CLEAR_MBINT_FLAGS, FCAN_MBINT_9);
 	ioctl(FCAN, FCAN_CLEAR_MBINT_FLAGS, FCAN_MBINT_10);

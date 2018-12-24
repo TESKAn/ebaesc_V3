@@ -26,9 +26,8 @@ Int16 CAN_Init()
 		
 		for(i=8;i<16;i++)
 		{
-			MB = ioctl(FCAN, FCAN_GET_MB_MODULE, i);
-			
-			ioctl(MB, FCANMB_SET_ID, 0x4e2123 | FCAN_ID_EXT);	
+			MB = ioctl(FCAN, FCAN_GET_MB_MODULE, i);			
+			ioctl(MB, FCANMB_SET_ID, 0x00015500 | FCAN_ID_EXT);	
 			ioctl(MB, FCANMB_SET_CODE, FCAN_MB_CODE_RXEMPTY);
 		}
 		ioctl(FCAN, FCAN_UNLOCK_ALL_MB, null);

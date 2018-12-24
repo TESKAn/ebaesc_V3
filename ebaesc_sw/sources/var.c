@@ -9,7 +9,9 @@
 
 // EEPROM test
 Int8 i8EEPROMOp = 0;
+Int16 i16EEPROMReadErrors = 0;
 UWord32 uw32EEPROMAddress = 0;
+UWord32 uw32ErrorIndex = 0;
 UWord16 uw16EEPROMData = 0;
 // End eeprom test
 
