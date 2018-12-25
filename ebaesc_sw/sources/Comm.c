@@ -14,50 +14,6 @@ COMMDATA* CommData;
 
 UInt16 ui16CommTimer = 5000;
 
-
-// Slave functions
-Int16 Comm_initData(COMMDATA* dataStruct)
-{
-	// Store pointer to data structure
-	CommData = dataStruct;
-	// Unit registers
-	CommData->REGS.ui8ID = COMM_ID;
-	CommData->REGS.ui16ModelNumber = 0x001c;
-	CommData->REGS.ui8FirmwareVersion = 1;
-	CommData->REGS.ui8BaudRate = 3;
-	CommData->REGS.ui16Errors = 0;
-	//CommData->REGS.f32SetRPM = 0.0f;
-	CommData->REGS.ui16State = SYSTEM.systemState;
-	CommData->REGS.ui8Armed = 0;
-	CommData->REGS.ui8Park = 0;
-	CommData->REGS.ui8ReturnDelayTime = 1;
-	// Park position
-	CommData->REGS.i16ParkPosition = M_PARK_POSITION;
-	
-	CommData->ui16RegsBytes = 64;
-	CommData->errStatus = 0;
-	CommData->ui16RXCommTimeout = 100;
-	CommData->ui16RXTimeoutCounter = 0;
-	CommData->ui16TXCommTimeout = 100;
-	CommData->ui16TXTimeoutCounter = 0;	
-	CommData->ui16ReadOnlyLow = 0;
-	CommData->ui16ReadOnlyHigh = 2;
-	
-	CommData->REGS.i16PWMMax = 2000;
-	CommData->REGS.i16PWMMin = 1000;
-	
-	CommData->REGS.i16MaxRPM = 18000;
-	CommData->REGS.i16MinRPM = 2000;
-	CommData->REGS.i16CurrentPWM = 1000;
-	CommData->REGS.i16ParkPosition = 2048;
-	
-	CommData->REGS.i16ZeroSpeedPWM = 50;
-	
-}
-
-
-
-
 UInt16 update_crc(UInt16 crc_accum, UInt8 *data_blk_ptr, UInt16 data_blk_size)
 {
 	UInt16 i, j;

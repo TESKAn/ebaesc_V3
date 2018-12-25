@@ -980,10 +980,11 @@ void FCAN_MB_ISR(void)
 		{
 			// Get data
 			uw32CANDataPtr = ioctl(MB, FCANMB_GET_DATAPTR32, null);
-			uw32Test = *uw32CANDataPtr;
 			
-			uw32Test = MB->data[0];
-			uw32Test = MB->data[1];					
+			if(9 == i)
+			{
+				CAN_RXRPMLimits(MB);
+			}			
 		}
 	}
 	ioctl(FCAN, FCAN_CLEAR_MBINT_FLAGS, FCAN_MBINT_8);

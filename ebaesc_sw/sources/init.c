@@ -369,10 +369,13 @@ void InitSysVars(Int16 initial)
 	
 	COMMDataStruct.REGS.i16MaxRPM = 18000;
 	COMMDataStruct.REGS.i16MinRPM = 2000;
+	
 	COMMDataStruct.REGS.i16CurrentPWM = 1000;
 	COMMDataStruct.REGS.i16ParkPosition = 2048;
 	
 	COMMDataStruct.REGS.i16ZeroSpeedPWM = 50;
+	
+	COMMDataStruct.REGS.i16SetRPM = 0;
 	
 }
 

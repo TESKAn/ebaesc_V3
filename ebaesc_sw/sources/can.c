@@ -12,6 +12,7 @@ Int16 CAN_Init()
 	int i = 0;
 	FCAN_MB *MB;
 	int code = 0;
+	UWord32 uw32IDValue = 0;
 	
 
 	if(ioctl(FCAN, FCAN_TEST_READY, null))
@@ -30,11 +31,21 @@ Int16 CAN_Init()
 			ioctl(MB, FCANMB_SET_ID, 0x00015500 | FCAN_ID_EXT);	
 			ioctl(MB, FCANMB_SET_CODE, FCAN_MB_CODE_RXEMPTY);
 		}
+		// Set mailbox 9 to receive RPM limits
+		uw32IDValue = CAN_MID_SETRPMLIMIT; 
+		uw32IDValue = uw32IDValue << 8;
+		MB = ioctl(FCAN, FCAN_GET_MB_MODULE, 9);			
+		ioctl(MB, FCANMB_SET_ID, uw32IDValue | FCAN_ID_EXT);	
+		ioctl(MB, FCANMB_SET_CODE, FCAN_MB_CODE_RXEMPTY);
+		
+		
 		ioctl(FCAN, FCAN_UNLOCK_ALL_MB, null);
 		
 	}
 	return 0;
 }
+
+
 
 Int16 CAN_CRCAdd(FCAN_MB *MB)
 {
@@ -78,6 +89,26 @@ Int16 CAN_CRCAdd(FCAN_MB *MB)
 	
 }
 
+UInt32 CAN_GenerateID(UInt32 ui32PRIO, UInt32 ui32MID)
+{
+	UInt32 ui32Temp = 0;
+	UInt32 ui32MsgID = 0;
+
+	// Generate message ID
+	ui32Temp = ui32PRIO;
+	ui32Temp = ui32Temp << 24;
+	ui32MsgID = ui32Temp;
+
+	ui32Temp = ui32MID;
+	ui32Temp = ui32Temp << 8;
+	ui32MsgID = ui32MsgID | ui32Temp;
+
+	ui32Temp = (UWord32)COMMDataStruct.REGS.ui8ID;
+	ui32MsgID = ui32MsgID | ui32Temp;
+
+	return ui32MsgID;
+}
+
 Int16 CAN_TXStatus()
 {
 	FCAN_MB *MB;
@@ -105,17 +136,9 @@ Int16 CAN_TXStatus()
 			code = ioctl(MB, FCANMB_GET_CODE, null);
 			if(code == 0b1000)
 			{
-				// Generate message ID
-				uw32Temp = CAN_PRIO_STATUS;
-				uw32Temp = uw32Temp << 24;
-				uw32MessageID = uw32Temp;
+				// Generate message ID				
+				uw32MessageID = CAN_GenerateID(CAN_PRIO_STATUS, CAN_MID_STATUS);
 				
-				uw32Temp = CAN_MID_STATUS;
-				uw32Temp = uw32Temp << 8;
-				uw32MessageID = uw32MessageID | uw32Temp;
-				
-				uw32Temp = (UWord32)COMMDataStruct.REGS.ui8ID;
-				uw32MessageID = uw32MessageID | uw32Temp;
 				// Calculate time in seconds
 				t32bit.uw32 = SYSTEM.ui32SystemTime / 1000;
 				// Flip bytes
@@ -159,15 +182,7 @@ Int16 CAN_TXVoltage()
 	if(ioctl(FCAN, FCAN_TEST_READY, null))
 	{
 		// Generate message ID
-		uw32Temp = CAN_PRIO_UIN;
-		uw32Temp = uw32Temp << 24;
-		uw32MessageID = uw32Temp;
-		uw32Temp = 21034;
-		uw32Temp = uw32Temp << 8;
-		uw32MessageID = uw32MessageID | uw32Temp;
-		uw32Temp = (UWord32)COMMDataStruct.REGS.ui8ID;
-		uw32MessageID = uw32MessageID | uw32Temp;
-		
+		uw32MessageID = CAN_GenerateID(CAN_PRIO_UIN, CAN_MID_UIN);		
 		// Get free MB
 		for(i=0;i<8;i++)
 		{
@@ -193,5 +208,11 @@ Int16 CAN_TXVoltage()
 			}
 		}			
 	}		
+	return 0;
+}
+
+Int16 CAN_RXRPMLimits(FCAN_MB *MB)
+{
+	
 	return 0;
 }

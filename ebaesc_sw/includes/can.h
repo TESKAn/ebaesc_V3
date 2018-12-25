@@ -67,7 +67,10 @@ typedef struct
 
 Int16 CAN_Init();
 Int16 CAN_CRCAdd(FCAN_MB *MB);
+UInt32 CAN_GenerateID(UInt32 ui32PRIO, UInt32 ui32MID);
 Int16 CAN_TXStatus();
 Int16 CAN_TXVoltage();
+
+Int16 CAN_RXRPMLimits(FCAN_MB *MB);
 
 #endif /* CAN_H_ */

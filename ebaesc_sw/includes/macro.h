@@ -293,16 +293,26 @@
 #define POS_SENS_LOW						200
 #define POS_SENS_HIGH						3900
 
-// CAN macros
-#define CAN_MID_STATUS						341
-#define CAN_MID_UIN							20001
-#define CAN_PRIO_UIN						0x1f
-#define CAN_PRIO_STATUS						0x15
-// CAN RX message ID
-#define CAN_MID_RX							
-
+// CAN macros		
 
 #define CAN_INFO_INTERVAL					100
 #define CAN_STATUS_INTERVAL					500
+
+// From main controller
+// CAN message IDs
+#define CAN_MID_STATUS					341
+#define CAN_MID_ORIENTATION				20001
+#define CAN_MID_SETRPMLIMIT				20002
+
+// CAN message priorities
+#define CAN_PRIO_STATUS					0x15
+#define CAN_PRIO_ORIENTATION			0x15
+#define CAN_PRIO_SETRPMLIMIT			0x15
+
+// From ESC
+// CAN message IDs
+#define CAN_MID_UIN						20101
+// CAN message priorities
+#define CAN_PRIO_UIN					0x15
 
 #endif /* MACRO_H_ */
