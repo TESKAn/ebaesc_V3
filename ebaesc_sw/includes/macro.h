@@ -312,7 +312,9 @@
 // From ESC
 // CAN message IDs
 #define CAN_MID_UIN						20101
+#define CAN_MID_RPMINFO					20102
 // CAN message priorities
 #define CAN_PRIO_UIN					0x15
+#define CAN_PRIO_RPMINFO				0x15
 
 #endif /* MACRO_H_ */

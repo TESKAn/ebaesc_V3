@@ -950,6 +950,7 @@ void PIT_0_ISR(void)
 		if(SYSTEM.CAN.ui16CANInfoInterval < SYSTEM.CAN.ui16CANInfoTimer)
 		{
 			CAN_TXVoltage();
+			CAN_TXRPMInfo();
 			SYSTEM.CAN.ui16CANInfoTimer = 0;
 		}
 		if(SYSTEM.CAN.ui16CANStatusInterval < SYSTEM.CAN.ui16CANStatusTimer)
@@ -973,6 +974,8 @@ void FCAN_MB_ISR(void)
 	for(i=8;i<16;i++)
 	{
 		MB = ioctl(FCAN, FCAN_GET_MB_MODULE, i);
+		
+		//while(0b1 == ioctl(MB, FCANMB_GET_CODE, null))
 		
 		code = ioctl(MB, FCANMB_GET_CODE, null);
 		

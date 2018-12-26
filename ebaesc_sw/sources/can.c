@@ -211,8 +211,68 @@ Int16 CAN_TXVoltage()
 	return 0;
 }
 
+Int16 CAN_TXRPMInfo()
+{
+	FCAN_MB *MB;
+	int i = 0;
+	int code = 0;
+	UWord32 uw32MessageID = 0;
+	UWord32 uw32Temp = 0;
+	t32BitVars t32bit;
+	
+	
+	if(ioctl(FCAN, FCAN_TEST_READY, null))
+	{
+		// Generate message ID
+		uw32MessageID = CAN_GenerateID(CAN_PRIO_RPMINFO, CAN_MID_RPMINFO);		
+		// Get free MB
+		for(i=0;i<8;i++)
+		{
+			MB = ioctl(FCAN, FCAN_GET_MB_MODULE, i);
+			// Get code
+			code = ioctl(MB, FCANMB_GET_CODE, null);
+			if(code == 0b1000)
+			{
+				
+				t32bit.words.i16[1] = (Int16)SYSTEM.SIVALUES.fRPM;
+				t32bit.words.i16[0] = COMMDataStruct.REGS.i16SetRPM;
+				MB->data[0] = t32bit.uw32;
+				t32bit.uw32 = 0;
+				t32bit.bytes.ui8[0] = 0xc0;
+				MB->data[1] = t32bit.uw32;
+				
+				ioctl(MB, FCANMB_REORDER_BYTES, NULL);
+				
+				ioctl(MB, FCANMB_SET_ID, uw32MessageID | FCAN_ID_EXT);
+				ioctl(MB, FCANMB_SET_LEN, 5);
+				ioctl(MB, FCANMB_SET_CODE, FCAN_MB_CODE_TXONCE);		
+				i = 15;
+			}
+		}			
+	}		
+	return 0;
+}
+
 Int16 CAN_RXRPMLimits(FCAN_MB *MB)
 {
+	t32BitVars t32bit;
+	
+	// Flip bytes
+	ioctl(MB, FCANMB_REORDER_BYTES, NULL);
+	
+	
+	t32bit.uw32 = MB->data[0];
+	
+	                                        
+	                 
+	if((0 == t32bit.bytes.ui8[0])||(COMMDataStruct.REGS.ui8ID == t32bit.bytes.ui8[0]))
+	{
+		COMMDataStruct.REGS.i16MinRPM = t32bit.words.i16[1];
+		
+		t32bit.uw32 = MB->data[1];
+		COMMDataStruct.REGS.i16MaxRPM = t32bit.words.i16[0];		
+	}
+
 	
 	return 0;
 }

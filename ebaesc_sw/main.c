@@ -372,6 +372,11 @@ void main (void)
     			i8CANTest = 0;
     			break;
     		}
+    		case 6:
+    		{
+    			CAN_TXRPMInfo();
+    			i8CANTest = 0;
+    		}
     		default:
     		{
     		    i8CANTest = 0;
