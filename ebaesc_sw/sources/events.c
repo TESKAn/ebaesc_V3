@@ -975,9 +975,13 @@ void FCAN_MB_ISR(void)
 	{
 		MB = ioctl(FCAN, FCAN_GET_MB_MODULE, i);
 		
-		//while(0b1 == ioctl(MB, FCANMB_GET_CODE, null))
+		code = 0b1;
 		
-		code = ioctl(MB, FCANMB_GET_CODE, null);
+		while(0b1 == code)
+		{
+			code = ioctl(MB, FCANMB_GET_CODE, null);
+		}
+		
 		
 		if(0b10 == code)
 		{
@@ -987,7 +991,15 @@ void FCAN_MB_ISR(void)
 			if(9 == i)
 			{
 				CAN_RXRPMLimits(MB);
-			}			
+				ioctl(MB, FCANMB_SET_CODE, FCAN_MB_CODE_RXEMPTY);
+			}	
+			else if(10 == i)
+			{
+				CAN_RXRPM(MB);
+				code = ioctl(MB, FCANMB_GET_CODE, null);
+				ioctl(MB, FCANMB_SET_CODE, FCAN_MB_CODE_RXEMPTY);
+				code = ioctl(MB, FCANMB_GET_CODE, null);
+			}
 		}
 	}
 	ioctl(FCAN, FCAN_CLEAR_MBINT_FLAGS, FCAN_MBINT_8);

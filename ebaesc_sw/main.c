@@ -134,7 +134,7 @@ void main (void)
     if(1 == SYSTEM.i16EEPROMStoreDone)
     {    	
     	// Load from EEPROM
-    	LoadEEPROM();
+    	//LoadEEPROM();
     }
 
     // Calculate float values from parameters 

@@ -298,16 +298,26 @@
 #define CAN_INFO_INTERVAL					100
 #define CAN_STATUS_INTERVAL					500
 
+// Motor IDs
+#define CAN_MOTOR_FR_ID			20
+#define CAN_MOTOR_FL_ID			21
+#define CAN_MOTOR_RR_ID			22
+#define CAN_MOTOR_RL_ID			23
+
+#define CAN_MOTOR_ALL_ID		26
+
 // From main controller
 // CAN message IDs
 #define CAN_MID_STATUS					341
 #define CAN_MID_ORIENTATION				20001
 #define CAN_MID_SETRPMLIMIT				20002
+#define CAN_MID_SETRPM					20003
 
 // CAN message priorities
 #define CAN_PRIO_STATUS					0x15
 #define CAN_PRIO_ORIENTATION			0x15
 #define CAN_PRIO_SETRPMLIMIT			0x15
+#define CAN_PRIO_SETRPM					0x15
 
 // From ESC
 // CAN message IDs

@@ -72,5 +72,6 @@ Int16 CAN_TXStatus();
 Int16 CAN_TXVoltage();
 Int16 CAN_TXRPMInfo();
 Int16 CAN_RXRPMLimits(FCAN_MB *MB);
+Int16 CAN_RXRPM(FCAN_MB *MB);
 
 #endif /* CAN_H_ */
