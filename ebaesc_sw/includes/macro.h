@@ -12,7 +12,7 @@
 #define M_NONE
 
 #ifdef M_NONE
-#define M_ID				0x23
+#define M_ID				0x15
 #define M_MAXSENSORINDEX	0
 #define M_MINSENSORINDEX	0
 #define M_POLEPAIRS			7
@@ -25,7 +25,7 @@
 #define M_POLEARRAY_6		0
 #define M_POLEARRAY_7		0
 // This unit ID
-#define COMM_ID				0x23
+#define COMM_ID				0x15
 // Unit park position
 #define M_PARK_POSITION		0
 
@@ -312,12 +312,14 @@
 #define CAN_MID_ORIENTATION				20001
 #define CAN_MID_SETRPMLIMIT				20002
 #define CAN_MID_SETRPM					20003
+#define CAN_MID_ENABLE					20004
 
 // CAN message priorities
 #define CAN_PRIO_STATUS					0x15
 #define CAN_PRIO_ORIENTATION			0x15
 #define CAN_PRIO_SETRPMLIMIT			0x15
-#define CAN_PRIO_SETRPM					0x15
+#define CAN_PRIO_SETRPM					0x14
+#define CAN_PRIO_ENABLE					0x14
 
 // From ESC
 // CAN message IDs

@@ -341,41 +341,44 @@ void InitSysVars(Int16 initial)
 	}	
 	SYSTEM.ui32SystemTime = 0;
 	
-	// Comm data struct
-	// Unit registers
-	COMMDataStruct.REGS.ui8ID = COMM_ID;
-	COMMDataStruct.REGS.ui16ModelNumber = 0x001c;
-	COMMDataStruct.REGS.ui8FirmwareVersion = 1;
-	COMMDataStruct.REGS.ui8BaudRate = 3;
-	COMMDataStruct.REGS.ui16Errors = 0;
-	COMMDataStruct.REGS.ui16State = SYSTEM.systemState;
-	COMMDataStruct.REGS.ui8Armed = 0;
-	COMMDataStruct.REGS.ui8Park = 0;
-	COMMDataStruct.REGS.ui8ReturnDelayTime = 1;
-	// Park position
-	COMMDataStruct.REGS.i16ParkPosition = M_PARK_POSITION;
-	
-	COMMDataStruct.ui16RegsBytes = 64;
-	COMMDataStruct.errStatus = 0;
-	COMMDataStruct.ui16RXCommTimeout = 100;
-	COMMDataStruct.ui16RXTimeoutCounter = 0;
-	COMMDataStruct.ui16TXCommTimeout = 100;
-	COMMDataStruct.ui16TXTimeoutCounter = 0;	
-	COMMDataStruct.ui16ReadOnlyLow = 0;
-	COMMDataStruct.ui16ReadOnlyHigh = 2;
-	
-	COMMDataStruct.REGS.i16PWMMax = 2000;
-	COMMDataStruct.REGS.i16PWMMin = 1000;
-	
-	COMMDataStruct.REGS.i16MaxRPM = 18000;
-	COMMDataStruct.REGS.i16MinRPM = 2000;
-	
-	COMMDataStruct.REGS.i16CurrentPWM = 1000;
-	COMMDataStruct.REGS.i16ParkPosition = 2048;
-	
-	COMMDataStruct.REGS.i16ZeroSpeedPWM = 50;
-	
-	COMMDataStruct.REGS.i16SetRPM = 0;
+	if(0 != initial)
+	{
+		// Comm data struct
+		// Unit registers
+		COMMDataStruct.REGS.ui8ID = COMM_ID;
+		COMMDataStruct.REGS.ui16ModelNumber = 0x001c;
+		COMMDataStruct.REGS.ui8FirmwareVersion = 1;
+		COMMDataStruct.REGS.ui8BaudRate = 3;
+		COMMDataStruct.REGS.ui16Errors = 0;
+		COMMDataStruct.REGS.ui16State = SYSTEM.systemState;
+		COMMDataStruct.REGS.ui8Armed = 0;
+		COMMDataStruct.REGS.ui8Park = 0;
+		COMMDataStruct.REGS.ui8ReturnDelayTime = 1;
+		// Park position
+		COMMDataStruct.REGS.i16ParkPosition = M_PARK_POSITION;
+		
+		COMMDataStruct.ui16RegsBytes = 64;
+		COMMDataStruct.errStatus = 0;
+		COMMDataStruct.ui16RXCommTimeout = 100;
+		COMMDataStruct.ui16RXTimeoutCounter = 0;
+		COMMDataStruct.ui16TXCommTimeout = 100;
+		COMMDataStruct.ui16TXTimeoutCounter = 0;	
+		COMMDataStruct.ui16ReadOnlyLow = 0;
+		COMMDataStruct.ui16ReadOnlyHigh = 2;
+		
+		COMMDataStruct.REGS.i16PWMMax = 2000;
+		COMMDataStruct.REGS.i16PWMMin = 1000;
+		
+		COMMDataStruct.REGS.i16MaxRPM = 18000;
+		COMMDataStruct.REGS.i16MinRPM = 2000;
+		
+		COMMDataStruct.REGS.i16CurrentPWM = 1000;
+		COMMDataStruct.REGS.i16ParkPosition = 2048;
+		
+		COMMDataStruct.REGS.i16ZeroSpeedPWM = 50;
+		
+		COMMDataStruct.REGS.i16SetRPM = 0;
+	}
 	
 }
 
@@ -554,165 +557,323 @@ UWord32 EEPROMReadf(UWord32 uw32CurrIndex, float *fData)
 	return uw32CurrIndex + 1;
 }
 
-Int16 LoadEEPROM()
+Int16 StoreEEPROM()
 {
 	// Index
-	UWord32 uw32Index = 1;
-	//******************************************
-	// Motor ID
-	//******************************************	
+	UWord32 uw32Index = 0;
+	// Store - EEPROM written
+	uw32Index = EEPROMStorei16(uw32Index, 1);
 	//******************************************
 	// Calibration
 	//******************************************
-	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.CALIBRATION.i16MotorPolePairs);
-	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.CALIBRATION.i16PolePairArray[0]);
-	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.CALIBRATION.i16PolePairArray[1]);
-	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.CALIBRATION.i16PolePairArray[2]);
-	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.CALIBRATION.i16PolePairArray[3]);
-	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.CALIBRATION.i16PolePairArray[4]);
-	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.CALIBRATION.i16PolePairArray[5]);
-	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.CALIBRATION.i16PolePairArray[6]);
-	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.CALIBRATION.i16PolePairArray[7]);
-	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.CALIBRATION.i16MaxSensorIndex);
-	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.CALIBRATION.i16MinSensorIndex);
-	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.CALIBRATION.i16CalibrationState);
+	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.CALIBRATION.i16MotorPolePairs); //1
+	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.CALIBRATION.i16PolePairArray[0]); //2
+	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.CALIBRATION.i16PolePairArray[1]); //3
+	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.CALIBRATION.i16PolePairArray[2]); //4
+	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.CALIBRATION.i16PolePairArray[3]); //5
+	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.CALIBRATION.i16PolePairArray[4]); //6
+	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.CALIBRATION.i16PolePairArray[5]); //7
+	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.CALIBRATION.i16PolePairArray[6]); //8
+	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.CALIBRATION.i16PolePairArray[7]); //9
+	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.CALIBRATION.i16MaxSensorIndex); //10
+	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.CALIBRATION.i16MinSensorIndex); //11
+	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.CALIBRATION.i16CalibrationState); //12
 	//******************************************
 	// Regulators
 	//******************************************
 	// D, Q regulators
 	// D
-	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.REGULATORS.mudtControllerParamId.f16PropGain);
-	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.REGULATORS.mudtControllerParamId.f16IntegGain);
-	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.REGULATORS.mudtControllerParamId.i16PropGainShift);
-	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.REGULATORS.mudtControllerParamId.i16IntegGainShift);
-	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.REGULATORS.mudtControllerParamId.f16UpperLimit);
-	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.REGULATORS.mudtControllerParamId.f16LowerLimit);
+	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.REGULATORS.mudtControllerParamId.f16PropGain); //13
+	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.REGULATORS.mudtControllerParamId.f16IntegGain); //14
+	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.REGULATORS.mudtControllerParamId.i16PropGainShift); //15
+	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.REGULATORS.mudtControllerParamId.i16IntegGainShift); //16
+	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.REGULATORS.mudtControllerParamId.f16UpperLimit); //17
+	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.REGULATORS.mudtControllerParamId.f16LowerLimit); //18
 	// Q
-	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.REGULATORS.mudtControllerParamIq.f16PropGain);
-	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.REGULATORS.mudtControllerParamIq.f16IntegGain);
-	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.REGULATORS.mudtControllerParamIq.i16PropGainShift);
-	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.REGULATORS.mudtControllerParamIq.i16IntegGainShift);
-	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.REGULATORS.mudtControllerParamIq.f16UpperLimit);
-	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.REGULATORS.mudtControllerParamIq.f16LowerLimit);
+	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.REGULATORS.mudtControllerParamIq.f16PropGain); //19
+	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.REGULATORS.mudtControllerParamIq.f16IntegGain); //20
+	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.REGULATORS.mudtControllerParamIq.i16PropGainShift); //21
+	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.REGULATORS.mudtControllerParamIq.i16IntegGainShift); //22
+	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.REGULATORS.mudtControllerParamIq.f16UpperLimit); //23
+	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.REGULATORS.mudtControllerParamIq.f16LowerLimit); //24
 	// W regulator
-	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.REGULATORS.mudtControllerParamW.f16PropGain);
-	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.REGULATORS.mudtControllerParamW.f16IntegGain);
-	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.REGULATORS.mudtControllerParamW.i16PropGainShift);
-	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.REGULATORS.mudtControllerParamW.i16IntegGainShift);
-	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.REGULATORS.mudtControllerParamW.f16UpperLimit);
-	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.REGULATORS.mudtControllerParamW.f16LowerLimit);
-	uw32Index = EEPROMReadui16(uw32Index, &SYSTEM.REGULATORS.ui16SpeedRegInterval);
+	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.REGULATORS.mudtControllerParamW.f16PropGain); //25
+	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.REGULATORS.mudtControllerParamW.f16IntegGain); //26
+	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.REGULATORS.mudtControllerParamW.i16PropGainShift); //27
+	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.REGULATORS.mudtControllerParamW.i16IntegGainShift); //28
+	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.REGULATORS.mudtControllerParamW.f16UpperLimit); //29
+	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.REGULATORS.mudtControllerParamW.f16LowerLimit); //30
+	uw32Index = EEPROMStoreui16(uw32Index, SYSTEM.REGULATORS.ui16SpeedRegInterval); //31
 	//******************************************
 	// Position
 	//******************************************
 	// Init for BEMF observer
-	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.POSITION.acBemfObsrvDQ.udtCtrl.f16PropGain);
-	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.POSITION.acBemfObsrvDQ.udtCtrl.i16PropGainShift);
-	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.POSITION.acBemfObsrvDQ.udtCtrl.f16IntegGain);
-	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.POSITION.acBemfObsrvDQ.udtCtrl.i16IntegGainShift);
-	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.POSITION.acBemfObsrvDQ.f16IGain);
-	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.POSITION.acBemfObsrvDQ.f16UGain);
-	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.POSITION.acBemfObsrvDQ.f16EGain);
-	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.POSITION.acBemfObsrvDQ.f16WIGain);
+	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.POSITION.acBemfObsrvDQ.udtCtrl.f16PropGain); //32
+	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.POSITION.acBemfObsrvDQ.udtCtrl.i16PropGainShift); //33
+	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.POSITION.acBemfObsrvDQ.udtCtrl.f16IntegGain); //34
+	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.POSITION.acBemfObsrvDQ.udtCtrl.i16IntegGainShift); //35
+	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.POSITION.acBemfObsrvDQ.f16IGain); //36
+	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.POSITION.acBemfObsrvDQ.f16UGain); //37
+	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.POSITION.acBemfObsrvDQ.f16EGain); //38
+	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.POSITION.acBemfObsrvDQ.f16WIGain); //39
 	// Tracking observer
-	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.POSITION.acToPos.f16PropGain);
-	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.POSITION.acToPos.i16PropGainShift);
-	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.POSITION.acToPos.f16IntegGain);
-	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.POSITION.acToPos.i16IntegGainShift);
-	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.POSITION.acToPos.f16ThGain);
-	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.POSITION.acToPos.i16ThGainShift);
+	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.POSITION.acToPos.f16PropGain); //40
+	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.POSITION.acToPos.i16PropGainShift); //41
+	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.POSITION.acToPos.f16IntegGain); //42
+	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.POSITION.acToPos.i16IntegGainShift); //43
+	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.POSITION.acToPos.f16ThGain); //44
+	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.POSITION.acToPos.i16ThGainShift); //45
 	// Speed MA filter
-	uw32Index = EEPROMReadw16(uw32Index, &SYSTEM.POSITION.FilterMA32Speed.w16N);
-	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.POSITION.f16ManualAngleIncrease);
-	uw32Index = EEPROMReadf(uw32Index, &SYSTEM.POSITION.fOffsetCalcFactor);
+	uw32Index = EEPROMStorew16(uw32Index, SYSTEM.POSITION.FilterMA32Speed.w16N); //46
+	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.POSITION.f16ManualAngleIncrease); //47
+	uw32Index = EEPROMStoref(uw32Index, SYSTEM.POSITION.fOffsetCalcFactor); //48
 	//******************************************
 	// Sensorless
 	//******************************************
-	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.SENSORLESS.f16MinSpeed);
-	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.SENSORLESS.f16MaxObserverError);
-	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.SENSORLESS.f16AlignCurrent);
-	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.SENSORLESS.f16StartCurrent);
-	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.SENSORLESS.i16AlignTime);
-	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.SENSORLESS.f16StartSpeed);
-	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.SENSORLESS.f16StartTorque);
-	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.SENSORLESS.f16AngleManualError);
-	uw32Index = EEPROMReadui8(uw32Index, &SYSTEM.SENSORLESS.ui8MaxBemfObserverErrorCount);
-	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.SENSORLESS.f16MinSpeedHysteresis);
+	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.SENSORLESS.f16MinSpeed); //49
+	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.SENSORLESS.f16MaxObserverError); //50
+	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.SENSORLESS.f16AlignCurrent); //51
+	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.SENSORLESS.f16StartCurrent); //52
+	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.SENSORLESS.i16AlignTime); //53
+	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.SENSORLESS.f16StartSpeed); //54
+	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.SENSORLESS.f16StartTorque); //55
+	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.SENSORLESS.f16AngleManualError); //56
+	uw32Index = EEPROMStoreui8(uw32Index, SYSTEM.SENSORLESS.ui8MaxBemfObserverErrorCount); //57
+	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.SENSORLESS.f16MinSpeedHysteresis); //58
 	//******************************************
 	// Ramps
 	//******************************************
-	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.RAMPS.Ramp16_AlignCurrent.f16RampUp);
-	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.RAMPS.Ramp16_AlignCurrent.f16RampDown);
-	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.RAMPS.Ramp16_Speed.f16RampUp);
-	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.RAMPS.Ramp16_Speed.f16RampDown);
-	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.RAMPS.Ramp16_Torque.f16RampUp);
-	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.RAMPS.Ramp16_Torque.f16RampDown);
+	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.RAMPS.Ramp16_AlignCurrent.f16RampUp); //59
+	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.RAMPS.Ramp16_AlignCurrent.f16RampDown); //60
+	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.RAMPS.Ramp16_Speed.f16RampUp); //61
+	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.RAMPS.Ramp16_Speed.f16RampDown); //62
+	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.RAMPS.Ramp16_Torque.f16RampUp); //63
+	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.RAMPS.Ramp16_Torque.f16RampDown); //64
 	//******************************************
 	// ADC
 	//******************************************
 	// Angle filter
-	uw32Index = EEPROMReadw16(uw32Index, &SYSTEM.ADC.FilterMA32SensorA.w16N);
-	uw32Index = EEPROMReadw16(uw32Index, &SYSTEM.ADC.FilterMA32SensorB.w16N);
+	uw32Index = EEPROMStorew16(uw32Index, SYSTEM.ADC.FilterMA32SensorA.w16N); //65
+	uw32Index = EEPROMStorew16(uw32Index, SYSTEM.ADC.FilterMA32SensorB.w16N); //66
 	// DC link MA filter
-	uw32Index = EEPROMReadw16(uw32Index, &SYSTEM.ADC.FilterMA32DCLink.w16N);
+	uw32Index = EEPROMStorew16(uw32Index, SYSTEM.ADC.FilterMA32DCLink.w16N); //67
 	// Temperature MA filter
-	uw32Index = EEPROMReadw16(uw32Index, &SYSTEM.ADC.FilterMA32Temperature.w16N);
-	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.ADC.f16CurrentGainFactor);
+	uw32Index = EEPROMStorew16(uw32Index, SYSTEM.ADC.FilterMA32Temperature.w16N); //68
+	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.ADC.f16CurrentGainFactor); //69
 	//******************************************
 	// MCTRL
 	//******************************************
-	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.MCTRL.f16TorqueFactor);
+	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.MCTRL.f16TorqueFactor); //70
 	//******************************************
 	// PWM
 	//******************************************
 	// PWM input variables
-	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.PWMIN.i16PWMfullThrottle);
-	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.PWMIN.i16PWMoffThrottle);
-	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.PWMIN.i16PWMinThrottle);
-	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.PWMIN.i16PWMThrottleDifference);
+	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.PWMIN.i16PWMfullThrottle); //71
+	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.PWMIN.i16PWMoffThrottle); //72
+	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.PWMIN.i16PWMinThrottle); //73
+	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.PWMIN.i16PWMThrottleDifference); //74
 	// PWM input parameters
-	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.PWMIN.i16PWMInMiddleValue);
-	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.PWMIN.i16PWMInHighValRef);
-	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.PWMIN.i16PWMInLowValRef);
-	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.PWMIN.i16PWMInMeasureTime);
-	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.PWMIN.i16PWMInOffZone);
-	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.PWMIN.i16PWMFilterSize);
+	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.PWMIN.i16PWMInMiddleValue); //75
+	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.PWMIN.i16PWMInHighValRef); //76
+	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.PWMIN.i16PWMInLowValRef); //77
+	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.PWMIN.i16PWMInMeasureTime); //78
+	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.PWMIN.i16PWMInOffZone); //79
+	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.PWMIN.i16PWMFilterSize); //80
 	//******************************************
 	// SI values
 	//******************************************	
-	uw32Index = EEPROMReadf(uw32Index, &SYSTEM.SIVALUES.fIInFiltDiv);
+	uw32Index = EEPROMStoref(uw32Index, SYSTEM.SIVALUES.fIInFiltDiv); //81
 	//******************************************
 	// Measure params
 	//******************************************
-	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.MEASUREPARAMS.f16SetpointMulti);
-	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.MEASUREPARAMS.f16LphaIset);
-	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.MEASUREPARAMS.i16TotalMeasurements);
+	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.MEASUREPARAMS.f16SetpointMulti); //82
+	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.MEASUREPARAMS.f16LphaIset); //83
+	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.MEASUREPARAMS.i16TotalMeasurements); //84
 	//******************************************
 	// CAN
 	//******************************************
-	uw32Index = EEPROMReadui16(uw32Index, &SYSTEM.CAN.ui16CANInfoInterval);
-	uw32Index = EEPROMReadui16(uw32Index, &SYSTEM.CAN.ui16CANStatusInterval);
+	uw32Index = EEPROMStoreui16(uw32Index, SYSTEM.CAN.ui16CANInfoInterval); //85
+	uw32Index = EEPROMStoreui16(uw32Index, SYSTEM.CAN.ui16CANStatusInterval); //86
 	//******************************************
 	// Other
 	//******************************************
 	// Comm data struct
 	// Unit registers
-	uw32Index = EEPROMReadui8(uw32Index, &COMMDataStruct.REGS.ui8ID);
-	uw32Index = EEPROMReadui16(uw32Index, &COMMDataStruct.REGS.ui16ModelNumber);
-	uw32Index = EEPROMReadui8(uw32Index, &COMMDataStruct.REGS.ui8FirmwareVersion);
-	uw32Index = EEPROMReadui8(uw32Index, &COMMDataStruct.REGS.ui8BaudRate);
-	uw32Index = EEPROMReadui8(uw32Index, &COMMDataStruct.REGS.ui8ReturnDelayTime);
-	uw32Index = EEPROMReadi16(uw32Index, &COMMDataStruct.REGS.i16ParkPosition);
-	uw32Index = EEPROMReadui16(uw32Index, &COMMDataStruct.ui16RegsBytes);
-	uw32Index = EEPROMReadui16(uw32Index, &COMMDataStruct.ui16RXCommTimeout);
-	uw32Index = EEPROMReadui16(uw32Index, &COMMDataStruct.ui16TXCommTimeout);
-	uw32Index = EEPROMReadi16(uw32Index, &COMMDataStruct.REGS.i16PWMMax);
-	uw32Index = EEPROMReadi16(uw32Index, &COMMDataStruct.REGS.i16PWMMin);
-	uw32Index = EEPROMReadi16(uw32Index, &COMMDataStruct.REGS.i16MaxRPM);
-	uw32Index = EEPROMReadi16(uw32Index, &COMMDataStruct.REGS.i16MinRPM);
-	uw32Index = EEPROMReadi16(uw32Index, &COMMDataStruct.REGS.i16CurrentPWM);
-	uw32Index = EEPROMReadi16(uw32Index, &COMMDataStruct.REGS.i16ParkPosition);
-	uw32Index = EEPROMReadi16(uw32Index, &COMMDataStruct.REGS.i16ZeroSpeedPWM);
+	uw32Index = EEPROMStoreui8(uw32Index, COMMDataStruct.REGS.ui8ID); //87
+	uw32Index = EEPROMStoreui16(uw32Index, COMMDataStruct.REGS.ui16ModelNumber); //88
+	uw32Index = EEPROMStoreui8(uw32Index, COMMDataStruct.REGS.ui8FirmwareVersion); //89
+	uw32Index = EEPROMStoreui8(uw32Index, COMMDataStruct.REGS.ui8BaudRate); //90
+	uw32Index = EEPROMStoreui8(uw32Index, COMMDataStruct.REGS.ui8ReturnDelayTime); //91
+	uw32Index = EEPROMStorei16(uw32Index, COMMDataStruct.REGS.i16ParkPosition); //92
+	uw32Index = EEPROMStoreui16(uw32Index, COMMDataStruct.ui16RegsBytes); //93
+	uw32Index = EEPROMStoreui16(uw32Index, COMMDataStruct.ui16RXCommTimeout); //94
+	uw32Index = EEPROMStoreui16(uw32Index, COMMDataStruct.ui16TXCommTimeout); //95
+	uw32Index = EEPROMStorei16(uw32Index, COMMDataStruct.REGS.i16PWMMax); //96
+	uw32Index = EEPROMStorei16(uw32Index, COMMDataStruct.REGS.i16PWMMin); //97
+	uw32Index = EEPROMStorei16(uw32Index, COMMDataStruct.REGS.i16MaxRPM); //98
+	uw32Index = EEPROMStorei16(uw32Index, COMMDataStruct.REGS.i16MinRPM); //99
+	uw32Index = EEPROMStorei16(uw32Index, COMMDataStruct.REGS.i16CurrentPWM); //100
+	uw32Index = EEPROMStorei16(uw32Index, COMMDataStruct.REGS.i16ParkPosition); //101
+	uw32Index = EEPROMStorei16(uw32Index, COMMDataStruct.REGS.i16ZeroSpeedPWM); //102
+	return (Int16)uw32Index;
+}
+
+Int16 LoadEEPROM()
+{
+	// Index
+	UWord32 uw32Index = 1;
+	//******************************************
+	// Calibration
+	//******************************************
+	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.CALIBRATION.i16MotorPolePairs); //1
+	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.CALIBRATION.i16PolePairArray[0]); //2
+	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.CALIBRATION.i16PolePairArray[1]); //3
+	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.CALIBRATION.i16PolePairArray[2]); //4
+	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.CALIBRATION.i16PolePairArray[3]); //5
+	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.CALIBRATION.i16PolePairArray[4]); //6
+	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.CALIBRATION.i16PolePairArray[5]); //7
+	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.CALIBRATION.i16PolePairArray[6]); //8
+	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.CALIBRATION.i16PolePairArray[7]); //9
+	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.CALIBRATION.i16MaxSensorIndex); //10
+	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.CALIBRATION.i16MinSensorIndex); //11
+	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.CALIBRATION.i16CalibrationState); //12
+	//******************************************
+	// Regulators
+	//******************************************
+	// D, Q regulators
+	// D
+	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.REGULATORS.mudtControllerParamId.f16PropGain); //13
+	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.REGULATORS.mudtControllerParamId.f16IntegGain); //14
+	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.REGULATORS.mudtControllerParamId.i16PropGainShift); //15
+	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.REGULATORS.mudtControllerParamId.i16IntegGainShift); //16
+	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.REGULATORS.mudtControllerParamId.f16UpperLimit); //17
+	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.REGULATORS.mudtControllerParamId.f16LowerLimit); //18
+	// Q
+	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.REGULATORS.mudtControllerParamIq.f16PropGain); //19
+	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.REGULATORS.mudtControllerParamIq.f16IntegGain); //20
+	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.REGULATORS.mudtControllerParamIq.i16PropGainShift); //21
+	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.REGULATORS.mudtControllerParamIq.i16IntegGainShift); //22
+	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.REGULATORS.mudtControllerParamIq.f16UpperLimit); //23
+	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.REGULATORS.mudtControllerParamIq.f16LowerLimit); //24
+	// W regulator
+	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.REGULATORS.mudtControllerParamW.f16PropGain); //25
+	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.REGULATORS.mudtControllerParamW.f16IntegGain); //26
+	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.REGULATORS.mudtControllerParamW.i16PropGainShift); //27
+	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.REGULATORS.mudtControllerParamW.i16IntegGainShift); //28
+	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.REGULATORS.mudtControllerParamW.f16UpperLimit); //29
+	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.REGULATORS.mudtControllerParamW.f16LowerLimit); //30
+	uw32Index = EEPROMReadui16(uw32Index, &SYSTEM.REGULATORS.ui16SpeedRegInterval); //31
+	//******************************************
+	// Position
+	//******************************************
+	// Init for BEMF observer
+	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.POSITION.acBemfObsrvDQ.udtCtrl.f16PropGain); //32
+	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.POSITION.acBemfObsrvDQ.udtCtrl.i16PropGainShift); //33
+	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.POSITION.acBemfObsrvDQ.udtCtrl.f16IntegGain); //34
+	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.POSITION.acBemfObsrvDQ.udtCtrl.i16IntegGainShift); //35
+	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.POSITION.acBemfObsrvDQ.f16IGain); //36
+	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.POSITION.acBemfObsrvDQ.f16UGain); //37
+	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.POSITION.acBemfObsrvDQ.f16EGain); //38
+	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.POSITION.acBemfObsrvDQ.f16WIGain); //39
+	// Tracking observer
+	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.POSITION.acToPos.f16PropGain); //40
+	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.POSITION.acToPos.i16PropGainShift); //41
+	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.POSITION.acToPos.f16IntegGain); //42
+	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.POSITION.acToPos.i16IntegGainShift); //43
+	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.POSITION.acToPos.f16ThGain); //44
+	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.POSITION.acToPos.i16ThGainShift); //45
+	// Speed MA filter
+	uw32Index = EEPROMReadw16(uw32Index, &SYSTEM.POSITION.FilterMA32Speed.w16N); //46
+	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.POSITION.f16ManualAngleIncrease); //47
+	uw32Index = EEPROMReadf(uw32Index, &SYSTEM.POSITION.fOffsetCalcFactor); //48
+	//******************************************
+	// Sensorless
+	//******************************************
+	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.SENSORLESS.f16MinSpeed); //49
+	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.SENSORLESS.f16MaxObserverError); //50
+	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.SENSORLESS.f16AlignCurrent); //51
+	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.SENSORLESS.f16StartCurrent); //52
+	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.SENSORLESS.i16AlignTime); //53
+	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.SENSORLESS.f16StartSpeed); //54
+	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.SENSORLESS.f16StartTorque); //55
+	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.SENSORLESS.f16AngleManualError); //56
+	uw32Index = EEPROMReadui8(uw32Index, &SYSTEM.SENSORLESS.ui8MaxBemfObserverErrorCount); //57
+	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.SENSORLESS.f16MinSpeedHysteresis); //58
+	//******************************************
+	// Ramps
+	//******************************************
+	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.RAMPS.Ramp16_AlignCurrent.f16RampUp); //59
+	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.RAMPS.Ramp16_AlignCurrent.f16RampDown); //60
+	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.RAMPS.Ramp16_Speed.f16RampUp); //61
+	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.RAMPS.Ramp16_Speed.f16RampDown); //62
+	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.RAMPS.Ramp16_Torque.f16RampUp); //63
+	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.RAMPS.Ramp16_Torque.f16RampDown); //64
+	//******************************************
+	// ADC
+	//******************************************
+	// Angle filter
+	uw32Index = EEPROMReadw16(uw32Index, &SYSTEM.ADC.FilterMA32SensorA.w16N); //65
+	uw32Index = EEPROMReadw16(uw32Index, &SYSTEM.ADC.FilterMA32SensorB.w16N); //66
+	// DC link MA filter
+	uw32Index = EEPROMReadw16(uw32Index, &SYSTEM.ADC.FilterMA32DCLink.w16N); //67
+	// Temperature MA filter
+	uw32Index = EEPROMReadw16(uw32Index, &SYSTEM.ADC.FilterMA32Temperature.w16N); //68
+	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.ADC.f16CurrentGainFactor); //69
+	//******************************************
+	// MCTRL
+	//******************************************
+	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.MCTRL.f16TorqueFactor); //70
+	//******************************************
+	// PWM
+	//******************************************
+	// PWM input variables
+	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.PWMIN.i16PWMfullThrottle); //71
+	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.PWMIN.i16PWMoffThrottle); //72
+	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.PWMIN.i16PWMinThrottle); //73
+	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.PWMIN.i16PWMThrottleDifference); //74
+	// PWM input parameters
+	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.PWMIN.i16PWMInMiddleValue); //75
+	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.PWMIN.i16PWMInHighValRef); //76
+	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.PWMIN.i16PWMInLowValRef); //77
+	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.PWMIN.i16PWMInMeasureTime); //78
+	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.PWMIN.i16PWMInOffZone); //79
+	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.PWMIN.i16PWMFilterSize); //80
+	//******************************************
+	// SI values
+	//******************************************	
+	uw32Index = EEPROMReadf(uw32Index, &SYSTEM.SIVALUES.fIInFiltDiv); //81
+	//******************************************
+	// Measure params
+	//******************************************
+	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.MEASUREPARAMS.f16SetpointMulti); //82
+	uw32Index = EEPROMReadf16(uw32Index, &SYSTEM.MEASUREPARAMS.f16LphaIset); //83
+	uw32Index = EEPROMReadi16(uw32Index, &SYSTEM.MEASUREPARAMS.i16TotalMeasurements); //84
+	//******************************************
+	// CAN
+	//******************************************
+	uw32Index = EEPROMReadui16(uw32Index, &SYSTEM.CAN.ui16CANInfoInterval); //85
+	uw32Index = EEPROMReadui16(uw32Index, &SYSTEM.CAN.ui16CANStatusInterval); //86
+	//******************************************
+	// Other
+	//******************************************
+	// Comm data struct
+	// Unit registers
+	uw32Index = EEPROMReadui8(uw32Index, &COMMDataStruct.REGS.ui8ID); //87
+	uw32Index = EEPROMReadui16(uw32Index, &COMMDataStruct.REGS.ui16ModelNumber); //88
+	uw32Index = EEPROMReadui8(uw32Index, &COMMDataStruct.REGS.ui8FirmwareVersion); //89
+	uw32Index = EEPROMReadui8(uw32Index, &COMMDataStruct.REGS.ui8BaudRate); //90
+	uw32Index = EEPROMReadui8(uw32Index, &COMMDataStruct.REGS.ui8ReturnDelayTime); //91
+	uw32Index = EEPROMReadi16(uw32Index, &COMMDataStruct.REGS.i16ParkPosition); //92
+	uw32Index = EEPROMReadui16(uw32Index, &COMMDataStruct.ui16RegsBytes); //93
+	uw32Index = EEPROMReadui16(uw32Index, &COMMDataStruct.ui16RXCommTimeout); //94
+	uw32Index = EEPROMReadui16(uw32Index, &COMMDataStruct.ui16TXCommTimeout); //95
+	uw32Index = EEPROMReadi16(uw32Index, &COMMDataStruct.REGS.i16PWMMax); //96
+	uw32Index = EEPROMReadi16(uw32Index, &COMMDataStruct.REGS.i16PWMMin); //97
+	uw32Index = EEPROMReadi16(uw32Index, &COMMDataStruct.REGS.i16MaxRPM); //98
+	uw32Index = EEPROMReadi16(uw32Index, &COMMDataStruct.REGS.i16MinRPM); //99
+	uw32Index = EEPROMReadi16(uw32Index, &COMMDataStruct.REGS.i16CurrentPWM); //100
+	uw32Index = EEPROMReadi16(uw32Index, &COMMDataStruct.REGS.i16ParkPosition); //101
+	uw32Index = EEPROMReadi16(uw32Index, &COMMDataStruct.REGS.i16ZeroSpeedPWM); //102
 	// If there is calibration data
 	if(0 != SYSTEM.CALIBRATION.i16PolePairArray[0])
 	{
@@ -722,171 +883,6 @@ Int16 LoadEEPROM()
 		SYSTEM_CALIBRATED = 1;	
 	}	
 
-	return (Int16)uw32Index;
-}
-
-Int16 StoreEEPROM()
-{
-	// Index
-	UWord32 uw32Index = 0;
-	// Store - EEPROM written
-	uw32Index = EEPROMStorei16(uw32Index, 1);
-	//******************************************
-	// Motor ID
-	//******************************************	
-	
-	//******************************************
-	// Calibration
-	//******************************************
-	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.CALIBRATION.i16MotorPolePairs);
-	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.CALIBRATION.i16PolePairArray[0]);
-	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.CALIBRATION.i16PolePairArray[1]);
-	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.CALIBRATION.i16PolePairArray[2]);
-	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.CALIBRATION.i16PolePairArray[3]);
-	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.CALIBRATION.i16PolePairArray[4]);
-	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.CALIBRATION.i16PolePairArray[5]);
-	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.CALIBRATION.i16PolePairArray[6]);
-	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.CALIBRATION.i16PolePairArray[7]);
-	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.CALIBRATION.i16MaxSensorIndex);
-	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.CALIBRATION.i16MinSensorIndex);
-	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.CALIBRATION.i16CalibrationState);
-	//******************************************
-	// Regulators
-	//******************************************
-	// D, Q regulators
-	// D
-	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.REGULATORS.mudtControllerParamId.f16PropGain);
-	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.REGULATORS.mudtControllerParamId.f16IntegGain);
-	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.REGULATORS.mudtControllerParamId.i16PropGainShift);
-	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.REGULATORS.mudtControllerParamId.i16IntegGainShift);
-	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.REGULATORS.mudtControllerParamId.f16UpperLimit);
-	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.REGULATORS.mudtControllerParamId.f16LowerLimit);
-	// Q
-	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.REGULATORS.mudtControllerParamIq.f16PropGain);
-	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.REGULATORS.mudtControllerParamIq.f16IntegGain);
-	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.REGULATORS.mudtControllerParamIq.i16PropGainShift);
-	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.REGULATORS.mudtControllerParamIq.i16IntegGainShift);
-	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.REGULATORS.mudtControllerParamIq.f16UpperLimit);
-	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.REGULATORS.mudtControllerParamIq.f16LowerLimit);
-	// W regulator
-	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.REGULATORS.mudtControllerParamW.f16PropGain);
-	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.REGULATORS.mudtControllerParamW.f16IntegGain);
-	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.REGULATORS.mudtControllerParamW.i16PropGainShift);
-	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.REGULATORS.mudtControllerParamW.i16IntegGainShift);
-	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.REGULATORS.mudtControllerParamW.f16UpperLimit);
-	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.REGULATORS.mudtControllerParamW.f16LowerLimit);
-	uw32Index = EEPROMStoreui16(uw32Index, SYSTEM.REGULATORS.ui16SpeedRegInterval);
-	//******************************************
-	// Position
-	//******************************************
-	// Init for BEMF observer
-	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.POSITION.acBemfObsrvDQ.udtCtrl.f16PropGain);
-	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.POSITION.acBemfObsrvDQ.udtCtrl.i16PropGainShift);
-	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.POSITION.acBemfObsrvDQ.udtCtrl.f16IntegGain);
-	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.POSITION.acBemfObsrvDQ.udtCtrl.i16IntegGainShift);
-	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.POSITION.acBemfObsrvDQ.f16IGain);
-	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.POSITION.acBemfObsrvDQ.f16UGain);
-	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.POSITION.acBemfObsrvDQ.f16EGain);
-	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.POSITION.acBemfObsrvDQ.f16WIGain);
-	// Tracking observer
-	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.POSITION.acToPos.f16PropGain);
-	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.POSITION.acToPos.i16PropGainShift);
-	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.POSITION.acToPos.f16IntegGain);
-	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.POSITION.acToPos.i16IntegGainShift);
-	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.POSITION.acToPos.f16ThGain);
-	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.POSITION.acToPos.i16ThGainShift);
-	// Speed MA filter
-	uw32Index = EEPROMStorew16(uw32Index, SYSTEM.POSITION.FilterMA32Speed.w16N);
-	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.POSITION.f16ManualAngleIncrease);
-	uw32Index = EEPROMStoref(uw32Index, SYSTEM.POSITION.fOffsetCalcFactor);
-	//******************************************
-	// Sensorless
-	//******************************************
-	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.SENSORLESS.f16MinSpeed);
-	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.SENSORLESS.f16MaxObserverError);
-	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.SENSORLESS.f16AlignCurrent);
-	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.SENSORLESS.f16StartCurrent);
-	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.SENSORLESS.i16AlignTime);
-	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.SENSORLESS.f16StartSpeed);
-	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.SENSORLESS.f16StartTorque);
-	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.SENSORLESS.f16AngleManualError);
-	uw32Index = EEPROMStoreui8(uw32Index, SYSTEM.SENSORLESS.ui8MaxBemfObserverErrorCount);
-	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.SENSORLESS.f16MinSpeedHysteresis);
-	//******************************************
-	// Ramps
-	//******************************************
-	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.RAMPS.Ramp16_AlignCurrent.f16RampUp);
-	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.RAMPS.Ramp16_AlignCurrent.f16RampDown);
-	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.RAMPS.Ramp16_Speed.f16RampUp);
-	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.RAMPS.Ramp16_Speed.f16RampDown);
-	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.RAMPS.Ramp16_Torque.f16RampUp);
-	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.RAMPS.Ramp16_Torque.f16RampDown);
-	//******************************************
-	// ADC
-	//******************************************
-	// Angle filter
-	uw32Index = EEPROMStorew16(uw32Index, SYSTEM.ADC.FilterMA32SensorA.w16N);
-	uw32Index = EEPROMStorew16(uw32Index, SYSTEM.ADC.FilterMA32SensorB.w16N);
-	// DC link MA filter
-	uw32Index = EEPROMStorew16(uw32Index, SYSTEM.ADC.FilterMA32DCLink.w16N);
-	// Temperature MA filter
-	uw32Index = EEPROMStorew16(uw32Index, SYSTEM.ADC.FilterMA32Temperature.w16N);
-	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.ADC.f16CurrentGainFactor);
-	//******************************************
-	// MCTRL
-	//******************************************
-	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.MCTRL.f16TorqueFactor);
-	//******************************************
-	// PWM
-	//******************************************
-	// PWM input variables
-	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.PWMIN.i16PWMfullThrottle);
-	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.PWMIN.i16PWMoffThrottle);
-	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.PWMIN.i16PWMinThrottle);
-	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.PWMIN.i16PWMThrottleDifference);
-	// PWM input parameters
-	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.PWMIN.i16PWMInMiddleValue);
-	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.PWMIN.i16PWMInHighValRef);
-	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.PWMIN.i16PWMInLowValRef);
-	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.PWMIN.i16PWMInMeasureTime);
-	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.PWMIN.i16PWMInOffZone);
-	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.PWMIN.i16PWMFilterSize);
-	//******************************************
-	// SI values
-	//******************************************	
-	uw32Index = EEPROMStoref(uw32Index, SYSTEM.SIVALUES.fIInFiltDiv);
-	//******************************************
-	// Measure params
-	//******************************************
-	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.MEASUREPARAMS.f16SetpointMulti);
-	uw32Index = EEPROMStoref16(uw32Index, SYSTEM.MEASUREPARAMS.f16LphaIset);
-	uw32Index = EEPROMStorei16(uw32Index, SYSTEM.MEASUREPARAMS.i16TotalMeasurements);
-	//******************************************
-	// CAN
-	//******************************************
-	uw32Index = EEPROMStoreui16(uw32Index, SYSTEM.CAN.ui16CANInfoInterval);
-	uw32Index = EEPROMStoreui16(uw32Index, SYSTEM.CAN.ui16CANStatusInterval);
-	//******************************************
-	// Other
-	//******************************************
-	// Comm data struct
-	// Unit registers
-	uw32Index = EEPROMStoreui8(uw32Index, COMMDataStruct.REGS.ui8ID);
-	uw32Index = EEPROMStoreui16(uw32Index, COMMDataStruct.REGS.ui16ModelNumber);
-	uw32Index = EEPROMStoreui8(uw32Index, COMMDataStruct.REGS.ui8FirmwareVersion);
-	uw32Index = EEPROMStoreui8(uw32Index, COMMDataStruct.REGS.ui8BaudRate);
-	uw32Index = EEPROMStoreui8(uw32Index, COMMDataStruct.REGS.ui8ReturnDelayTime);
-	uw32Index = EEPROMStorei16(uw32Index, COMMDataStruct.REGS.i16ParkPosition);
-	uw32Index = EEPROMStoreui16(uw32Index, COMMDataStruct.ui16RegsBytes);
-	uw32Index = EEPROMStoreui16(uw32Index, COMMDataStruct.ui16RXCommTimeout);
-	uw32Index = EEPROMStoreui16(uw32Index, COMMDataStruct.ui16TXCommTimeout);
-	uw32Index = EEPROMStorei16(uw32Index, COMMDataStruct.REGS.i16PWMMax);
-	uw32Index = EEPROMStorei16(uw32Index, COMMDataStruct.REGS.i16PWMMin);
-	uw32Index = EEPROMStorei16(uw32Index, COMMDataStruct.REGS.i16MaxRPM);
-	uw32Index = EEPROMStorei16(uw32Index, COMMDataStruct.REGS.i16MinRPM);
-	uw32Index = EEPROMStorei16(uw32Index, COMMDataStruct.REGS.i16CurrentPWM);
-	uw32Index = EEPROMStorei16(uw32Index, COMMDataStruct.REGS.i16ParkPosition);
-	uw32Index = EEPROMStorei16(uw32Index, COMMDataStruct.REGS.i16ZeroSpeedPWM);
 	return (Int16)uw32Index;
 }
 
@@ -904,82 +900,80 @@ Int16 CheckEEPROM()
 	
 	// Index
 	UWord32 uw32Index = 1;	//******************************************
-
-	//******************************************
 	// Calibration
 	//******************************************
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != SYSTEM.CALIBRATION.i16MotorPolePairs) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //1
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != SYSTEM.CALIBRATION.i16PolePairArray[0]) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //2
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != SYSTEM.CALIBRATION.i16PolePairArray[1]) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //3
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != SYSTEM.CALIBRATION.i16PolePairArray[2]) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //4
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != SYSTEM.CALIBRATION.i16PolePairArray[3]) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //5
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != SYSTEM.CALIBRATION.i16PolePairArray[4]) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //6
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != SYSTEM.CALIBRATION.i16PolePairArray[5]) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //7
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != SYSTEM.CALIBRATION.i16PolePairArray[6]) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //8
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != SYSTEM.CALIBRATION.i16PolePairArray[7]) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //9
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != SYSTEM.CALIBRATION.i16MaxSensorIndex) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //10
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != SYSTEM.CALIBRATION.i16MinSensorIndex) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //11
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != SYSTEM.CALIBRATION.i16CalibrationState) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //12
 	//******************************************
 	// Regulators
 	//******************************************
@@ -989,118 +983,118 @@ Int16 CheckEEPROM()
 	if(f16Temp != SYSTEM.REGULATORS.mudtControllerParamId.f16PropGain) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //13
 	uw32Index = EEPROMReadf16(uw32Index, &f16Temp);
 	if(f16Temp != SYSTEM.REGULATORS.mudtControllerParamId.f16IntegGain) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //14
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != SYSTEM.REGULATORS.mudtControllerParamId.i16PropGainShift) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //15
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != SYSTEM.REGULATORS.mudtControllerParamId.i16IntegGainShift) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //16
 	uw32Index = EEPROMReadf16(uw32Index, &f16Temp);
 	if(f16Temp != SYSTEM.REGULATORS.mudtControllerParamId.f16UpperLimit) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //17
 	uw32Index = EEPROMReadf16(uw32Index, &f16Temp);
 	if(f16Temp != SYSTEM.REGULATORS.mudtControllerParamId.f16LowerLimit) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //18
 	// Q
 	uw32Index = EEPROMReadf16(uw32Index, &f16Temp);
 	if(f16Temp != SYSTEM.REGULATORS.mudtControllerParamIq.f16PropGain) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //19
 	uw32Index = EEPROMReadf16(uw32Index, &f16Temp);
 	if(f16Temp != SYSTEM.REGULATORS.mudtControllerParamIq.f16IntegGain) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //20
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != SYSTEM.REGULATORS.mudtControllerParamIq.i16PropGainShift) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //21
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != SYSTEM.REGULATORS.mudtControllerParamIq.i16IntegGainShift) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //22
 	uw32Index = EEPROMReadf16(uw32Index, &f16Temp);
 	if(f16Temp != SYSTEM.REGULATORS.mudtControllerParamIq.f16UpperLimit) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //23
 	uw32Index = EEPROMReadf16(uw32Index, &f16Temp);
 	if(f16Temp != SYSTEM.REGULATORS.mudtControllerParamIq.f16LowerLimit) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //24
 	// W regulator
 	uw32Index = EEPROMReadf16(uw32Index, &f16Temp);
 	if(f16Temp != SYSTEM.REGULATORS.mudtControllerParamW.f16PropGain) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //25
 	uw32Index = EEPROMReadf16(uw32Index, &f16Temp);
 	if(f16Temp != SYSTEM.REGULATORS.mudtControllerParamW.f16IntegGain) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //26
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != SYSTEM.REGULATORS.mudtControllerParamW.i16PropGainShift) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //27
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != SYSTEM.REGULATORS.mudtControllerParamW.i16IntegGainShift) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //28
 	uw32Index = EEPROMReadf16(uw32Index, &f16Temp);
 	if(f16Temp != SYSTEM.REGULATORS.mudtControllerParamW.f16UpperLimit) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //29
 	uw32Index = EEPROMReadf16(uw32Index, &f16Temp);
 	if(f16Temp != SYSTEM.REGULATORS.mudtControllerParamW.f16LowerLimit) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //30
 	uw32Index = EEPROMReadui16(uw32Index, &ui16Temp);
 	if(ui16Temp != SYSTEM.REGULATORS.ui16SpeedRegInterval) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //31
 	//******************************************
 	// Position
 	//******************************************
@@ -1109,106 +1103,106 @@ Int16 CheckEEPROM()
 	if(f16Temp != SYSTEM.POSITION.acBemfObsrvDQ.udtCtrl.f16PropGain) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //32
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != SYSTEM.POSITION.acBemfObsrvDQ.udtCtrl.i16PropGainShift) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //33
 	uw32Index = EEPROMReadf16(uw32Index, &f16Temp);
 	if(f16Temp != SYSTEM.POSITION.acBemfObsrvDQ.udtCtrl.f16IntegGain) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //34
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != SYSTEM.POSITION.acBemfObsrvDQ.udtCtrl.i16IntegGainShift) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //35
 	uw32Index = EEPROMReadf16(uw32Index, &f16Temp);
 	if(f16Temp != SYSTEM.POSITION.acBemfObsrvDQ.f16IGain) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //36
 	uw32Index = EEPROMReadf16(uw32Index, &f16Temp);
 	if(f16Temp != SYSTEM.POSITION.acBemfObsrvDQ.f16UGain) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //37
 	uw32Index = EEPROMReadf16(uw32Index, &f16Temp);
 	if(f16Temp != SYSTEM.POSITION.acBemfObsrvDQ.f16EGain) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //38
 	uw32Index = EEPROMReadf16(uw32Index, &f16Temp);
 	if(f16Temp != SYSTEM.POSITION.acBemfObsrvDQ.f16WIGain) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //39
 	// Tracking observer
 	uw32Index = EEPROMReadf16(uw32Index, &f16Temp);
 	if(f16Temp != SYSTEM.POSITION.acToPos.f16PropGain) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //40
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != SYSTEM.POSITION.acToPos.i16PropGainShift) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //41
 	uw32Index = EEPROMReadf16(uw32Index, &f16Temp);
 	if(f16Temp != SYSTEM.POSITION.acToPos.f16IntegGain) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //42
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != SYSTEM.POSITION.acToPos.i16IntegGainShift) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //43
 	uw32Index = EEPROMReadf16(uw32Index, &f16Temp);
 	if(f16Temp != SYSTEM.POSITION.acToPos.f16ThGain) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //44
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != SYSTEM.POSITION.acToPos.i16ThGainShift) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //45
 	// Speed MA filter
 	uw32Index = EEPROMReadw16(uw32Index, &w16Temp);
 	if(w16Temp != SYSTEM.POSITION.FilterMA32Speed.w16N) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //46
 	uw32Index = EEPROMReadf16(uw32Index, &f16Temp);
 	if(f16Temp != SYSTEM.POSITION.f16ManualAngleIncrease) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //47
 	uw32Index = EEPROMReadf(uw32Index, &fTemp);
 	if(fTemp != SYSTEM.POSITION.fOffsetCalcFactor) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //48
 	//******************************************
 	// Sensorless
 	//******************************************
@@ -1216,62 +1210,62 @@ Int16 CheckEEPROM()
 	if(f16Temp != SYSTEM.SENSORLESS.f16MinSpeed) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //49
 	uw32Index = EEPROMReadf16(uw32Index, &f16Temp);
 	if(f16Temp != SYSTEM.SENSORLESS.f16MaxObserverError) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //50
 	uw32Index = EEPROMReadf16(uw32Index, &f16Temp);
 	if(f16Temp != SYSTEM.SENSORLESS.f16AlignCurrent) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //51
 	uw32Index = EEPROMReadf16(uw32Index, &f16Temp);
 	if(f16Temp != SYSTEM.SENSORLESS.f16StartCurrent) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //52
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != SYSTEM.SENSORLESS.i16AlignTime) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //53
 	uw32Index = EEPROMReadf16(uw32Index, &f16Temp);
 	if(f16Temp != SYSTEM.SENSORLESS.f16StartSpeed) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //54
 	uw32Index = EEPROMReadf16(uw32Index, &f16Temp);
 	if(f16Temp != SYSTEM.SENSORLESS.f16StartTorque) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //55
 	uw32Index = EEPROMReadf16(uw32Index, &f16Temp);
 	if(f16Temp != SYSTEM.SENSORLESS.f16AngleManualError) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //56
 	uw32Index = EEPROMReadui8(uw32Index, &ui8Temp);
 	if(ui8Temp != SYSTEM.SENSORLESS.ui8MaxBemfObserverErrorCount) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //57
 	uw32Index = EEPROMReadf16(uw32Index, &f16Temp);
 	if(f16Temp != SYSTEM.SENSORLESS.f16MinSpeedHysteresis) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //58
 	//******************************************
 	// Ramps
 	//******************************************
@@ -1279,38 +1273,38 @@ Int16 CheckEEPROM()
 	if(f16Temp != SYSTEM.RAMPS.Ramp16_AlignCurrent.f16RampUp) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //59
 	uw32Index = EEPROMReadf16(uw32Index, &f16Temp);
 	if(f16Temp != SYSTEM.RAMPS.Ramp16_AlignCurrent.f16RampDown) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //60
 	uw32Index = EEPROMReadf16(uw32Index, &f16Temp);
 	if(f16Temp != SYSTEM.RAMPS.Ramp16_Speed.f16RampUp) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //61
 	uw32Index = EEPROMReadf16(uw32Index, &f16Temp);
 	if(f16Temp != SYSTEM.RAMPS.Ramp16_Speed.f16RampDown) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //62
 	uw32Index = EEPROMReadf16(uw32Index, &f16Temp);
 	if(f16Temp != SYSTEM.RAMPS.Ramp16_Torque.f16RampUp) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //63
 	uw32Index = EEPROMReadf16(uw32Index, &f16Temp);
 	if(f16Temp != SYSTEM.RAMPS.Ramp16_Torque.f16RampDown) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //64
 	//******************************************
 	// ADC
 	//******************************************
@@ -1319,34 +1313,34 @@ Int16 CheckEEPROM()
 	if(w16Temp != SYSTEM.ADC.FilterMA32SensorA.w16N) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //65
 	uw32Index = EEPROMReadw16(uw32Index, &w16Temp);
 	if(w16Temp != SYSTEM.ADC.FilterMA32SensorB.w16N) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //66
 	// DC link MA filter
 	uw32Index = EEPROMReadw16(uw32Index, &w16Temp);
 	if(w16Temp != SYSTEM.ADC.FilterMA32DCLink.w16N) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //67
 	// Temperature MA filter
 	uw32Index = EEPROMReadw16(uw32Index, &w16Temp);
 	if(w16Temp != SYSTEM.ADC.FilterMA32Temperature.w16N) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //68
 	uw32Index = EEPROMReadf16(uw32Index, &f16Temp);
 	if(f16Temp != SYSTEM.ADC.f16CurrentGainFactor) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //69
 	//******************************************
 	// MCTRL
 	//******************************************
@@ -1354,8 +1348,8 @@ Int16 CheckEEPROM()
 	if(f16Temp != SYSTEM.MCTRL.f16TorqueFactor) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //70
 	//******************************************
 	// PWM
 	//******************************************
@@ -1364,63 +1358,63 @@ Int16 CheckEEPROM()
 	if(i16Temp != SYSTEM.PWMIN.i16PWMfullThrottle) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //71
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != SYSTEM.PWMIN.i16PWMoffThrottle) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //72
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != SYSTEM.PWMIN.i16PWMinThrottle) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //73
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != SYSTEM.PWMIN.i16PWMThrottleDifference) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //74
 	// PWM input parameters
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != SYSTEM.PWMIN.i16PWMInMiddleValue) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //75
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != SYSTEM.PWMIN.i16PWMInHighValRef) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //76
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != SYSTEM.PWMIN.i16PWMInLowValRef) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //77
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != SYSTEM.PWMIN.i16PWMInMeasureTime) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //78
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != SYSTEM.PWMIN.i16PWMInOffZone) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //79
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != SYSTEM.PWMIN.i16PWMFilterSize) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //80
 	//******************************************
 	// SI values
 	//******************************************	
@@ -1428,8 +1422,8 @@ Int16 CheckEEPROM()
 	if(fTemp != SYSTEM.SIVALUES.fIInFiltDiv) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //81
 	//******************************************
 	// Measure params
 	//******************************************
@@ -1437,20 +1431,20 @@ Int16 CheckEEPROM()
 	if(f16Temp != SYSTEM.MEASUREPARAMS.f16SetpointMulti) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //82
 	uw32Index = EEPROMReadf16(uw32Index, &f16Temp);
 	if(f16Temp != SYSTEM.MEASUREPARAMS.f16LphaIset) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //83
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != SYSTEM.MEASUREPARAMS.i16TotalMeasurements) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //84
 	//******************************************
 	// CAN
 	//******************************************
@@ -1458,14 +1452,14 @@ Int16 CheckEEPROM()
 	if(ui16Temp != SYSTEM.CAN.ui16CANInfoInterval) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //85
 	uw32Index = EEPROMReadui16(uw32Index, &ui16Temp);
 	if(ui16Temp != SYSTEM.CAN.ui16CANStatusInterval) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //86
 	//******************************************
 	// Other
 	//******************************************
@@ -1475,97 +1469,97 @@ Int16 CheckEEPROM()
 	if(ui8Temp != COMMDataStruct.REGS.ui8ID) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //87
 	uw32Index = EEPROMReadui16(uw32Index, &ui16Temp);
 	if(ui16Temp != COMMDataStruct.REGS.ui16ModelNumber) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //88
 	uw32Index = EEPROMReadui8(uw32Index, &ui8Temp);
 	if(ui8Temp != COMMDataStruct.REGS.ui8FirmwareVersion) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //89
 	uw32Index = EEPROMReadui8(uw32Index, &ui8Temp);
 	if(ui8Temp != COMMDataStruct.REGS.ui8BaudRate) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //90
 	uw32Index = EEPROMReadui8(uw32Index, &ui8Temp);
 	if(ui8Temp != COMMDataStruct.REGS.ui8ReturnDelayTime) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //91
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != COMMDataStruct.REGS.i16ParkPosition) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //92
 	uw32Index = EEPROMReadui16(uw32Index, &ui16Temp);
 	if(ui16Temp != COMMDataStruct.ui16RegsBytes) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //93
 	uw32Index = EEPROMReadui16(uw32Index, &ui16Temp);
 	if(ui16Temp != COMMDataStruct.ui16RXCommTimeout) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //94
 	uw32Index = EEPROMReadui16(uw32Index, &ui16Temp);
 	if(ui16Temp != COMMDataStruct.ui16TXCommTimeout) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //95
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != COMMDataStruct.REGS.i16PWMMax) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //96
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != COMMDataStruct.REGS.i16PWMMin) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //97
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != COMMDataStruct.REGS.i16MaxRPM) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //98
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != COMMDataStruct.REGS.i16MinRPM) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //99
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != COMMDataStruct.REGS.i16CurrentPWM) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //100
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != COMMDataStruct.REGS.i16ParkPosition) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //101
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
 	if(i16Temp != COMMDataStruct.REGS.i16ZeroSpeedPWM) 
 	{ 
 		NOK++; 
-		uw32ErrorIndex = uw32Index; 
-	}
+		uw32ErrorIndex = uw32Index - 1; 
+	} //102
 	return NOK;
 }

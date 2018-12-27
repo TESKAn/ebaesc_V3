@@ -45,6 +45,12 @@ Int16 CAN_Init()
 		ioctl(MB, FCANMB_SET_ID, uw32IDValue | FCAN_ID_EXT);	
 		ioctl(MB, FCANMB_SET_CODE, FCAN_MB_CODE_RXEMPTY);
 		
+		// Set mailbox 11 to receive enable signal
+		uw32IDValue = CAN_MID_ENABLE; 
+		uw32IDValue = uw32IDValue << 8;
+		MB = ioctl(FCAN, FCAN_GET_MB_MODULE, 11);			
+		ioctl(MB, FCANMB_SET_ID, uw32IDValue | FCAN_ID_EXT);	
+		ioctl(MB, FCANMB_SET_CODE, FCAN_MB_CODE_RXEMPTY);
 		
 		ioctl(FCAN, FCAN_UNLOCK_ALL_MB, null);
 		
@@ -301,6 +307,29 @@ Int16 CAN_RXRPM(FCAN_MB *MB)
 	{
 		t32bit.uw32 = MB->data[0];    
 		COMMDataStruct.REGS.i16SetRPM = t32bit.words.i16[1];
+	}
+	
+	return 0;
+}
+
+Int16 CAN_RXENABLE(FCAN_MB *MB)
+{
+	t32BitVars t32bit;
+	
+	// Flip bytes
+	ioctl(MB, FCANMB_REORDER_BYTES, NULL);
+	
+	t32bit.uw32 = MB->data[0];    
+	if((CAN_MOTOR_ALL_ID == t32bit.bytes.ui8[1])||(COMMDataStruct.REGS.ui8ID == t32bit.bytes.ui8[1]))
+	{
+		if((COMMDataStruct.REGS.i16MinRPM <= COMMDataStruct.REGS.i16SetRPM)&&(1 == t32bit.bytes.ui8[0]))
+		{
+			COMMDataStruct.REGS.ui8Armed = 1;
+		}
+		else
+		{
+			COMMDataStruct.REGS.ui8Armed = 0;
+		}
 	}
 	
 	return 0;

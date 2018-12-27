@@ -282,6 +282,13 @@ void main (void)
 					i8EEPROMOp = 0;
 					break;
 				}
+				case 4:
+				{
+					// Initialise system variables to default values
+					InitSysVars(1);
+					i8EEPROMOp = 0;
+					break;
+				}
 				default:
 				{
 					i8EEPROMOp = 0;
