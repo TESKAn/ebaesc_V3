@@ -25,6 +25,7 @@ typedef struct tagCOMMDATA
 	UInt8 ui8TXState;
 	UInt8 ui8RXState;
 	UInt8 ui8ReturnDelay;
+	UInt16 ui16CANErrors;
 	
 	// How many bytes in our structure
 	UInt16 ui16RegsBytes;

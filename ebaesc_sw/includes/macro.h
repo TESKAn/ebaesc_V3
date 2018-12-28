@@ -11,8 +11,14 @@
 // Calibration parameters
 #define M_NONE
 
+/*
+#define CAN_MOTOR_FR_ID			20	0x14
+#define CAN_MOTOR_FL_ID			21	0x15
+#define CAN_MOTOR_RR_ID			22	0x16
+#define CAN_MOTOR_RL_ID			23	0x17
+ */
+
 #ifdef M_NONE
-#define M_ID				0x15
 #define M_MAXSENSORINDEX	0
 #define M_MINSENSORINDEX	0
 #define M_POLEPAIRS			7
@@ -25,14 +31,16 @@
 #define M_POLEARRAY_6		0
 #define M_POLEARRAY_7		0
 // This unit ID
-#define COMM_ID				0x15
+//#define COMM_ID				0x14	// FR
+#define COMM_ID				0x15	// FL
+//#define COMM_ID				0x16	// RR
+//#define COMM_ID				0x17	// RL
 // Unit park position
 #define M_PARK_POSITION		0
 
 #endif
 
 #ifdef M_FR
-#define M_ID				0x23
 #define M_MAXSENSORINDEX	3700
 #define M_MINSENSORINDEX	410
 #define M_POLEPAIRS			7
@@ -52,7 +60,6 @@
 #endif
 
 #ifdef M_FL
-#define M_ID				0x22
 #define M_MAXSENSORINDEX	3700
 #define M_MINSENSORINDEX	409
 #define M_POLEPAIRS			7
@@ -71,8 +78,7 @@
 
 #endif
 
-#ifdef M_R
-#define M_ID				0x21
+#ifdef M_RR
 #define M_MAXSENSORINDEX	3718
 #define M_MINSENSORINDEX	426
 #define M_POLEPAIRS			7
@@ -313,6 +319,10 @@
 #define CAN_MID_SETRPMLIMIT				20002
 #define CAN_MID_SETRPM					20003
 #define CAN_MID_ENABLE					20004
+#define CAN_MID_SETRPM_FR				20005
+#define CAN_MID_SETRPM_FL				20006
+#define CAN_MID_SETRPM_RR				20007
+#define CAN_MID_SETRPM_RL				20008
 
 // CAN message priorities
 #define CAN_PRIO_STATUS					0x15
@@ -320,6 +330,10 @@
 #define CAN_PRIO_SETRPMLIMIT			0x15
 #define CAN_PRIO_SETRPM					0x14
 #define CAN_PRIO_ENABLE					0x14
+#define CAN_PRIO_SETRPM_FR				0x01
+#define CAN_PRIO_SETRPM_FL				0x01
+#define CAN_PRIO_SETRPM_RR				0x01
+#define CAN_PRIO_SETRPM_RL				0x01
 
 // From ESC
 // CAN message IDs

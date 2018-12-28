@@ -15,7 +15,7 @@ void InitSysVars(Int16 initial)
 	//******************************************
 	// Motor ID
 	//******************************************	
-	COMMDataStruct.REGS.ui8ID = M_ID;
+	COMMDataStruct.REGS.ui8ID = COMM_ID;
 	//******************************************
 	// Calibration
 	//******************************************

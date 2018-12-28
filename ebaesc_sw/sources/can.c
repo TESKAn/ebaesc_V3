@@ -39,7 +39,30 @@ Int16 CAN_Init()
 		ioctl(MB, FCANMB_SET_CODE, FCAN_MB_CODE_RXEMPTY);
 		
 		// Set mailbox 10 to receive RPM setting limits
-		uw32IDValue = CAN_MID_SETRPM; 
+		switch(COMMDataStruct.REGS.ui8ID)
+		{
+			case CAN_MOTOR_FR_ID:
+			{
+				uw32IDValue = CAN_MID_SETRPM_FR; 
+				break;
+			}
+			case CAN_MOTOR_FL_ID:
+			{
+				uw32IDValue = CAN_MID_SETRPM_FL; 
+				break;
+			}
+			case CAN_MOTOR_RR_ID:
+			{
+				uw32IDValue = CAN_MID_SETRPM_RR; 
+				break;
+			}
+			case CAN_MOTOR_RL_ID:
+			{
+				uw32IDValue = CAN_MID_SETRPM_RL; 
+				break;
+			}
+		}
+		
 		uw32IDValue = uw32IDValue << 8;
 		MB = ioctl(FCAN, FCAN_GET_MB_MODULE, 10);			
 		ioctl(MB, FCANMB_SET_ID, uw32IDValue | FCAN_ID_EXT);	
@@ -274,16 +297,13 @@ Int16 CAN_RXRPMLimits(FCAN_MB *MB)
 	ioctl(MB, FCANMB_REORDER_BYTES, NULL);
 	
 	
-	t32bit.uw32 = MB->data[0];
-	
-	                                        
-	                 
-	if((0 == t32bit.bytes.ui8[0])||(COMMDataStruct.REGS.ui8ID == t32bit.bytes.ui8[0]))
+	t32bit.uw32 = MB->data[1];
+	if((CAN_MOTOR_ALL_ID == t32bit.bytes.ui8[0])||(COMMDataStruct.REGS.ui8ID == t32bit.bytes.ui8[0]))
 	{
-		COMMDataStruct.REGS.i16MinRPM = t32bit.words.i16[1];
+		t32bit.uw32 = MB->data[0];
 		
-		t32bit.uw32 = MB->data[1];
-		COMMDataStruct.REGS.i16MaxRPM = t32bit.words.i16[0];		
+		COMMDataStruct.REGS.i16MinRPM = t32bit.words.i16[0];
+		COMMDataStruct.REGS.i16MaxRPM = t32bit.words.i16[1];		
 	}
 
 	
@@ -297,18 +317,42 @@ Int16 CAN_RXRPM(FCAN_MB *MB)
 	// Flip bytes
 	ioctl(MB, FCANMB_REORDER_BYTES, NULL);
 	
+	t32bit.uw32 = MB->data[0];
+	// Check that speed is within limits
+	
+	if(COMMDataStruct.REGS.i16MinRPM > t32bit.words.i16[0])
+	{
+		COMMDataStruct.REGS.i16SetRPM = COMMDataStruct.REGS.i16MinRPM;
+	}
+	else if(COMMDataStruct.REGS.i16MaxRPM < t32bit.words.i16[0])
+	{
+		COMMDataStruct.REGS.i16SetRPM = COMMDataStruct.REGS.i16MaxRPM;
+	}
+	else
+	{
+		COMMDataStruct.REGS.i16SetRPM = t32bit.words.i16[0];
+	}
+	/*
 	t32bit.uw32 = MB->data[1];    
 	if((CAN_MOTOR_ALL_ID == t32bit.bytes.ui8[0])||(COMMDataStruct.REGS.ui8ID == t32bit.bytes.ui8[0]))
 	{
 		t32bit.uw32 = MB->data[0];    
-		COMMDataStruct.REGS.i16SetRPM = t32bit.words.i16[0];
+		// Check that speed is within limits
+		if((COMMDataStruct.REGS.i16MinRPM <= t32bit.words.i16[0])&&(COMMDataStruct.REGS.i16MaxRPM >= t32bit.words.i16[0]))
+		{
+			COMMDataStruct.REGS.i16SetRPM = t32bit.words.i16[0];
+		}
 	}
 	else if(COMMDataStruct.REGS.ui8ID == t32bit.bytes.ui8[1])
 	{
-		t32bit.uw32 = MB->data[0];    
-		COMMDataStruct.REGS.i16SetRPM = t32bit.words.i16[1];
+		t32bit.uw32 = MB->data[0];  		
+		// Check that speed is within limits
+		if((COMMDataStruct.REGS.i16MinRPM <= t32bit.words.i16[1])&&(COMMDataStruct.REGS.i16MaxRPM >= t32bit.words.i16[1]))
+		{
+			COMMDataStruct.REGS.i16SetRPM = t32bit.words.i16[1];
+		}
 	}
-	
+	*/
 	return 0;
 }
 

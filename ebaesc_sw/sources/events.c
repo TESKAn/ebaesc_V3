@@ -1015,6 +1015,7 @@ void FCAN_MB_ISR(void)
 #pragma interrupt saveall
 void FCAN_ERR_ISR(void)
 {
+	COMMDataStruct.ui16CANErrors++;
 	ioctl(FCAN, FCAN_CLEAR_ERR_INT, NULL);
 }
 
