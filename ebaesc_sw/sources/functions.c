@@ -215,10 +215,7 @@ Int16 CalculateSIValues(void)
 	fTemp = fTemp / 32768.0f;
 	fTemp = fTemp * fTemp;
 	fTemp = 0.9f - fTemp;
-	fTemp = sqrtf(fTemp);
-	fTemp = fTemp * 32767.0f;
-	i16Temp = (Int16)fTemp;
-	SYSTEM.REGULATORS.f16UqRemaining = (Frac16)i16Temp;
+	SYSTEM.REGULATORS.f16UqRemaining = GFLIB_Sqrt_F16((Frac16)fTemp);
 	
 	// Calculate phase current for amplifier gain settings
 	// Id^2
@@ -231,12 +228,9 @@ Int16 CalculateSIValues(void)
 	fTemp1 = fTemp1 * fTemp1;
 	// Add
 	fTemp += fTemp1;
-	// Sqrt
-	fTemp = sqrtf(fTemp);
 	// Calculate FRAC16 value
-	fTemp = fTemp * 32768;
-	SYSTEM.MCTRL.f16IPh = (Frac16)fTemp;	
-	
+	fTemp = fTemp * 32768;	
+	SYSTEM.MCTRL.f16IPh = GFLIB_Sqrt_F16((Frac16)fTemp);
 	
 	i16Temp = CalculateTemperature(SYSTEM.ADC.f16TemperatureFiltered);
 	SYSTEM.SIVALUES.fTempPCB = (float)i16Temp;
@@ -399,6 +393,25 @@ acc32_t CalculateAcc32Value(float K)
 	return retVal;
 }
 
+float ln(float x)
+{
+	float old_sum = 0.0;
+	float xmlxpl = (x - 1) / (x + 1);
+	float xmlxpl_2 = xmlxpl * xmlxpl;
+	float denom = 1.0;
+	float frac = xmlxpl;
+	float term = frac;                 // denom start from 1.0
+	float sum = term;
+
+    while ( sum != old_sum )
+    {
+        old_sum = sum;
+        denom += 2.0f;
+        frac *= xmlxpl_2;
+        sum += frac / denom;
+    }
+    return 2.0f * sum;
+}
 
 // Function calculates frac gain and int shift from float input
 Int16 CalculateShiftGain(float K)
@@ -413,10 +426,10 @@ Int16 CalculateShiftGain(float K)
 	float z;
 	float exp;
 	float logK;
-	float log05 = log10(0.5);
-	float log2 = log10(2.0);
+	float log05 = ln(0.5);
+	float log2 = ln(2.0);
 	
-	logK = log10(K);
+	logK = ln(K);
 	
 	x = logK - log05;
 	x = x / log2;

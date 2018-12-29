@@ -17,6 +17,7 @@ Int16 CalculateCalibrationData(void);
 Int16 CalculateFloat(void);
 float CalculateFloatAcc32(acc32_t val);
 acc32_t CalculateAcc32Value(float K);
+float ln(float x);
 Int16 CalculateShiftGain(float K);
 void calculateFactors(void);
 void calculateFloats(void);
