@@ -39,11 +39,12 @@
 								<option id="com.freescale.dsc.cdt.toolchain.linker.input.libs.2085586622" name="Additional Libraries" superClass="com.freescale.dsc.cdt.toolchain.linker.input.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="&quot;${MCUToolsBaseDir}/M56800E Support/runtime_56800E/lib/runtime 56800E smm.lib&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${MCUToolsBaseDir}/M56800E Support/msl/MSL_C/DSP_56800E/lib/MSL C 56800E smm.lib&quot;"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_ACLIB/56800Ex_ACLIB.lib}&quot;"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_GDFLIB/56800Ex_GDFLIB.lib}&quot;"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_GFLIB/56800Ex_GFLIB.lib}&quot;"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_MCLIB/56800Ex_MCLIB.lib}&quot;"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_MLIB/56800Ex_MLIB.lib}&quot;"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL_LDM/AMCLIB/AMCLIB_LDM.lib}&quot;"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL_LDM/GDFLIB/GDFLIB_LDM.lib}&quot;"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL_LDM/GFLIB/GFLIB_LDM.lib}&quot;"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL_LDM/GMCLIB/GMCLIB_LDM.lib}&quot;"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL_LDM/MLIB/MLIB_LDM.lib}&quot;"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL_LDM/PCLIB/PCLIB_LDM.lib}&quot;"/>
 								</option>
 								<option id="com.freescale.dsc.cdt.toolchain.linker.output.generateSRecord.1020752415" name="Generate S-Record File" superClass="com.freescale.dsc.cdt.toolchain.linker.output.generateSRecord" value="true" valueType="boolean"/>
 								<option id="com.freescale.dsc.cdt.toolchain.linker.input.linkorder.802220652" name="Link Order" superClass="com.freescale.dsc.cdt.toolchain.linker.input.linkorder" valueType="stringList">
@@ -119,13 +120,14 @@
 									<listOptionValue builtIn="false" value="&quot;${DSP56800E_QS_SRC_260}/MC56F84763/system&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${DSP56800E_QS_SRC_260}/MC56F84763/peripheral&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${DSP56800E_QS_SRC_260}/support/freemaster&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_ACLIB/Include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_GFLIB/Include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_GDFLIB/Include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_MCLIB/Include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_MLIB/Include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/includes}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/EepromDrv}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL_LDM/AMCLIB/Include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL_LDM/GDFLIB/Include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL_LDM/GFLIB/Include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL_LDM/GMCLIB/Include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL_LDM/MLIB/Include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL_LDM/PCLIB/Include}&quot;"/>
 								</option>
 								<option id="com.freescale.dsc.cdt.toolchain.compiler.input.sysIncludeRecursive.505809737" name="Search System Paths Recursively" superClass="com.freescale.dsc.cdt.toolchain.compiler.input.sysIncludeRecursive" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${MCUToolsBaseDir}/M56800E Support&quot;"/>
@@ -145,13 +147,14 @@
 									<listOptionValue builtIn="false" value="&quot;${DSP56800E_QS_SRC_260}/MC56F84763/system&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${DSP56800E_QS_SRC_260}/MC56F84763/peripheral&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${DSP56800E_QS_SRC_260}/support/freemaster&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_ACLIB/Include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_GDFLIB/Include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_GFLIB/Include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_MCLIB/Include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_MLIB/Include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/includes}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/EepromDrv}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL_LDM/AMCLIB/Include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL_LDM/GDFLIB/Include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL_LDM/GFLIB/Include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL_LDM/GMCLIB/Include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL_LDM/MLIB/Include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL_LDM/PCLIB/Include}&quot;"/>
 								</option>
 								<option id="com.freescale.dsc.cdt.toolchain.asm.general.generates56800EX.138450156" name="Generates elf file for 56800EX core" superClass="com.freescale.dsc.cdt.toolchain.asm.general.generates56800EX" value="true" valueType="boolean"/>
 								<option id="com.freescale.dsc.cdt.toolchain.asm.input.include.recursive.920173944" name="User Recursive Path (-ir )" superClass="com.freescale.dsc.cdt.toolchain.asm.input.include.recursive" valueType="includePath">
@@ -226,6 +229,12 @@
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_GFLIB/56800Ex_GFLIB.lib}&quot;"/>
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_MCLIB/56800Ex_MCLIB.lib}&quot;"/>
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_MLIB/56800Ex_MLIB.lib}&quot;"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL_LDM/AMCLIB/AMCLIB_LDM.lib}&quot;"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL_LDM/GDFLIB/GDFLIB_LDM.lib}&quot;"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL_LDM/GFLIB/GFLIB_LDM.lib}&quot;"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL_LDM/GMCLIB/GMCLIB_LDM.lib}&quot;"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL_LDM/MLIB/MLIB_LDM.lib}&quot;"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL_LDM/PCLIB/PCLIB_LDM.lib}&quot;"/>
 								</option>
 								<option id="com.freescale.dsc.cdt.toolchain.linker.general.dataModel.2143316349" name="Large Data Memory Model" superClass="com.freescale.dsc.cdt.toolchain.linker.general.dataModel" value="true" valueType="boolean"/>
 								<option id="com.freescale.dsc.cdt.toolchain.linker.output.generateSRecord.145204607" name="Generate S-Record File" superClass="com.freescale.dsc.cdt.toolchain.linker.output.generateSRecord" value="true" valueType="boolean"/>
@@ -253,6 +262,12 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_MLIB/Include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/includes}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/EepromDrv}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL_LDM/AMCLIB/Include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL_LDM/GDFLIB/Include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL_LDM/GFLIB/Include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL_LDM/GMCLIB/Include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL_LDM/MLIB/Include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL_LDM/PCLIB}&quot;"/>
 								</option>
 								<option id="com.freescale.dsc.cdt.toolchain.compiler.input.sysIncludeRecursive.849154823" name="Search System Paths Recursively" superClass="com.freescale.dsc.cdt.toolchain.compiler.input.sysIncludeRecursive" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${MCUToolsBaseDir}/M56800E Support&quot;"/>
@@ -280,6 +295,12 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_MLIB/Include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/includes}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/EepromDrv}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL_LDM/AMCLIB/Include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL_LDM/GDFLIB/Include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL_LDM/GFLIB/Include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL_LDM/GMCLIB/Include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL_LDM/MLIB/Include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL_LDM/PCLIB}&quot;"/>
 								</option>
 								<option id="com.freescale.dsc.cdt.toolchain.asm.general.generates56800EX.206556035" name="Generates elf file for 56800EX core" superClass="com.freescale.dsc.cdt.toolchain.asm.general.generates56800EX" value="true" valueType="boolean"/>
 								<option id="com.freescale.dsc.cdt.toolchain.asm.input.include.recursive.528823417" name="User Recursive Path (-ir )" superClass="com.freescale.dsc.cdt.toolchain.asm.input.include.recursive" valueType="includePath">

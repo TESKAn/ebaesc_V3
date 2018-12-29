@@ -1,9 +1,9 @@
 src/support/freemaster/freemaster_sfio_c.obj: C:\Freescale\DSC56800EX_Quick_Start_r2.6\src\support\freemaster\freemaster_sfio.c \
-	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\SystemConfig\Internal_pFlash_LDM.prefix \
-	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\SystemConfig\Internal_PFlash_LDM.cmd \
+	C:\Users\jmoc\Documents\Razno\EBAESC_SW\V3\ebaesc_v3_sw\ebaesc_sw\SystemConfig\Internal_pFlash_LDM.prefix \
+	C:\Users\jmoc\Documents\Razno\EBAESC_SW\V3\ebaesc_v3_sw\ebaesc_sw\SystemConfig\Internal_PFlash_LDM.cmd \
 	C:\Freescale\DSC56800EX_Quick_Start_r2.6\src\include\version.h \
 	C:\Freescale\DSC56800EX_Quick_Start_r2.6\src\include\hawkcpu.h \
-	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\ApplicationConfig\appconfig.h \
+	C:\Users\jmoc\Documents\Razno\EBAESC_SW\V3\ebaesc_v3_sw\ebaesc_sw\ApplicationConfig\appconfig.h \
 	C:\Freescale\DSC56800EX_Quick_Start_r2.6\src\support\freemaster\freemaster.h \
 	C:\Freescale\DSC56800EX_Quick_Start_r2.6\src\support\freemaster\freemaster_defcfg.h \
 	C:\Freescale\DSC56800EX_Quick_Start_r2.6\src\support\freemaster\freemaster_cfg.h \

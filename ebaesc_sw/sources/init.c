@@ -42,35 +42,48 @@ void InitSysVars(Int16 initial)
 	// D, Q regulators
 	// D
 	if(0 != initial)
-	{
+	{	
+		/*
 		SYSTEM.REGULATORS.mudtControllerParamId.f16PropGain = D_KP_GAIN;
 		SYSTEM.REGULATORS.mudtControllerParamId.f16IntegGain = D_KI_GAIN;
 		SYSTEM.REGULATORS.mudtControllerParamId.i16PropGainShift = D_KP_SHIFT;
 		SYSTEM.REGULATORS.mudtControllerParamId.i16IntegGainShift = D_KI_SHIFT;
-		SYSTEM.REGULATORS.mudtControllerParamId.f16UpperLimit = FRAC16(0.95);
-		SYSTEM.REGULATORS.mudtControllerParamId.f16LowerLimit = FRAC16(-0.95);
+		*/
+		SYSTEM.REGULATORS.mudtControllerParamId.a32PGain = 0;
+		SYSTEM.REGULATORS.mudtControllerParamId.a32IGain = 0;		
+		SYSTEM.REGULATORS.mudtControllerParamId.f16UpperLim = FRAC16(0.95);
+		SYSTEM.REGULATORS.mudtControllerParamId.f16LowerLim = FRAC16(-0.95);
 		
 		// Q
+		/*
 		SYSTEM.REGULATORS.mudtControllerParamIq.f16PropGain = Q_KP_GAIN;
 		SYSTEM.REGULATORS.mudtControllerParamIq.f16IntegGain = Q_KI_GAIN;
 		SYSTEM.REGULATORS.mudtControllerParamIq.i16PropGainShift = Q_KP_SHIFT;
 		SYSTEM.REGULATORS.mudtControllerParamIq.i16IntegGainShift = Q_KI_SHIFT;
-		SYSTEM.REGULATORS.mudtControllerParamIq.f16UpperLimit = FRAC16(0.95);
-		SYSTEM.REGULATORS.mudtControllerParamIq.f16LowerLimit = FRAC16(-0.95);
+		*/
+		SYSTEM.REGULATORS.mudtControllerParamIq.a32PGain = 0;
+		SYSTEM.REGULATORS.mudtControllerParamIq.a32IGain = 0;
+		SYSTEM.REGULATORS.mudtControllerParamIq.f16UpperLim = FRAC16(0.95);
+		SYSTEM.REGULATORS.mudtControllerParamIq.f16LowerLim = FRAC16(-0.95);
 		
 		// W regulator
+		/*
 		SYSTEM.REGULATORS.mudtControllerParamW.f16PropGain = SPEED_PI_PROP_GAIN;
 		SYSTEM.REGULATORS.mudtControllerParamW.f16IntegGain = SPEED_PI_INTEG_GAIN;
 		SYSTEM.REGULATORS.mudtControllerParamW.i16PropGainShift = SPEED_PI_PROP_SHIFT;
 		SYSTEM.REGULATORS.mudtControllerParamW.i16IntegGainShift = SPEED_PI_INTEG_SHIFT;
-		SYSTEM.REGULATORS.mudtControllerParamW.f16UpperLimit = SPEED_LOOP_HIGH_LIMIT;
-		SYSTEM.REGULATORS.mudtControllerParamW.f16LowerLimit = SPEED_LOOP_LOW_LIMIT;	
+		*/
+		SYSTEM.REGULATORS.mudtControllerParamW.a32PGain = 0;
+		SYSTEM.REGULATORS.mudtControllerParamW.a32IGain = 0;
+		SYSTEM.REGULATORS.mudtControllerParamW.f16UpperLim = SPEED_LOOP_HIGH_LIMIT;
+		SYSTEM.REGULATORS.mudtControllerParamW.f16LowerLim = SPEED_LOOP_LOW_LIMIT;	
 		
 		SYSTEM.REGULATORS.ui16SpeedRegInterval = SPEED_LOOP_CNTR;
 	}
-	SYSTEM.REGULATORS.mudtControllerParamId.f32IntegPartK_1 = FRAC32(0.0);
-	SYSTEM.REGULATORS.mudtControllerParamIq.f32IntegPartK_1 = FRAC32(0.0);
-	SYSTEM.REGULATORS.mudtControllerParamW.f32IntegPartK_1 = FRAC32(0.0);
+	GFLIB_CtrlPIpAWInit_F16(FRAC16(0), &SYSTEM.REGULATORS.mudtControllerParamId);
+	GFLIB_CtrlPIpAWInit_F16(FRAC16(0), &SYSTEM.REGULATORS.mudtControllerParamIq);
+	GFLIB_CtrlPIpAWInit_F16(FRAC16(0), &SYSTEM.REGULATORS.mudtControllerParamW);
+	
 	
 	// Set req currents to 0
 	SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.0);
@@ -92,6 +105,14 @@ void InitSysVars(Int16 initial)
 	
 	if(0 != initial)
 	{
+		SYSTEM.POSITION.acBemfObsrvDQ.sCtrl.a32PGain= ACC32(1.697);
+		SYSTEM.POSITION.acBemfObsrvDQ.sCtrl.a32IGain= ACC32(0.134);
+		SYSTEM.POSITION.acBemfObsrvDQ.a32IGain = I_SCALE;
+		SYSTEM.POSITION.acBemfObsrvDQ.a32UGain = U_SCALE;
+		SYSTEM.POSITION.acBemfObsrvDQ.a32WIGain= WI_SCALE;
+		SYSTEM.POSITION.acBemfObsrvDQ.a32EGain = E_SCALE;
+		
+		/*
 		SYSTEM.POSITION.acBemfObsrvDQ.udtCtrl.f16PropGain= BEMF_DQ_KP_GAIN;
 		SYSTEM.POSITION.acBemfObsrvDQ.udtCtrl.i16PropGainShift= BEMF_DQ_KP_SHIFT;
 		SYSTEM.POSITION.acBemfObsrvDQ.udtCtrl.f16IntegGain= BEMF_DQ_KI_GAIN;
@@ -101,7 +122,10 @@ void InitSysVars(Int16 initial)
 		SYSTEM.POSITION.acBemfObsrvDQ.f16UGain = U_SCALE;
 		SYSTEM.POSITION.acBemfObsrvDQ.f16EGain = E_SCALE;
 		SYSTEM.POSITION.acBemfObsrvDQ.f16WIGain = WI_SCALE;		
+		*/
 	}	
+	AMCLIB_PMSMBemfObsrvDQInit_F16(&SYSTEM.POSITION.acBemfObsrvDQ);
+	
 	SYSTEM.POSITION.acBemfObsrvDQ.udtIObsrv.f32D = FRAC32(0.0);
 	SYSTEM.POSITION.acBemfObsrvDQ.udtIObsrv.f32Q = FRAC32(0.0);
 	SYSTEM.POSITION.acBemfObsrvDQ.udtEObsrv.f32D = FRAC32(0.0);
@@ -112,12 +136,12 @@ void InitSysVars(Int16 initial)
 	// Tracking observer
 	if(0 != initial)
 	{
-		SYSTEM.POSITION.acToPos.f16PropGain= TO_KP_GAIN;
-		SYSTEM.POSITION.acToPos.i16PropGainShift= TO_KP_SHIFT;
-		SYSTEM.POSITION.acToPos.f16IntegGain= TO_KI_GAIN;
-		SYSTEM.POSITION.acToPos.i16IntegGainShift= TO_KI_SHIFT;
+		SYSTEM.POSITION.acToPos.f16PGain= TO_KP_GAIN;
+		SYSTEM.POSITION.acToPos.i16PGainSh= TO_KP_SHIFT;
+		SYSTEM.POSITION.acToPos.f16IGain= TO_KI_GAIN;
+		SYSTEM.POSITION.acToPos.i16IGainSh= TO_KI_SHIFT;
 		SYSTEM.POSITION.acToPos.f16ThGain= TO_THETA_GAIN;
-		SYSTEM.POSITION.acToPos.i16ThGainShift = TO_THETA_SHIFT;	
+		SYSTEM.POSITION.acToPos.i16ThGainSh = TO_THETA_SHIFT;	
 	}
 	
 	// Other init - once

@@ -41,10 +41,12 @@
 #include "pdb.h"
 #include "freemaster.h"
 
-#include "gflib.h"
-#include "mclib.h"
-#include "aclib.h"
+#include "amclib.h"
 #include "gdflib.h"
+#include "gflib.h"
+#include "gmclib.h"
+#include "mlib.h"
+#include "pclib.h"
 
 #include "math.h"
 
