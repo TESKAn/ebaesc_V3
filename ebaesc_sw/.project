@@ -155,7 +155,7 @@
 		<link>
 			<name>src/MC56F84763/peripherals/adc16.c</name>
 			<type>1</type>
-			<locationURI>PARENT-4-PROJECT_LOC/Freescale/DSC56800EX_Quick_Start_r2.6/src/MC56F84763/peripheral/adc16.c</locationURI>
+			<location>C:/Freescale/DSC56800EX_Quick_Start_r2.6/src/MC56F84763/peripheral/adc16.c</location>
 		</link>
 		<link>
 			<name>src/MC56F84763/peripherals/adc16.h</name>
