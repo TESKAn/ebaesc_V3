@@ -317,6 +317,8 @@ void InitSysVars(Int16 initial)
 	SYSTEM.DRIVERSTATE.i8DriverFaultCount = 0;
 	SYSTEM.DRIVERSTATE.i8DriverFault = 0;
 	
+	SYSTEM.SENSORLESS.ui8BemfObserverErrorCount = 0;
+	
 	//******************************************
 	// Other
 	//******************************************

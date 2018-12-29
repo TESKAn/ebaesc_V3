@@ -590,34 +590,6 @@ void StopMotor(void)
 	// Load new PWM values	
 	ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);	
 	
-	/*
-	// Disable PWMs
-	// Mark dont align rotor
-	ALIGN = 0;
-	// Do not check merge
-	MERGE_CHECK=0;
-	// Observer is inactive
-	OBSERVER_ACTIVE = 0;
-	// System not running from BEMF
-	RUNNING_FROM_BEMF = 0;		
-	// Set to speed mode
-	MOTOR_MODE_TORQUE = 0;	
-	// Disable algo
-	RUN_ADC_EOS_ALG = 0;
-	SYSTEM_GOTO_ACTIVE = 0;
-	SYSTEM_GOTO_RUN = 0;
-	
-	RUN_WSENSOR = 0;
-	RUN_FROMSENSOR = 0;
-	SENSOR_PREDICTION_ZEROED = 0;
-	// Stop calibrating
-	if(SYSTEM_MAN_ROTATE)
-	{
-		SYSTEM_MAN_ROTATE = 0;
-		SYSTEM_CALIBRATED = 0;
-		SYSTEM_SPINNING = 0;
-		systemVariables.ui16CalibrationState = CALIBRATE_INIT;
-	}*/
 }
 
 //#pragma interrupt called

@@ -608,7 +608,7 @@ Int16 SystemRunState()
 				StopMotor();
 				SystemStateTransition();
 			}		
-			if(2 == COMMDataStruct.REGS.ui8Armed)
+			else if(2 == COMMDataStruct.REGS.ui8Armed)
 			{
 				COMMDataStruct.REGS.ui8Armed = 0;
 				StopMotor();
@@ -616,8 +616,16 @@ Int16 SystemRunState()
 			}
 			else if(3 == COMMDataStruct.REGS.ui8Armed)
 			{
+				// BEMF error - go to restart
 				COMMDataStruct.REGS.ui8Armed = 1;
 				SYSTEM.SENSORLESS.ui8BemfObserverErrorCount = 0;
+				
+				StopMotor();
+				SystemStateTransition();
+			}
+			else if(!SYSTEM_CALIBRATED && !SYSTEM_RUN_SENSORED)
+			{
+				// Sensorless running - go out of transition
 				StopMotor();
 				SystemStateTransition();
 			}
