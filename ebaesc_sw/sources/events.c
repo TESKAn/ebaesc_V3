@@ -104,19 +104,20 @@ void ADC_1_EOS_ISR(void)
 	// Measure DC link voltage
 	SYSTEM.ADC.f16DCLinkVoltage = ioctl(ADC_1, ADC_READ_SAMPLE, 2);
 	// Filter	
-	SYSTEM.ADC.f16DCLinkVoltageFiltered = GDFLIB_FilterMA32(SYSTEM.ADC.f16DCLinkVoltage, &SYSTEM.ADC.FilterMA32DCLink);	
+	SYSTEM.ADC.f16DCLinkVoltageFiltered = GDFLIB_FilterMA_F16(SYSTEM.ADC.f16DCLinkVoltage, &SYSTEM.ADC.FilterMA32DCLink);
+	//SYSTEM.ADC.f16DCLinkVoltageFiltered = GDFLIB_FilterMA32(SYSTEM.ADC.f16DCLinkVoltage, &SYSTEM.ADC.FilterMA32DCLink);
 	
 	// Measure temperature
 	SYSTEM.ADC.f16Temperature = ioctl(ADC_1, ADC_READ_SAMPLE, 10);
 	// Filter	
-	SYSTEM.ADC.f16TemperatureFiltered = GDFLIB_FilterMA32(SYSTEM.ADC.f16Temperature, &SYSTEM.ADC.FilterMA32Temperature);	
+	SYSTEM.ADC.f16TemperatureFiltered = GDFLIB_FilterMA_F16(SYSTEM.ADC.f16Temperature, &SYSTEM.ADC.FilterMA32Temperature);	
 	
 	// Measure sensor value
 	SYSTEM.ADC.f16SensorValueA = ioctl(ADC_1, ADC_READ_SAMPLE, 1);
 	SYSTEM.ADC.f16SensorValueB = ioctl(ADC_1, ADC_READ_SAMPLE, 9);
 	// Filter
-	SYSTEM.ADC.f16SensorValueAFiltered = GDFLIB_FilterMA32(SYSTEM.ADC.f16SensorValueA, &SYSTEM.ADC.FilterMA32SensorA);
-	SYSTEM.ADC.f16SensorValueBFiltered = GDFLIB_FilterMA32(SYSTEM.ADC.f16SensorValueB, &SYSTEM.ADC.FilterMA32SensorB);
+	SYSTEM.ADC.f16SensorValueAFiltered = GDFLIB_FilterMA_F16(SYSTEM.ADC.f16SensorValueA, &SYSTEM.ADC.FilterMA32SensorA);
+	SYSTEM.ADC.f16SensorValueBFiltered = GDFLIB_FilterMA_F16(SYSTEM.ADC.f16SensorValueB, &SYSTEM.ADC.FilterMA32SensorB);
 	
 	// Calculate values
 	COMMDataStruct.REGS.i16UIn = mult(SYSTEM.ADC.f16DCLinkVoltage, 6087);
@@ -334,10 +335,10 @@ void ADC_1_EOS_ISR(void)
 	// Transform currents to rotating frame
 	//******************************************
 	// Clark transform to get Ia, Ib
-	MCLIB_ClarkTrf(&SYSTEM.MCTRL.m2IAlphaBeta, &SYSTEM.ADC.m3IphUVW);
+	GMCLIB_Clark_F16(&SYSTEM.ADC.m3IphUVW, &SYSTEM.MCTRL.m2IAlphaBeta);
 	// Calculate park transform to get Id, Iq
 	// Out m2IDQ
-	MCLIB_ParkTrf(&SYSTEM.MCTRL.m2IDQ, &SYSTEM.MCTRL.m2IAlphaBeta, &SYSTEM.POSITION.mSinCosAngle);
+	GMCLIB_Park_F16(&SYSTEM.MCTRL.m2IAlphaBeta, &SYSTEM.POSITION.mSinCosAngle, &SYSTEM.MCTRL.m2IDQ);
 	
 	//******************************************
 	// BEMF observer calculation
@@ -348,7 +349,7 @@ void ADC_1_EOS_ISR(void)
 	if(SYSTEM.SENSORLESS.f16MinSpeed < f16Temp)
 	{
 		// Calculate DQ observer
-		ACLIB_PMSMBemfObsrvDQ(&SYSTEM.MCTRL.m2IDQ, &SYSTEM.MCTRL.m2UDQ_m, SYSTEM.POSITION.f16SpeedFiltered, &SYSTEM.POSITION.acBemfObsrvDQ);
+		AMCLIB_PMSMBemfObsrvDQ_F16(&SYSTEM.MCTRL.m2IDQ, &SYSTEM.MCTRL.m2UDQ_m, SYSTEM.POSITION.f16SpeedFiltered, &SYSTEM.POSITION.acBemfObsrvDQ);
 		// Check BEMF error
 		if(POSITION_SOURCE_MULTIPLE == SYSTEM.POSITION.i16PositionSource)
 		{
@@ -484,6 +485,8 @@ void ADC_1_EOS_ISR(void)
 				
 				SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_SENSORLESS_ROTATE;
 				SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_SENSORLESS_ROTATE;
+				GFLIB_RampInit_F16(SYSTEM.REGULATORS.m2IDQReq.f16Q, &SYSTEM.RAMPS.Ramp16_AlignCurrent);
+				
 				// Reset bemf observer error part
 				SYSTEM.SENSORLESS.f16BEMFErrorPart = FRAC16(0.0);
 			}
@@ -519,10 +522,11 @@ void ADC_1_EOS_ISR(void)
 						SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_CONTROL_SPEED;
 						// Set default values
 						// Set current
-						SYSTEM.REGULATORS.mudtControllerParamW.f32IntegPartK_1 = SYSTEM.REGULATORS.m2IDQReq.f16Q;
+						SYSTEM.REGULATORS.mudtControllerParamW.f32IAccK_1 = (frac32_t)SYSTEM.REGULATORS.m2IDQReq.f16Q;
 						SYSTEM.REGULATORS.ui16SpeedRegCounter = 0;
 						SYSTEM.RAMPS.f16SpeedRampDesiredValue = SYSTEM.SENSORLESS.f16StartSpeed;
 						SYSTEM.RAMPS.f16SpeedRampActualValue = SYSTEM.POSITION.f16Speed;
+						GFLIB_RampInit_F16(SYSTEM.POSITION.f16Speed, &SYSTEM.RAMPS.Ramp16_Speed);
 					}
 					else if(CONTROL_TORQUE)
 					{
@@ -538,17 +542,17 @@ void ADC_1_EOS_ISR(void)
 						SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_NONE;
 					}
 				}
-				SYSTEM.POSITION.f16RotorAngle = ACLIB_TrackObsrv(f16Temp, &SYSTEM.POSITION.acToPos);
+				SYSTEM.POSITION.f16RotorAngle = AMCLIB_TrackObsrv_F16(f16Temp, &SYSTEM.POSITION.acToPos);
 				
 			}
 			else
 			{
-				SYSTEM.POSITION.f16RotorAngle = ACLIB_TrackObsrv(SYSTEM.SENSORLESS.f16AngleManualError, &SYSTEM.POSITION.acToPos);
+				SYSTEM.POSITION.f16RotorAngle = AMCLIB_TrackObsrv_F16(SYSTEM.SENSORLESS.f16AngleManualError, &SYSTEM.POSITION.acToPos);
 			}
 			
 			// Store & filter speed
 			SYSTEM.POSITION.f16Speed = extract_h(SYSTEM.POSITION.acToPos.f32Speed);
-			SYSTEM.POSITION.f16SpeedFiltered = GDFLIB_FilterMA32(SYSTEM.POSITION.f16Speed, &SYSTEM.POSITION.FilterMA32Speed);	
+			SYSTEM.POSITION.f16SpeedFiltered = GDFLIB_FilterMA_F16(SYSTEM.POSITION.f16Speed, &SYSTEM.POSITION.FilterMA32Speed);	
 			break;
 		}
 		case POSITION_SOURCE_SENSORLESS_MERGE:
@@ -588,11 +592,11 @@ void ADC_1_EOS_ISR(void)
 			SYSTEM.POSITION.f16AnglePhaseError = mf16ErrorK;
 			
 			// Calculate angle tracking observer or use forced angle
-			SYSTEM.POSITION.f16RotorAngle = ACLIB_TrackObsrv(SYSTEM.POSITION.f16AnglePhaseError, &SYSTEM.POSITION.acToPos);
+			SYSTEM.POSITION.f16RotorAngle = AMCLIB_TrackObsrv_F16(SYSTEM.POSITION.f16AnglePhaseError, &SYSTEM.POSITION.acToPos);
 			
 			// Store & filter speed
 			SYSTEM.POSITION.f16Speed = extract_h(SYSTEM.POSITION.acToPos.f32Speed);
-			SYSTEM.POSITION.f16SpeedFiltered = GDFLIB_FilterMA32(SYSTEM.POSITION.f16Speed, &SYSTEM.POSITION.FilterMA32Speed);	
+			SYSTEM.POSITION.f16SpeedFiltered = GDFLIB_FilterMA_F16(SYSTEM.POSITION.f16Speed, &SYSTEM.POSITION.FilterMA32Speed);	
 			break;
 		}
 		case POSITION_SOURCE_STANDSTILL:
@@ -610,8 +614,8 @@ void ADC_1_EOS_ISR(void)
 	}
 	
 	// Calculate new sin/cos
-	SYSTEM.POSITION.mSinCosAngle.f16Sin = GFLIB_SinTlr(SYSTEM.POSITION.f16RotorAngle);
-	SYSTEM.POSITION.mSinCosAngle.f16Cos = GFLIB_CosTlr(SYSTEM.POSITION.f16RotorAngle);
+	SYSTEM.POSITION.mSinCosAngle.f16Sin = GFLIB_Sin_F16(SYSTEM.POSITION.f16RotorAngle);
+	SYSTEM.POSITION.mSinCosAngle.f16Cos = GFLIB_Cos_F16(SYSTEM.POSITION.f16RotorAngle);
 	
 	//******************************************
 	// Set Id, Iq currents
@@ -636,7 +640,7 @@ void ADC_1_EOS_ISR(void)
 				// Id = 0
 				SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.0);
 				// Iq saturated?
-				if(0 != SYSTEM.REGULATORS.mudtControllerParamIq.i16LimitFlag)
+				if(0 != SYSTEM.REGULATORS.mudtControllerParamIq.bLimFlag)
 				{
 					// Iq saturated, decrease it
 					if(FRAC16(0.0) < SYSTEM.REGULATORS.m2IDQReq.f16Q)
@@ -653,7 +657,7 @@ void ADC_1_EOS_ISR(void)
 					// Torque ramp
 					if(SYSTEM.RAMPS.f16TorqueRampDesiredValue != SYSTEM.RAMPS.f16TorqueRampActualValue)
 					{
-						SYSTEM.RAMPS.f16TorqueRampActualValue = GFLIB_Ramp16(SYSTEM.RAMPS.f16TorqueRampDesiredValue, SYSTEM.RAMPS.f16TorqueRampActualValue, &SYSTEM.RAMPS.Ramp16_Torque);
+						SYSTEM.RAMPS.f16TorqueRampActualValue = GFLIB_Ramp_F16(SYSTEM.RAMPS.f16TorqueRampDesiredValue, &SYSTEM.RAMPS.Ramp16_Torque);
 					}
 					// Scale with some factor
 					SYSTEM.REGULATORS.m2IDQReq.f16Q = mult(SYSTEM.RAMPS.f16TorqueRampActualValue, SYSTEM.MCTRL.f16TorqueFactor);
@@ -673,12 +677,12 @@ void ADC_1_EOS_ISR(void)
 				// Do we have to do ramp?
 				if(SYSTEM.RAMPS.f16SpeedRampActualValue != SYSTEM.RAMPS.f16SpeedRampDesiredValue)
 				{
-					SYSTEM.RAMPS.f16SpeedRampActualValue = GFLIB_Ramp16(SYSTEM.RAMPS.f16SpeedRampDesiredValue, SYSTEM.RAMPS.f16SpeedRampActualValue, &SYSTEM.RAMPS.Ramp16_Speed);						
+					SYSTEM.RAMPS.f16SpeedRampActualValue = GFLIB_Ramp_F16(SYSTEM.RAMPS.f16SpeedRampDesiredValue, &SYSTEM.RAMPS.Ramp16_Speed);						
 				}
 				
 				f16SpeedErrorK = SYSTEM.RAMPS.f16SpeedRampActualValue - SYSTEM.POSITION.f16SpeedFiltered;
 
-				SYSTEM.REGULATORS.m2IDQReq.f16Q = GFLIB_ControllerPIp(f16SpeedErrorK, &SYSTEM.REGULATORS.mudtControllerParamW, &SYSTEM.REGULATORS.mudtControllerParamIq.i16LimitFlag);
+				SYSTEM.REGULATORS.m2IDQReq.f16Q = GFLIB_CtrlPIpAW_F16(f16SpeedErrorK, &SYSTEM.REGULATORS.mudtControllerParamIq.bLimFlag, &SYSTEM.REGULATORS.mudtControllerParamW);
 				
 				// Set D value to 0
 				//SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.0);
@@ -690,7 +694,7 @@ void ADC_1_EOS_ISR(void)
 			// Calculate ramp
 			if(SYSTEM.RAMPS.f16AlignCurrentActualValue != SYSTEM.RAMPS.f16AlignCurrentDesiredValue)
 			{
-				SYSTEM.RAMPS.f16AlignCurrentActualValue = GFLIB_Ramp16(SYSTEM.RAMPS.f16AlignCurrentDesiredValue, SYSTEM.RAMPS.f16AlignCurrentActualValue, &SYSTEM.RAMPS.Ramp16_AlignCurrent);						
+				SYSTEM.RAMPS.f16AlignCurrentActualValue = GFLIB_Ramp_F16(SYSTEM.RAMPS.f16AlignCurrentDesiredValue, &SYSTEM.RAMPS.Ramp16_AlignCurrent);						
 			}		
 			// If SYSTEM_RUN_MANUAL, set Id
 			if(SYSTEM_RUN_MANUAL)
@@ -717,7 +721,7 @@ void ADC_1_EOS_ISR(void)
 			// Set Id to align current
 			if(SYSTEM.REGULATORS.m2IDQReq.f16D != SYSTEM.SENSORLESS.f16AlignCurrent)
 			{
-				SYSTEM.REGULATORS.m2IDQReq.f16D = GFLIB_Ramp16(SYSTEM.SENSORLESS.f16AlignCurrent, SYSTEM.REGULATORS.m2IDQReq.f16D, &SYSTEM.RAMPS.Ramp16_AlignCurrent);						
+				SYSTEM.REGULATORS.m2IDQReq.f16D = GFLIB_Ramp_F16(SYSTEM.SENSORLESS.f16AlignCurrent, &SYSTEM.RAMPS.Ramp16_AlignCurrent);						
 			}
 			SYSTEM.REGULATORS.m2IDQReq.f16Q = FRAC16(0.0);
 			break;
@@ -728,7 +732,7 @@ void ADC_1_EOS_ISR(void)
 			SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.0);		
 			if(SYSTEM.REGULATORS.m2IDQReq.f16Q != SYSTEM.SENSORLESS.f16StartCurrent)
 			{
-				SYSTEM.REGULATORS.m2IDQReq.f16Q = GFLIB_Ramp16(SYSTEM.SENSORLESS.f16StartCurrent, SYSTEM.REGULATORS.m2IDQReq.f16Q, &SYSTEM.RAMPS.Ramp16_AlignCurrent);						
+				SYSTEM.REGULATORS.m2IDQReq.f16Q = GFLIB_Ramp_F16(SYSTEM.SENSORLESS.f16StartCurrent, &SYSTEM.RAMPS.Ramp16_AlignCurrent);						
 			}
 			break;
 		}
@@ -761,28 +765,28 @@ void ADC_1_EOS_ISR(void)
 		// Error calculation
 		mf16ErrorK = SYSTEM.REGULATORS.m2IDQReq.f16D - SYSTEM.MCTRL.m2IDQ.f16D;
 		// Controller calculation
-		SYSTEM.MCTRL.m2UDQ.f16D = GFLIB_ControllerPIp(mf16ErrorK, &SYSTEM.REGULATORS.mudtControllerParamId, &SYSTEM.REGULATORS.i16SatFlagD);
+		SYSTEM.MCTRL.m2UDQ.f16D = GFLIB_CtrlPIpAW_F16(mf16ErrorK, 0, &SYSTEM.REGULATORS.mudtControllerParamId);
 		// Q
 		// Calculate error
 		mf16ErrorK = SYSTEM.REGULATORS.m2IDQReq.f16Q - SYSTEM.MCTRL.m2IDQ.f16Q;
 
 		// Set Iq controller limits
-		SYSTEM.REGULATORS.mudtControllerParamIq.f16UpperLimit = SYSTEM.REGULATORS.f16UqRemaining;
-		SYSTEM.REGULATORS.mudtControllerParamIq.f16LowerLimit = -SYSTEM.REGULATORS.f16UqRemaining;
+		SYSTEM.REGULATORS.mudtControllerParamIq.f16UpperLim = SYSTEM.REGULATORS.f16UqRemaining;
+		SYSTEM.REGULATORS.mudtControllerParamIq.f16LowerLim = -SYSTEM.REGULATORS.f16UqRemaining;
 		
 		// Controller calculation
-		SYSTEM.MCTRL.m2UDQ.f16Q = GFLIB_ControllerPIp(mf16ErrorK, &SYSTEM.REGULATORS.mudtControllerParamIq, &SYSTEM.REGULATORS.mudtControllerParamId.i16LimitFlag);
+		SYSTEM.MCTRL.m2UDQ.f16Q = GFLIB_CtrlPIpAW_F16(mf16ErrorK, &SYSTEM.REGULATORS.mudtControllerParamId.bLimFlag, &SYSTEM.REGULATORS.mudtControllerParamIq);
 		
 		//******************************************
 		// Transformation to stationary frame, SVM, PWM
 		//******************************************
 		// We have Ud, Uq
 		// Do inverse park
-		MCLIB_ParkTrfInv(&SYSTEM.MCTRL.m2UAlphaBeta, &SYSTEM.MCTRL.m2UDQ, &SYSTEM.POSITION.mSinCosAngle);
+		//GMCLIB_ParkInv_F16(&SYSTEM.MCTRL.m2UDQ, &SYSTEM.POSITION.mSinCosAngle, &SYSTEM.MCTRL.m2UAlphaBeta);
 		// Eliminate DC bus ripple
 		//MCLIB_ElimDcBusRip(systemVariables.MOTOR.f16InvModeIndex, systemVariables.MOTOR.f16DCBusVoltage, &systemVariables.MOTOR.m2UAlphaBeta, &systemVariables.MOTOR.m2UAlphaBetaRippleElim);
 		// Do SVM
-		SYSTEM.MCTRL.SVMVoltageSector = MCLIB_SvmStd(&SYSTEM.MCTRL.m2UAlphaBeta, &SYSTEM.MCTRL.m3U_UVW);
+		SYSTEM.MCTRL.SVMVoltageSector  = GMCLIB_SvmStd_F16(&SYSTEM.MCTRL.m2UAlphaBeta, &SYSTEM.MCTRL.m3U_UVW);
 		
 		// Store PWMs
 		SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = SYSTEM.MCTRL.m3U_UVW.f16A;

@@ -212,12 +212,13 @@ Int16 CalculateSIValues(void)
 	// Calculate how much voltage we can have for Q regulator and set limits
 	// Ud squared
 	fTemp = (float)SYSTEM.MCTRL.m2UDQ.f16D;
-	fTemp = fTemp / 32768;
+	fTemp = fTemp / 32768.0f;
 	fTemp = fTemp * fTemp;
 	fTemp = 0.9f - fTemp;
 	fTemp = sqrtf(fTemp);
-	fTemp = fTemp * 32768;
-	SYSTEM.REGULATORS.f16UqRemaining = (Frac16)fTemp;
+	fTemp = fTemp * 32767.0f;
+	i16Temp = (Int16)fTemp;
+	SYSTEM.REGULATORS.f16UqRemaining = (Frac16)i16Temp;
 	
 	// Calculate phase current for amplifier gain settings
 	// Id^2
@@ -374,6 +375,31 @@ Int16 CalculateFloat(void)
 	return 0;
 }
 
+float CalculateFloatAcc32(acc32_t val)
+{
+	float retVal = 0.0f;
+	Int32 i32Temp = val & 0x7FFF;
+	retVal = (float)i32Temp;
+	retVal /= 32767;
+	i32Temp = val >> 15;
+	retVal += (float)i32Temp;
+	return retVal;
+}
+
+acc32_t CalculateAcc32Value(float K)
+{
+	acc32_t retVal = ACC32(0.0);
+	Int32 i32Temp = (Int32)K;
+	K = K - (float)i32Temp;
+	i32Temp = i32Temp << 15;
+	retVal = i32Temp;
+	K = K * 32767;
+	i32Temp = (Int32)K;
+	retVal = retVal | i32Temp;
+	return retVal;
+}
+
+
 // Function calculates frac gain and int shift from float input
 Int16 CalculateShiftGain(float K)
 {
@@ -439,43 +465,48 @@ void calculateFactors(void)
 	
 	// Id regulator
 	// D regulator proportional term
-	CalculateShiftGain(SYSTEM.REGULATORS.Kpd);
-	SYSTEM.REGULATORS.mudtControllerParamId.f16PropGain = pConv.gain;
-	SYSTEM.REGULATORS.mudtControllerParamId.i16PropGainShift = pConv.shift;
+	SYSTEM.REGULATORS.mudtControllerParamId.a32PGain = CalculateAcc32Value(SYSTEM.REGULATORS.Kpd);
 	// D regulator integral term
-	CalculateShiftGain(SYSTEM.REGULATORS.Kid);
-	SYSTEM.REGULATORS.mudtControllerParamId.f16IntegGain = pConv.gain;
-	SYSTEM.REGULATORS.mudtControllerParamId.i16IntegGainShift = pConv.shift;
+	SYSTEM.REGULATORS.mudtControllerParamId.a32IGain = CalculateAcc32Value(SYSTEM.REGULATORS.Kid);
 	
 	// Iq regulator
 	// Q regulator proportional term
-	CalculateShiftGain(SYSTEM.REGULATORS.Kpq);
-	SYSTEM.REGULATORS.mudtControllerParamIq.f16PropGain = pConv.gain;
-	SYSTEM.REGULATORS.mudtControllerParamIq.i16PropGainShift = pConv.shift;
+	SYSTEM.REGULATORS.mudtControllerParamIq.a32PGain = CalculateAcc32Value(SYSTEM.REGULATORS.Kpq);
 	// Q regulator integral term
-	CalculateShiftGain(SYSTEM.REGULATORS.Kiq);
-	SYSTEM.REGULATORS.mudtControllerParamIq.f16IntegGain = pConv.gain;
-	SYSTEM.REGULATORS.mudtControllerParamIq.i16IntegGainShift = pConv.shift;	
+	SYSTEM.REGULATORS.mudtControllerParamIq.a32IGain = CalculateAcc32Value(SYSTEM.REGULATORS.Kiq);
 	
 	// W regulator
 	// W regulator proportional term
-	CalculateShiftGain(SYSTEM.REGULATORS.Kpw);
-	SYSTEM.REGULATORS.mudtControllerParamW.f16PropGain = pConv.gain;
-	SYSTEM.REGULATORS.mudtControllerParamW.i16PropGainShift = pConv.shift;
+	SYSTEM.REGULATORS.mudtControllerParamW.a32PGain = CalculateAcc32Value(SYSTEM.REGULATORS.Kpw);
 	// W regulator integral term
-	CalculateShiftGain(SYSTEM.REGULATORS.Kiw);
-	SYSTEM.REGULATORS.mudtControllerParamW.f16IntegGain = pConv.gain;
-	SYSTEM.REGULATORS.mudtControllerParamW.i16IntegGainShift = pConv.shift;
+	SYSTEM.REGULATORS.mudtControllerParamW.a32IGain = CalculateAcc32Value(SYSTEM.REGULATORS.Kiw);
 	
 	// AcToPos
 	// Kp
 	CalculateShiftGain(SYSTEM.POSITION.Kpactopos);
-	SYSTEM.POSITION.acToPos.f16PropGain = pConv.gain;
-	SYSTEM.POSITION.acToPos.i16PropGainShift = pConv.shift;
+	SYSTEM.POSITION.acToPos.f16PGain = pConv.gain;
+	SYSTEM.POSITION.acToPos.i16PGainSh = pConv.shift;
 	// Ki
 	CalculateShiftGain(SYSTEM.POSITION.Kiactopos);
-	SYSTEM.POSITION.acToPos.f16IntegGain = pConv.gain;
-	SYSTEM.POSITION.acToPos.i16IntegGainShift = pConv.shift;
+	SYSTEM.POSITION.acToPos.f16IGain = pConv.gain;
+	SYSTEM.POSITION.acToPos.i16IGainSh = pConv.shift;
+	
+	// Kthactopos	
+	CalculateShiftGain(SYSTEM.POSITION.Kthactopos);	
+	SYSTEM.POSITION.acToPos.f16ThGain = pConv.gain;
+	SYSTEM.POSITION.acToPos.i16ThGainSh = pConv.shift;
+
+	
+	// DQ Kp
+	SYSTEM.POSITION.acBemfObsrvDQ.sCtrl.a32PGain = CalculateAcc32Value(SYSTEM.POSITION.fKpBemfDQ);	
+	// DQ Ki
+	SYSTEM.POSITION.acBemfObsrvDQ.sCtrl.a32IGain = CalculateAcc32Value(SYSTEM.POSITION.fKiBemfDQ);
+
+	// Scales
+	SYSTEM.POSITION.acBemfObsrvDQ.a32IGain = SYSTEM.POSITION.a32Ifrac;
+	SYSTEM.POSITION.acBemfObsrvDQ.a32UGain = SYSTEM.POSITION.a32Ufrac;
+	SYSTEM.POSITION.acBemfObsrvDQ.a32EGain = SYSTEM.POSITION.a32Efrac;
+	SYSTEM.POSITION.acBemfObsrvDQ.a32WIGain = SYSTEM.POSITION.a32WIfrac;	
 	
 }
 
@@ -485,73 +516,48 @@ void calculateFloats(void)
 	
 	// Calculate regulator gains
 	// Kpd
-	pConv.gain = SYSTEM.REGULATORS.mudtControllerParamId.f16PropGain;
-	pConv.shift = SYSTEM.REGULATORS.mudtControllerParamId.i16PropGainShift;
-	CalculateFloat();
-	SYSTEM.REGULATORS.Kpd = pConv.value;
+	SYSTEM.REGULATORS.Kpd = CalculateFloatAcc32(SYSTEM.REGULATORS.mudtControllerParamId.a32PGain);
 	// Kid
-	pConv.gain = SYSTEM.REGULATORS.mudtControllerParamId.f16IntegGain;
-	pConv.shift = SYSTEM.REGULATORS.mudtControllerParamId.i16IntegGainShift;
-	CalculateFloat();
-	SYSTEM.REGULATORS.Kid = pConv.value;
+	SYSTEM.REGULATORS.Kid = CalculateFloatAcc32(SYSTEM.REGULATORS.mudtControllerParamId.a32IGain);
 	
 	// Kpq
-	pConv.gain = SYSTEM.REGULATORS.mudtControllerParamIq.f16PropGain;
-	pConv.shift = SYSTEM.REGULATORS.mudtControllerParamIq.i16PropGainShift;
-	CalculateFloat();
-	SYSTEM.REGULATORS.Kpq = pConv.value;
+	SYSTEM.REGULATORS.Kpq = CalculateFloatAcc32(SYSTEM.REGULATORS.mudtControllerParamIq.a32PGain);
 	// Kiq
-	pConv.gain = SYSTEM.REGULATORS.mudtControllerParamIq.f16IntegGain;
-	pConv.shift = SYSTEM.REGULATORS.mudtControllerParamIq.i16IntegGainShift;
-	CalculateFloat();
-	SYSTEM.REGULATORS.Kiq = pConv.value;	
+	SYSTEM.REGULATORS.Kiq = CalculateFloatAcc32(SYSTEM.REGULATORS.mudtControllerParamIq.a32IGain);
 	
 	// Kpw
-	pConv.gain = SYSTEM.REGULATORS.mudtControllerParamW.f16PropGain;
-	pConv.shift = SYSTEM.REGULATORS.mudtControllerParamW.i16PropGainShift;
-	CalculateFloat();
-	SYSTEM.REGULATORS.Kpw = pConv.value;
+	SYSTEM.REGULATORS.Kpw = CalculateFloatAcc32(SYSTEM.REGULATORS.mudtControllerParamW.a32PGain);
 	// Kiw
-	pConv.gain = SYSTEM.REGULATORS.mudtControllerParamW.f16IntegGain;
-	pConv.shift = SYSTEM.REGULATORS.mudtControllerParamW.i16IntegGainShift;
-	CalculateFloat();
-	SYSTEM.REGULATORS.Kiw = pConv.value;
+	SYSTEM.REGULATORS.Kiw = CalculateFloatAcc32(SYSTEM.REGULATORS.mudtControllerParamW.a32IGain);
 	
 	// Kpactopos	
-	pConv.gain = SYSTEM.POSITION.acToPos.f16PropGain;
-	pConv.shift = SYSTEM.POSITION.acToPos.i16PropGainShift;
+	pConv.gain = SYSTEM.POSITION.acToPos.f16PGain;
+	pConv.shift = SYSTEM.POSITION.acToPos.i16PGainSh;
 	CalculateFloat();
 	SYSTEM.POSITION.Kpactopos = pConv.value;
 	
 	// Kiactopos	
-	pConv.gain = SYSTEM.POSITION.acToPos.f16IntegGain;
-	pConv.shift = SYSTEM.POSITION.acToPos.i16IntegGainShift;
+	pConv.gain = SYSTEM.POSITION.acToPos.f16IGain;
+	pConv.shift = SYSTEM.POSITION.acToPos.i16IGainSh;
 	CalculateFloat();
 	SYSTEM.POSITION.Kiactopos = pConv.value;
 	
 	// Kthactopos	
 	pConv.gain = SYSTEM.POSITION.acToPos.f16ThGain;
-	pConv.shift = SYSTEM.POSITION.acToPos.i16ThGainShift;
+	pConv.shift = SYSTEM.POSITION.acToPos.i16ThGainSh;
 	CalculateFloat();
 	SYSTEM.POSITION.Kthactopos = pConv.value;
 	
 	// DQ Kp
-	pConv.gain = SYSTEM.POSITION.acBemfObsrvDQ.udtCtrl.f16PropGain;
-	pConv.shift = SYSTEM.POSITION.acBemfObsrvDQ.udtCtrl.i16PropGainShift;
-	CalculateFloat();
-	SYSTEM.POSITION.fKpBemfDQ = pConv.value;
-	
+	SYSTEM.POSITION.fKpBemfDQ = CalculateFloatAcc32(SYSTEM.POSITION.acBemfObsrvDQ.sCtrl.a32PGain);
 	// DQ Ki
-	pConv.gain = SYSTEM.POSITION.acBemfObsrvDQ.udtCtrl.f16IntegGain;
-	pConv.shift = SYSTEM.POSITION.acBemfObsrvDQ.udtCtrl.i16IntegGainShift;
-	CalculateFloat();
-	SYSTEM.POSITION.fKiBemfDQ = pConv.value;
-	
+	SYSTEM.POSITION.fKiBemfDQ = CalculateFloatAcc32(SYSTEM.POSITION.acBemfObsrvDQ.sCtrl.a32IGain);
+
 	// Scales
-	SYSTEM.POSITION.f16Ifrac = SYSTEM.POSITION.acBemfObsrvDQ.f16IGain;
-	SYSTEM.POSITION.f16Ufrac = SYSTEM.POSITION.acBemfObsrvDQ.f16UGain;
-	SYSTEM.POSITION.f16Efrac = SYSTEM.POSITION.acBemfObsrvDQ.f16EGain;
-	SYSTEM.POSITION.f16WIfrac = SYSTEM.POSITION.acBemfObsrvDQ.f16WIGain;	
+	SYSTEM.POSITION.a32Ifrac = SYSTEM.POSITION.acBemfObsrvDQ.a32IGain;
+	SYSTEM.POSITION.a32Ufrac = SYSTEM.POSITION.acBemfObsrvDQ.a32UGain;
+	SYSTEM.POSITION.a32Efrac = SYSTEM.POSITION.acBemfObsrvDQ.a32EGain;
+	SYSTEM.POSITION.a32WIfrac = SYSTEM.POSITION.acBemfObsrvDQ.a32WIGain;	
 }
 
 // Stop motor - set all variables to required value
@@ -849,8 +855,8 @@ Int16 MCAT_Calculate()
 	fTemp = fTemp * SI_IIN_FACTOR;
 	fTemp1 = AD_SAMPLE_TIME * UMAX;
 	fTemp1 = fTemp1 / fTemp;
-	fTemp1 *= 32768;
-	SYSTEM.POSITION.f16Ufrac = (Int16)fTemp1;
+	fTemp1 *= 32767;
+	SYSTEM.POSITION.a32Ufrac = (acc32_t)fTemp1;
 	
 	// Calculate EFRAC
 	fTemp = AD_SAMPLE_TIME * SYSTEM.MEASUREPARAMS.fRS;
@@ -859,7 +865,7 @@ Int16 MCAT_Calculate()
 	fTemp1 = AD_SAMPLE_TIME * EMAX;
 	fTemp1 = fTemp1 / fTemp;
 	fTemp1 *= 32768;
-	SYSTEM.POSITION.f16Efrac = (Int16)fTemp1;
+	SYSTEM.POSITION.a32Efrac = (acc32_t)fTemp1;
 	
 	// WIfrac
 	fTemp = AD_SAMPLE_TIME * SYSTEM.MEASUREPARAMS.fRS;
@@ -868,14 +874,14 @@ Int16 MCAT_Calculate()
 	fTemp1 = fTemp1 * fOmegaMax;
 	fTemp1 = fTemp1 / fTemp;
 	fTemp1 *= 32768;
-	SYSTEM.POSITION.f16WIfrac = (Int16)fTemp1;
+	SYSTEM.POSITION.a32WIfrac = (acc32_t)fTemp1;
 	
 	// Ifrac
 	fTemp = AD_SAMPLE_TIME * SYSTEM.MEASUREPARAMS.fRS;
 	fTemp = fTemp + SYSTEM.MEASUREPARAMS.fLD;
 	fTemp1 = SYSTEM.MEASUREPARAMS.fLD / fTemp;
 	fTemp1 *= 32768;
-	SYSTEM.POSITION.f16Ifrac = (Int16)fTemp1;
+	SYSTEM.POSITION.a32Ifrac = (acc32_t)fTemp1;
 	
 	// DQ KPs
 	BemfDQ_Kps = 2*2*PI*(SYSTEM.MEASUREPARAMS.fLD - SYSTEM.MEASUREPARAMS.fRS);
@@ -899,65 +905,50 @@ Int16 MCAT_Calculate()
 Int16 MCAT_Load()
 {
 	// Id regulator
+	// Id regulator
 	// D regulator proportional term
-	CalculateShiftGain(SYSTEM.REGULATORS.Kpd);
-	SYSTEM.REGULATORS.mudtControllerParamId.f16PropGain = pConv.gain;
-	SYSTEM.REGULATORS.mudtControllerParamId.i16PropGainShift = pConv.shift;
+	SYSTEM.REGULATORS.mudtControllerParamId.a32PGain = CalculateAcc32Value(SYSTEM.REGULATORS.Kpd);
 	// D regulator integral term
-	CalculateShiftGain(SYSTEM.REGULATORS.Kid);
-	SYSTEM.REGULATORS.mudtControllerParamId.f16IntegGain = pConv.gain;
-	SYSTEM.REGULATORS.mudtControllerParamId.i16IntegGainShift = pConv.shift;
+	SYSTEM.REGULATORS.mudtControllerParamId.a32IGain = CalculateAcc32Value(SYSTEM.REGULATORS.Kid);
 	
 	// Iq regulator
 	// Q regulator proportional term
-	CalculateShiftGain(SYSTEM.REGULATORS.Kpq);
-	SYSTEM.REGULATORS.mudtControllerParamIq.f16PropGain = pConv.gain;
-	SYSTEM.REGULATORS.mudtControllerParamIq.i16PropGainShift = pConv.shift;
+	SYSTEM.REGULATORS.mudtControllerParamIq.a32PGain = CalculateAcc32Value(SYSTEM.REGULATORS.Kpq);
 	// Q regulator integral term
-	CalculateShiftGain(SYSTEM.REGULATORS.Kiq);
-	SYSTEM.REGULATORS.mudtControllerParamIq.f16IntegGain = pConv.gain;
-	SYSTEM.REGULATORS.mudtControllerParamIq.i16IntegGainShift = pConv.shift;	
+	SYSTEM.REGULATORS.mudtControllerParamIq.a32IGain = CalculateAcc32Value(SYSTEM.REGULATORS.Kiq);
 	
 	// W regulator
 	// W regulator proportional term
-	CalculateShiftGain(SYSTEM.REGULATORS.Kpw);
-	SYSTEM.REGULATORS.mudtControllerParamW.f16PropGain = pConv.gain;
-	SYSTEM.REGULATORS.mudtControllerParamW.i16PropGainShift = pConv.shift;
+	SYSTEM.REGULATORS.mudtControllerParamW.a32PGain = CalculateAcc32Value(SYSTEM.REGULATORS.Kpw);
 	// W regulator integral term
-	CalculateShiftGain(SYSTEM.REGULATORS.Kiw);
-	SYSTEM.REGULATORS.mudtControllerParamW.f16IntegGain = pConv.gain;
-	SYSTEM.REGULATORS.mudtControllerParamW.i16IntegGainShift = pConv.shift;
+	SYSTEM.REGULATORS.mudtControllerParamW.a32IGain = CalculateAcc32Value(SYSTEM.REGULATORS.Kiw);
 	
 	// AcToPos
 	// Kp
 	CalculateShiftGain(SYSTEM.POSITION.Kpactopos);
-	SYSTEM.POSITION.acToPos.f16PropGain = pConv.gain;
-	SYSTEM.POSITION.acToPos.i16PropGainShift = pConv.shift;
+	SYSTEM.POSITION.acToPos.f16PGain = pConv.gain;
+	SYSTEM.POSITION.acToPos.i16PGainSh = pConv.shift;
 	// Ki
 	CalculateShiftGain(SYSTEM.POSITION.Kiactopos);
-	SYSTEM.POSITION.acToPos.f16IntegGain = pConv.gain;
-	SYSTEM.POSITION.acToPos.i16IntegGainShift = pConv.shift;
-	// Kth
-	CalculateShiftGain(SYSTEM.POSITION.Kthactopos);
-	SYSTEM.POSITION.acToPos.f16ThGain = pConv.gain;
-	SYSTEM.POSITION.acToPos.i16ThGainShift = pConv.shift;
+	SYSTEM.POSITION.acToPos.f16IGain = pConv.gain;
+	SYSTEM.POSITION.acToPos.i16IGainSh = pConv.shift;
 	
-	// BEMF observer
+	// Kthactopos	
+	CalculateShiftGain(SYSTEM.POSITION.Kthactopos);	
+	SYSTEM.POSITION.acToPos.f16ThGain = pConv.gain;
+	SYSTEM.POSITION.acToPos.i16ThGainSh = pConv.shift;
+
+	
 	// DQ Kp
-	CalculateShiftGain(SYSTEM.POSITION.fKpBemfDQ);
-	SYSTEM.POSITION.acBemfObsrvDQ.udtCtrl.f16PropGain= pConv.gain;
-	SYSTEM.POSITION.acBemfObsrvDQ.udtCtrl.i16PropGainShift= pConv.shift;	
-
+	SYSTEM.POSITION.acBemfObsrvDQ.sCtrl.a32PGain = CalculateAcc32Value(SYSTEM.POSITION.fKpBemfDQ);	
 	// DQ Ki
-	CalculateShiftGain(SYSTEM.POSITION.fKiBemfDQ);
-	SYSTEM.POSITION.acBemfObsrvDQ.udtCtrl.f16IntegGain= pConv.gain;
-	SYSTEM.POSITION.acBemfObsrvDQ.udtCtrl.i16IntegGainShift= pConv.shift;	
+	SYSTEM.POSITION.acBemfObsrvDQ.sCtrl.a32IGain = CalculateAcc32Value(SYSTEM.POSITION.fKiBemfDQ);
 
-	// Scales	
-	SYSTEM.POSITION.acBemfObsrvDQ.f16IGain = SYSTEM.POSITION.f16Ifrac;
-	SYSTEM.POSITION.acBemfObsrvDQ.f16UGain = SYSTEM.POSITION.f16Ufrac;
-	SYSTEM.POSITION.acBemfObsrvDQ.f16EGain = SYSTEM.POSITION.f16Efrac;
-	SYSTEM.POSITION.acBemfObsrvDQ.f16WIGain = SYSTEM.POSITION.f16WIfrac;	
+	// Scales
+	SYSTEM.POSITION.acBemfObsrvDQ.a32IGain = SYSTEM.POSITION.a32Ifrac;
+	SYSTEM.POSITION.acBemfObsrvDQ.a32UGain = SYSTEM.POSITION.a32Ufrac;
+	SYSTEM.POSITION.acBemfObsrvDQ.a32EGain = SYSTEM.POSITION.a32Efrac;
+	SYSTEM.POSITION.acBemfObsrvDQ.a32WIGain = SYSTEM.POSITION.a32WIfrac;	
 
 	return 0;
 }

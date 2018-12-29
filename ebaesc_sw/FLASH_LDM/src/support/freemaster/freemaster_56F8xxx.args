@@ -15,16 +15,6 @@
 -i
 "$(FREEMASTER)"
 -i
-"$(ProjDirPath)/FSLESL/56800Ex_ACLIB/Include"
--i
-"$(ProjDirPath)/FSLESL/56800Ex_GFLIB/Include"
--i
-"$(ProjDirPath)/FSLESL/56800Ex_GDFLIB/Include"
--i
-"$(ProjDirPath)/FSLESL/56800Ex_MCLIB/Include"
--i
-"$(ProjDirPath)/FSLESL/56800Ex_MLIB/Include"
--i
 "$(ProjDirPath)/includes"
 -i
 "$(ProjDirPath)/EepromDrv"

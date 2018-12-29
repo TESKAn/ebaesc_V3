@@ -661,8 +661,8 @@ Int16 SystemCalibrateState()
 			SYSTEM.CALIBRATION.i16CalibrationState = CALIBRATE_START;
 			SYSTEM.POSITION.f16RotorAngle = FRAC16(0.0);
 			// Calculate sin/cos
-			SYSTEM.POSITION.mSinCosAngle.f16Sin = GFLIB_SinTlr(SYSTEM.POSITION.f16RotorAngle);
-			SYSTEM.POSITION.mSinCosAngle.f16Cos = GFLIB_CosTlr(SYSTEM.POSITION.f16RotorAngle);
+			SYSTEM.POSITION.mSinCosAngle.f16Sin = GFLIB_Sin_F16(SYSTEM.POSITION.f16RotorAngle);
+			SYSTEM.POSITION.mSinCosAngle.f16Cos = GFLIB_Cos_F16(SYSTEM.POSITION.f16RotorAngle);
 			
 			// Zero array
 			for(i16Temp0 = 0; i16Temp0 < 4096; i16Temp0++)
@@ -1513,6 +1513,7 @@ Int16 SystemStateTransition()
 				// Set D, Q currents to 0
 				SYSTEM.RAMPS.f16AlignCurrentActualValue = FRAC16(0.0);
 				SYSTEM.RAMPS.f16AlignCurrentDesiredValue = FRAC16(0.0);
+				GFLIB_RampInit_F16(FRAC16(0.0), &SYSTEM.RAMPS.Ramp16_AlignCurrent);
 				// Set Id, Iq to 0
 				SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.0);
 				SYSTEM.REGULATORS.m2IDQReq.f16Q = FRAC16(0.0);
@@ -1604,6 +1605,7 @@ Int16 SystemStateTransition()
 			// Use align current
 			SYSTEM.RAMPS.f16AlignCurrentDesiredValue = SYSTEM.SENSORLESS.f16AlignCurrent;
 			SYSTEM.RAMPS.f16AlignCurrentActualValue = FRAC16(0.0);
+			GFLIB_RampInit_F16(FRAC16(0.0), &SYSTEM.RAMPS.Ramp16_AlignCurrent);
 			// Mark run manually
 			SYSTEM_RUN_MANUAL = 1;
 			// Mark system not calibrated
@@ -1642,6 +1644,7 @@ Int16 SystemStateTransition()
 			// Set D, Q currents to 0
 			SYSTEM.RAMPS.f16AlignCurrentActualValue = FRAC16(0.0);
 			SYSTEM.RAMPS.f16AlignCurrentDesiredValue = FRAC16(0.01);
+			GFLIB_RampInit_F16(FRAC16(0.0), &SYSTEM.RAMPS.Ramp16_AlignCurrent);
 			// Set Id, Iq to 0
 			SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.01);
 			SYSTEM.REGULATORS.m2IDQReq.f16Q = FRAC16(0.0);

@@ -208,7 +208,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactExtension="elf" artifactName="56F84763_Build" buildProperties="" cleanCommand="&quot;${system:ECLIPSE_HOME}/../gnu/bin/rm&quot; -f" description="" errorParsers="org.eclipse.cdt.core.GLDErrorParser;org.eclipse.cdt.core.GASErrorParser;com.freescale.core.ide.cdt.errorParsers.LnkErrorParser;com.freescale.core.ide.cdt.errorParsers.AsmErrorParser;com.freescale.core.ide.cdt.errorParsers.CobjErrorParser;com.freescale.core.ide.cdt.errorParsers.IcodeErrorParser;com.freescale.core.ide.cdt.errorParsers.LltErrorParser;com.freescale.core.ide.cdt.errorParsers.MwfeErrorParser;com.freescale.core.ide.cdt.errorParsers.MwErrorParser;com.freescale.core.ide.cdt.errorParsers.MPWErrorParser;org.eclipse.cdt.core.GmakeErrorParser;" id="com.freescale.dsc.cdt.toolchain.config.debug.998836409" isPrebuildInvalidatingBuild="false" name="FLASH_LDM" parent="com.freescale.dsc.cdt.toolchain.config.debug">
+				<configuration artifactExtension="elf" artifactName="56F84763_Build" buildProperties="" buildReferences="true" buildReferencingConfigurations="false" cleanCommand="&quot;${system:ECLIPSE_HOME}/../gnu/bin/rm&quot; -f" description="" errorParsers="org.eclipse.cdt.core.GLDErrorParser;org.eclipse.cdt.core.GASErrorParser;com.freescale.core.ide.cdt.errorParsers.LnkErrorParser;com.freescale.core.ide.cdt.errorParsers.AsmErrorParser;com.freescale.core.ide.cdt.errorParsers.CobjErrorParser;com.freescale.core.ide.cdt.errorParsers.IcodeErrorParser;com.freescale.core.ide.cdt.errorParsers.LltErrorParser;com.freescale.core.ide.cdt.errorParsers.MwfeErrorParser;com.freescale.core.ide.cdt.errorParsers.MwErrorParser;com.freescale.core.ide.cdt.errorParsers.MPWErrorParser;org.eclipse.cdt.core.GmakeErrorParser;" id="com.freescale.dsc.cdt.toolchain.config.debug.998836409" isPrebuildInvalidatingBuild="false" name="FLASH_LDM" parent="com.freescale.dsc.cdt.toolchain.config.debug" produceBuildErrorsWithMissingReferences="true">
 					<folderInfo id="com.freescale.dsc.cdt.toolchain.config.debug.998836409." name="/" resourcePath="">
 						<toolChain errorParsers="" id="com.freescale.dsc.cdt.toolchain.debug.1796632619" name="DSC Toolchain" superClass="com.freescale.dsc.cdt.toolchain.debug">
 							<targetPlatform id="com.freescale.dsc.cdt.toolchain.targetPlatform.697402866" isAbstract="false" name="DSC Target Platform" superClass="com.freescale.dsc.cdt.toolchain.targetPlatform"/>
@@ -224,11 +224,6 @@
 								<option id="com.freescale.dsc.cdt.toolchain.linker.input.libs.357822890" name="Additional Libraries" superClass="com.freescale.dsc.cdt.toolchain.linker.input.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="&quot;${MCUToolsBaseDir}/M56800E Support/runtime_56800E/lib/Runtime 56800E lmm.lib&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${MCUToolsBaseDir}/M56800E Support/msl/MSL_C/DSP_56800E/lib/MSL C 56800E LMM.lib&quot;"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_GDFLIB/56800Ex_GDFLIB.lib}&quot;"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_ACLIB/56800Ex_ACLIB.lib}&quot;"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_GFLIB/56800Ex_GFLIB.lib}&quot;"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_MCLIB/56800Ex_MCLIB.lib}&quot;"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_MLIB/56800Ex_MLIB.lib}&quot;"/>
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL_LDM/AMCLIB/AMCLIB_LDM.lib}&quot;"/>
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL_LDM/GDFLIB/GDFLIB_LDM.lib}&quot;"/>
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL_LDM/GFLIB/GFLIB_LDM.lib}&quot;"/>
@@ -255,11 +250,6 @@
 									<listOptionValue builtIn="false" value="&quot;${DSP56800E_QS_SRC_260}/MC56F84763/system&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${DSP56800E_QS_SRC_260}/MC56F84763/peripheral&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${DSP56800E_QS_SRC_260}/support/freemaster&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_ACLIB/Include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_GFLIB/Include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_GDFLIB/Include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_MCLIB/Include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_MLIB/Include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/includes}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/EepromDrv}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL_LDM/AMCLIB/Include}&quot;"/>
@@ -288,11 +278,6 @@
 									<listOptionValue builtIn="false" value="&quot;${DSP56800E_QS_SRC_260}/MC56F84763/system&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${DSP56800E_QS_SRC_260}/MC56F84763/peripheral&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${DSP56800E_QS_SRC_260}/support/freemaster&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_ACLIB/Include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_GFLIB/Include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_GDFLIB/Include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_MCLIB/Include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL/56800Ex_MLIB/Include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/includes}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/EepromDrv}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ebaesc_sw/FSLESL_LDM/AMCLIB/Include}&quot;"/>

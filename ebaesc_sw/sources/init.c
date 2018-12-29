@@ -126,12 +126,14 @@ void InitSysVars(Int16 initial)
 	}	
 	AMCLIB_PMSMBemfObsrvDQInit_F16(&SYSTEM.POSITION.acBemfObsrvDQ);
 	
+	/*
 	SYSTEM.POSITION.acBemfObsrvDQ.udtIObsrv.f32D = FRAC32(0.0);
 	SYSTEM.POSITION.acBemfObsrvDQ.udtIObsrv.f32Q = FRAC32(0.0);
 	SYSTEM.POSITION.acBemfObsrvDQ.udtEObsrv.f32D = FRAC32(0.0);
 	SYSTEM.POSITION.acBemfObsrvDQ.udtEObsrv.f32Q = FRAC32(0.0);
 	SYSTEM.POSITION.acBemfObsrvDQ.udtCtrl.f32ID_1= FRAC32(0.0);
 	SYSTEM.POSITION.acBemfObsrvDQ.udtCtrl.f32IQ_1= FRAC32(0.0);
+	*/
 	
 	// Tracking observer
 	if(0 != initial)
@@ -144,6 +146,8 @@ void InitSysVars(Int16 initial)
 		SYSTEM.POSITION.acToPos.i16ThGainSh = TO_THETA_SHIFT;	
 	}
 	
+	AMCLIB_TrackObsrvInit_F16(FRAC16(0.0), &SYSTEM.POSITION.acToPos);
+	
 	// Other init - once
 	if(0 != initial)
 	{
@@ -152,8 +156,8 @@ void InitSysVars(Int16 initial)
 		// Phase delay from speed
 		SYSTEM.POSITION.i16SensorIndexPhaseDelay = 0;	
 		// Speed MA filter
-		SYSTEM.POSITION.FilterMA32Speed.w16N = 2;
-		GDFLIB_FilterMA32Init(&SYSTEM.POSITION.FilterMA32Speed);	
+		SYSTEM.POSITION.FilterMA32Speed.u16Sh = 2;
+		GDFLIB_FilterMAInit_F16(FRAC16(0.0), &SYSTEM.POSITION.FilterMA32Speed);
 		SYSTEM.POSITION.f16ManualAngleIncrease = MANUAL_ANGLE_INCREASE;			
 		SYSTEM.POSITION.f16AddedAngleOffset = FRAC16(0.0);		
 		SYSTEM.POSITION.fOffsetCalcFactor = AOFFSET_FACTOR;
@@ -214,6 +218,9 @@ void InitSysVars(Int16 initial)
 		
 		
 	}
+	GFLIB_RampInit_F16(FRAC16(0.0), &SYSTEM.RAMPS.Ramp16_AlignCurrent);
+	GFLIB_RampInit_F16(FRAC16(0.0), &SYSTEM.RAMPS.Ramp16_Speed);
+	GFLIB_RampInit_F16(FRAC16(0.0), &SYSTEM.RAMPS.Ramp16_Torque);
 	
 	// Startup current ramp
 	SYSTEM.RAMPS.f16AlignCurrentActualValue = FRAC16(0.0);
@@ -233,18 +240,18 @@ void InitSysVars(Int16 initial)
 	if(0 != initial)
 	{
 		// Angle filter
-		SYSTEM.ADC.FilterMA32SensorA.w16N = 2;
-		GDFLIB_FilterMA32Init(&SYSTEM.ADC.FilterMA32SensorA);
-		SYSTEM.ADC.FilterMA32SensorB.w16N = 2;
-		GDFLIB_FilterMA32Init(&SYSTEM.ADC.FilterMA32SensorB);	
+		SYSTEM.ADC.FilterMA32SensorA.u16Sh = 2;
+		GDFLIB_FilterMAInit_F16(FRAC16(0.0), &SYSTEM.ADC.FilterMA32SensorA);
+		SYSTEM.ADC.FilterMA32SensorB.u16Sh = 2;
+		GDFLIB_FilterMAInit_F16(FRAC16(0.0), &SYSTEM.ADC.FilterMA32SensorB);
 		
 		// DC link MA filter
-		SYSTEM.ADC.FilterMA32DCLink.w16N = 6;
-		GDFLIB_FilterMA32Init(&SYSTEM.ADC.FilterMA32DCLink);
-		
+		SYSTEM.ADC.FilterMA32DCLink.u16Sh = 6;
+		GDFLIB_FilterMAInit_F16(FRAC16(0.0), &SYSTEM.ADC.FilterMA32DCLink);
+
 		// Temperature MA filter
-		SYSTEM.ADC.FilterMA32Temperature.w16N = 6;
-		GDFLIB_FilterMA32Init(&SYSTEM.ADC.FilterMA32Temperature);	
+		SYSTEM.ADC.FilterMA32Temperature.u16Sh = 6;
+		GDFLIB_FilterMAInit_F16(FRAC16(0.0), &SYSTEM.ADC.FilterMA32Temperature);
 		
 		SYSTEM.ADC.f16OffsetU = FRAC16(0.0);
 		SYSTEM.ADC.f16OffsetW = FRAC16(0.0);
@@ -587,6 +594,7 @@ Int16 StoreEEPROM()
 {
 	// Index
 	UWord32 uw32Index = 0;
+	/*
 	// Store - EEPROM written
 	uw32Index = EEPROMStorei16(uw32Index, 1);
 	//******************************************
@@ -741,6 +749,7 @@ Int16 StoreEEPROM()
 	uw32Index = EEPROMStorei16(uw32Index, COMMDataStruct.REGS.i16CurrentPWM); //100
 	uw32Index = EEPROMStorei16(uw32Index, COMMDataStruct.REGS.i16ParkPosition); //101
 	uw32Index = EEPROMStorei16(uw32Index, COMMDataStruct.REGS.i16ZeroSpeedPWM); //102
+	*/
 	return (Int16)uw32Index;
 }
 
@@ -748,6 +757,7 @@ Int16 LoadEEPROM()
 {
 	// Index
 	UWord32 uw32Index = 1;
+	/*
 	//******************************************
 	// Calibration
 	//******************************************
@@ -908,7 +918,7 @@ Int16 LoadEEPROM()
 		// Mark calibrated
 		SYSTEM_CALIBRATED = 1;	
 	}	
-
+*/
 	return (Int16)uw32Index;
 }
 
@@ -926,6 +936,7 @@ Int16 CheckEEPROM()
 	
 	// Index
 	UWord32 uw32Index = 1;	//******************************************
+	/*
 	// Calibration
 	//******************************************
 	uw32Index = EEPROMReadi16(uw32Index, &i16Temp);
@@ -1587,5 +1598,6 @@ Int16 CheckEEPROM()
 		NOK++; 
 		uw32ErrorIndex = uw32Index - 1; 
 	} //102
+	*/
 	return NOK;
 }

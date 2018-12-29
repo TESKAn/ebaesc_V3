@@ -193,10 +193,10 @@ typedef struct tagSYSVARS
 		// Observer parameters
 		float fKpBemfDQ;
 		float fKiBemfDQ;
-		Frac16 f16Ufrac;
-		Frac16 f16Efrac;
-		Frac16 f16WIfrac;
-		Frac16 f16Ifrac;
+		acc32_t a32Ufrac;
+		acc32_t a32Efrac;
+		acc32_t a32WIfrac;
+		acc32_t a32Ifrac;
 		
 	}POSITION;
 	
