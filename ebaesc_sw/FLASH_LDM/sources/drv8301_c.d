@@ -165,13 +165,13 @@ sources/drv8301_c.obj: C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\sources\drv8301.c 
 	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\FSLESL_LDM\GDFLIB\Include\GDFLIB_FilterIIR3_F32_Asm.h \
 	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\FSLESL_LDM\GDFLIB\Include\GDFLIB_FilterIIR4_F32_Asm.h \
 	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\FSLESL_LDM\GDFLIB\Include\GDFLIB_FilterMA_A32_Asm.h \
-	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\FSLESL_1\PCLIB\Include\pclib.h \
-	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\FSLESL_1\PCLIB\Include\PCLIB_CtrlPI_F16_Asm.h \
-	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\FSLESL_1\PCLIB\Include\pclib_types.h \
-	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\FSLESL_1\PCLIB\Include\PCLIB_CtrlPIandLPFilter_F16_Asm.h \
-	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\FSLESL_1\PCLIB\Include\PCLIB_CtrlPID_F16_Asm.h \
-	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\FSLESL_1\PCLIB\Include\PCLIB_Ctrl2P2Z_F16_Asm.h \
-	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\FSLESL_1\PCLIB\Include\PCLIB_Ctrl3P3Z_F16_Asm.h \
+	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\FSLESL_LDM\PCLIB\Include\pclib.h \
+	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\FSLESL_LDM\PCLIB\Include\PCLIB_CtrlPI_F16_Asm.h \
+	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\FSLESL_LDM\PCLIB\Include\pclib_types.h \
+	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\FSLESL_LDM\PCLIB\Include\PCLIB_CtrlPIandLPFilter_F16_Asm.h \
+	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\FSLESL_LDM\PCLIB\Include\PCLIB_CtrlPID_F16_Asm.h \
+	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\FSLESL_LDM\PCLIB\Include\PCLIB_Ctrl2P2Z_F16_Asm.h \
+	C:\Projekti\Git\ebaesc_v3_sw\ebaesc_sw\FSLESL_LDM\PCLIB\Include\PCLIB_Ctrl3P3Z_F16_Asm.h \
 	C:\Freescale\CW\ MCU\ v10.6\MCU\M56800E\ Support\msl\MSL_C\MSL_Common\Include\math.h \
 	C:\Freescale\CW\ MCU\ v10.6\MCU\M56800E\ Support\msl\MSL_C\MSL_Common\Include\ansi_parms.h \
 	C:\Freescale\CW\ MCU\ v10.6\MCU\M56800E\ Support\msl\MSL_C\MSL_Common\Include\msl_c_version.h \

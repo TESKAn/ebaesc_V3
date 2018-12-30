@@ -84,6 +84,9 @@ void main (void)
     // Initialise SCI0 ring buffer
     RB_Init(&SCI0RXBuff, SCI0RXBuffer, 256);
     
+	// Initialise system variables to default values
+	InitSysVars(1);    
+    
     
     // Check EEPROM
     UW32FlashResult = GetEepromInfo();
@@ -126,8 +129,7 @@ void main (void)
     delay(30000);
     
     
-	// Initialise system variables to default values
-	InitSysVars(1);      
+  
 	
     // Check EEPROM sys vars
     EEPROMReadi16(0, &SYSTEM.i16EEPROMStoreDone);
@@ -170,6 +172,9 @@ void main (void)
 	
 	ioctl(ADC16, ADC16_WRITE_SC1_REG, 1);
 	*/
+    
+    // Calculate values
+    
     
     SYSTEM_CALIBRATED = 0;
     

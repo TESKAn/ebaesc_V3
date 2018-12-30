@@ -12,6 +12,7 @@
  */
 void InitSysVars(Int16 initial)
 {	
+	float fTemp = 0.0f;
 	//******************************************
 	// Motor ID
 	//******************************************	
@@ -49,8 +50,18 @@ void InitSysVars(Int16 initial)
 		SYSTEM.REGULATORS.mudtControllerParamId.i16PropGainShift = D_KP_SHIFT;
 		SYSTEM.REGULATORS.mudtControllerParamId.i16IntegGainShift = D_KI_SHIFT;
 		*/
-		SYSTEM.REGULATORS.mudtControllerParamId.a32PGain = 0;
-		SYSTEM.REGULATORS.mudtControllerParamId.a32IGain = 0;		
+		
+		pConv.shift = D_KP_SHIFT;
+		pConv.gain = D_KP_GAIN;
+		CalculateFloat();
+		SYSTEM.REGULATORS.mudtControllerParamId.a32PGain = CalculateAcc32Value(pConv.value);
+	
+		pConv.shift = D_KI_SHIFT;
+		pConv.gain = D_KI_GAIN;
+		CalculateFloat();
+		SYSTEM.REGULATORS.mudtControllerParamId.a32IGain = CalculateAcc32Value(pConv.value);
+		//SYSTEM.REGULATORS.mudtControllerParamId.a32PGain = 0;
+		//SYSTEM.REGULATORS.mudtControllerParamId.a32IGain = 0;		
 		SYSTEM.REGULATORS.mudtControllerParamId.f16UpperLim = FRAC16(0.95);
 		SYSTEM.REGULATORS.mudtControllerParamId.f16LowerLim = FRAC16(-0.95);
 		
@@ -61,8 +72,14 @@ void InitSysVars(Int16 initial)
 		SYSTEM.REGULATORS.mudtControllerParamIq.i16PropGainShift = Q_KP_SHIFT;
 		SYSTEM.REGULATORS.mudtControllerParamIq.i16IntegGainShift = Q_KI_SHIFT;
 		*/
-		SYSTEM.REGULATORS.mudtControllerParamIq.a32PGain = 0;
-		SYSTEM.REGULATORS.mudtControllerParamIq.a32IGain = 0;
+		pConv.shift = Q_KP_SHIFT;
+		pConv.gain = Q_KP_GAIN;
+		CalculateFloat();
+		SYSTEM.REGULATORS.mudtControllerParamIq.a32PGain = CalculateAcc32Value(pConv.value);
+		pConv.shift = Q_KI_SHIFT;
+		pConv.gain = Q_KI_GAIN;
+		CalculateFloat();
+		SYSTEM.REGULATORS.mudtControllerParamIq.a32IGain = CalculateAcc32Value(pConv.value);
 		SYSTEM.REGULATORS.mudtControllerParamIq.f16UpperLim = FRAC16(0.95);
 		SYSTEM.REGULATORS.mudtControllerParamIq.f16LowerLim = FRAC16(-0.95);
 		
@@ -73,8 +90,14 @@ void InitSysVars(Int16 initial)
 		SYSTEM.REGULATORS.mudtControllerParamW.i16PropGainShift = SPEED_PI_PROP_SHIFT;
 		SYSTEM.REGULATORS.mudtControllerParamW.i16IntegGainShift = SPEED_PI_INTEG_SHIFT;
 		*/
-		SYSTEM.REGULATORS.mudtControllerParamW.a32PGain = 0;
-		SYSTEM.REGULATORS.mudtControllerParamW.a32IGain = 0;
+		pConv.shift = SPEED_PI_PROP_SHIFT;
+		pConv.gain = SPEED_PI_PROP_GAIN;
+		CalculateFloat();
+		SYSTEM.REGULATORS.mudtControllerParamW.a32PGain = CalculateAcc32Value(pConv.value);
+		pConv.shift = SPEED_PI_INTEG_SHIFT;
+		pConv.gain = SPEED_PI_INTEG_GAIN;
+		CalculateFloat();
+		SYSTEM.REGULATORS.mudtControllerParamW.a32IGain = CalculateAcc32Value(pConv.value);
 		SYSTEM.REGULATORS.mudtControllerParamW.f16UpperLim = SPEED_LOOP_HIGH_LIMIT;
 		SYSTEM.REGULATORS.mudtControllerParamW.f16LowerLim = SPEED_LOOP_LOW_LIMIT;	
 		
@@ -105,8 +128,14 @@ void InitSysVars(Int16 initial)
 	
 	if(0 != initial)
 	{
-		SYSTEM.POSITION.acBemfObsrvDQ.sCtrl.a32PGain= ACC32(1.697);
-		SYSTEM.POSITION.acBemfObsrvDQ.sCtrl.a32IGain= ACC32(0.134);
+		pConv.shift = BEMF_DQ_KP_SHIFT;
+		pConv.gain = BEMF_DQ_KP_GAIN;
+		CalculateFloat();
+		SYSTEM.POSITION.acBemfObsrvDQ.sCtrl.a32PGain = CalculateAcc32Value(pConv.value);
+		pConv.shift = BEMF_DQ_KI_SHIFT;
+		pConv.gain = BEMF_DQ_KI_GAIN;
+		CalculateFloat();
+		SYSTEM.POSITION.acBemfObsrvDQ.sCtrl.a32IGain = CalculateAcc32Value(pConv.value);
 		SYSTEM.POSITION.acBemfObsrvDQ.a32IGain = I_SCALE;
 		SYSTEM.POSITION.acBemfObsrvDQ.a32UGain = U_SCALE;
 		SYSTEM.POSITION.acBemfObsrvDQ.a32WIGain= WI_SCALE;

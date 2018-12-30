@@ -29,7 +29,7 @@
 -i
 "$(ProjDirPath)/FSLESL_LDM/MLIB/Include"
 -i
-"$(ProjDirPath)/FSLESL_LDM/PCLIB"
+"$(ProjDirPath)/FSLESL_LDM/PCLIB/Include"
 -ir
 "$(ProjDirPath)"
 -I-

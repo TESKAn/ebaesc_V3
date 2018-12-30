@@ -771,8 +771,8 @@ void ADC_1_EOS_ISR(void)
 		mf16ErrorK = SYSTEM.REGULATORS.m2IDQReq.f16Q - SYSTEM.MCTRL.m2IDQ.f16Q;
 
 		// Set Iq controller limits
-		SYSTEM.REGULATORS.mudtControllerParamIq.f16UpperLim = SYSTEM.REGULATORS.f16UqRemaining;
-		SYSTEM.REGULATORS.mudtControllerParamIq.f16LowerLim = -SYSTEM.REGULATORS.f16UqRemaining;
+		SYSTEM.REGULATORS.mudtControllerParamIq.f16UpperLim = FRAC16(0.9);//SYSTEM.REGULATORS.f16UqRemaining;
+		SYSTEM.REGULATORS.mudtControllerParamIq.f16LowerLim = FRAC16(-0.9);//-SYSTEM.REGULATORS.f16UqRemaining;
 		
 		// Controller calculation
 		SYSTEM.MCTRL.m2UDQ.f16Q = GFLIB_CtrlPIpAW_F16(mf16ErrorK, &SYSTEM.REGULATORS.mudtControllerParamId.bLimFlag, &SYSTEM.REGULATORS.mudtControllerParamIq);
@@ -782,7 +782,7 @@ void ADC_1_EOS_ISR(void)
 		//******************************************
 		// We have Ud, Uq
 		// Do inverse park
-		//GMCLIB_ParkInv_F16(&SYSTEM.MCTRL.m2UDQ, &SYSTEM.POSITION.mSinCosAngle, &SYSTEM.MCTRL.m2UAlphaBeta);
+		GMCLIB_ParkInv_F16(&SYSTEM.MCTRL.m2UDQ, &SYSTEM.POSITION.mSinCosAngle, &SYSTEM.MCTRL.m2UAlphaBeta);
 		// Eliminate DC bus ripple
 		//MCLIB_ElimDcBusRip(systemVariables.MOTOR.f16InvModeIndex, systemVariables.MOTOR.f16DCBusVoltage, &systemVariables.MOTOR.m2UAlphaBeta, &systemVariables.MOTOR.m2UAlphaBetaRippleElim);
 		// Do SVM
