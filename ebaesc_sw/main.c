@@ -78,6 +78,7 @@ void main (void)
     //ioctl(HSCMP_A, HSCMP_INIT, NULL);
     ioctl(FCAN, FCAN_INIT, NULL);
     ioctl(ADC16, ADC16_INIT, NULL);
+    ioctl(CRC, CRC_INIT, NULL);
     
     FMSTR_Init();    
     
@@ -86,7 +87,10 @@ void main (void)
     
 	// Initialise system variables to default values
 	InitSysVars(1);    
-    
+	
+	uw32Test = CalculateDataCRC();
+	// Compare
+	ioctl(CRC, CRC_WRITE_32BIT_CRC_VALUE, uw32Test);
     
     // Check EEPROM
     UW32FlashResult = GetEepromInfo();
@@ -291,6 +295,38 @@ void main (void)
 				{
 					// Initialise system variables to default values
 					InitSysVars(1);
+					i8EEPROMOp = 0;
+					break;
+				}
+				case 5:
+				{
+					checkEEPROMCRC();
+					i8EEPROMOp = 0;
+					break;
+				}
+				case 6:
+				{
+					// Write seed
+					ioctl(CRC, CRC_SET_WRITE_AS_SEED, CRC_ENABLE);
+					
+					ioctl(CRC, CRC_WRITE_32BIT_CRC_VALUE, 0xffffffff);
+					
+					ioctl(CRC, CRC_SET_WRITE_AS_SEED, CRC_DISABLE);
+					
+					ioctl(CRC, CRC_WRITE_32BIT_CRC_VALUE, 0x5555);
+					
+					ioctl(CRC, CRC_WRITE_32BIT_CRC_VALUE, 0xaaaa);
+					
+					ioctl(CRC, CRC_WRITE_32BIT_CRC_VALUE, 0x0fd1);
+					
+					ioctl(CRC, CRC_WRITE_32BIT_CRC_VALUE, 0x7af7d025);
+					
+					
+					
+					uw32Test = CalculateDataCRC();
+					// Compare
+					ioctl(CRC, CRC_WRITE_32BIT_CRC_VALUE, uw32Test);
+					
 					i8EEPROMOp = 0;
 					break;
 				}

@@ -63,11 +63,15 @@
 #define D_KP_SHIFT                      (1)
 #define D_KI_GAIN                       FRAC16(0.999969482421875)
 #define D_KI_SHIFT                      (-2)
+#define D_KP_ACC32						ACC32(1.25)
+#define D_KI_ACC32						ACC32(0.25)
 //Q-axis Controller - Parallel type     
 #define Q_KP_GAIN                       FRAC16(0.625)
 #define Q_KP_SHIFT                      (1)
 #define Q_KI_GAIN                       FRAC16(0.999969482421875)
 #define Q_KI_SHIFT                      (-2)
+#define Q_KP_ACC32						ACC32(1.25)
+#define Q_KI_ACC32						ACC32(0.25)
 
 //Speed Loop Control                    
 //----------------------------------------------------------------------
@@ -78,8 +82,10 @@
 //Speed Controller - Parallel type      
 #define SPEED_PI_PROP_GAIN              FRAC16(0.625)
 #define SPEED_PI_PROP_SHIFT             (3)
+#define SPEED_PI_PROP_ACC32				ACC32(5.0)
 #define SPEED_PI_INTEG_GAIN             FRAC16(0.639984)
 #define SPEED_PI_INTEG_SHIFT            (-6)
+#define SPEED_PI_INTEG_ACC32			ACC32(0.01)
 #define SPEED_LOOP_HIGH_LIMIT           FRAC16(0.09)
 #define SPEED_LOOP_LOW_LIMIT            FRAC16(-0.09)
 
@@ -129,18 +135,6 @@
 #define BEMF_DQ_KI_SHIFT (-3) 
 */
 
-// EMAX
-/*
-#define I_SCALE FRAC16(0.554913294798)  
-#define U_SCALE FRAC16(0.735680504467)  
-#define E_SCALE FRAC16(0.735680504467)  
-#define WI_SCALE FRAC16(0.07263798043) 
-
-#define BEMF_DQ_KP_GAIN FRAC16(0.516137807798)  
-#define BEMF_DQ_KP_SHIFT (0)  
-#define BEMF_DQ_KI_GAIN FRAC16(0.670005144485)  
-#define BEMF_DQ_KI_SHIFT (-8) 
-*/
 
 // EMAX 32
 #define I_SCALE ACC32(0.554913294798)  
@@ -152,6 +146,9 @@
 #define BEMF_DQ_KP_SHIFT (0)  
 #define BEMF_DQ_KI_GAIN FRAC16(0.670005144485)  
 #define BEMF_DQ_KI_SHIFT (-8) 
+
+#define BEMF_DQ_KP						ACC32(0.515)
+#define BEMF_DQ_KI						ACC32(0.0026)
 
 
 

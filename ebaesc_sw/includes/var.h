@@ -27,11 +27,16 @@ typedef union tag32BitVars
 		{
 			Int16 i16[2];
 		}words;
+		struct
+		{
+			Frac16 f16[2];
+		}frac16;
 		UWord32 uw32;
 		UInt32 ui32;
 		Int32 i32;
 		Frac32 f32;
 		Word32 w32;
+		acc32_t a32;
 		float f;
 	};
 }t32BitVars;
