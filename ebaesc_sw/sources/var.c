@@ -13,6 +13,7 @@ Int16 i16EEPROMReadErrors = 0;
 UWord32 uw32EEPROMAddress = 0;
 UWord32 uw32ErrorIndex = 0;
 UWord16 uw16EEPROMData = 0;
+Int16 i16EEPROMCRCOK = 0;
 // End eeprom test
 
 // CAN test

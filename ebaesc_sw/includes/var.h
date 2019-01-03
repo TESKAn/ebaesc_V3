@@ -21,6 +21,10 @@ typedef union tag32BitVars
 		}bytes;
 		struct
 		{
+			Int8 i8[4];
+		}ints;
+		struct
+		{
 			UWord16 uw16[2];
 		}uwords;
 		struct
@@ -548,6 +552,7 @@ extern Int16 i16EEPROMReadErrors;
 extern UWord32 uw32EEPROMAddress;
 extern UWord32 uw32ErrorIndex;
 extern UWord16 uw16EEPROMData;
+extern Int16 i16EEPROMCRCOK;
 // End eeprom test
 
 // CAN test

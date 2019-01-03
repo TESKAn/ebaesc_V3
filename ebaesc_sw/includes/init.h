@@ -27,10 +27,10 @@ UWord32 EEPROMReadui16(UWord32 uw32CurrIndex, UInt16 *ui16Data);
 UWord32 EEPROMReadw16(UWord32 uw32CurrIndex, Word16 *w16Data);
 UWord32 EEPROMReadf(UWord32 uw32CurrIndex, float *fData);
 UWord32 EEPROMReadACC32(UWord32 uw32CurrIndex, acc32_t *a32Data);
+UWord32 EEPROMReadUW32(UWord32 uw32CurrIndex, UWord32 *uw32Data);
 Int16 checkEEPROMCRC();
 Int16 LoadEEPROM();
 Int16 StoreEEPROM();
 Int16 CheckEEPROM();
-UWord32 CalculateDataCRC();
 
 #endif /* INIT_H_ */

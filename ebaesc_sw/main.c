@@ -88,10 +88,6 @@ void main (void)
 	// Initialise system variables to default values
 	InitSysVars(1);    
 	
-	uw32Test = CalculateDataCRC();
-	// Compare
-	ioctl(CRC, CRC_WRITE_32BIT_CRC_VALUE, uw32Test);
-    
     // Check EEPROM
     UW32FlashResult = GetEepromInfo();
     UW32FlashResult = UW32FlashResult & 0x0000ffff;
@@ -132,17 +128,17 @@ void main (void)
     EN_GATE_ON;
     delay(30000);
     
-    
-  
-	
     // Check EEPROM sys vars
     EEPROMReadi16(0, &SYSTEM.i16EEPROMStoreDone);
     if(1 == SYSTEM.i16EEPROMStoreDone)
-    {    	
-    	// Load from EEPROM
-    	//LoadEEPROM();
+    {	
+    	// Check - is CRC OK?
+    	if(0 == checkEEPROMCRC())
+    	{
+    		// Load from EEPROM
+    		LoadEEPROM();
+    	}
     }
-
     // Calculate float values from parameters 
     calculateFloats();
     
@@ -306,27 +302,7 @@ void main (void)
 				}
 				case 6:
 				{
-					// Write seed
-					ioctl(CRC, CRC_SET_WRITE_AS_SEED, CRC_ENABLE);
-					
-					ioctl(CRC, CRC_WRITE_32BIT_CRC_VALUE, 0xffffffff);
-					
-					ioctl(CRC, CRC_SET_WRITE_AS_SEED, CRC_DISABLE);
-					
-					ioctl(CRC, CRC_WRITE_32BIT_CRC_VALUE, 0x5555);
-					
-					ioctl(CRC, CRC_WRITE_32BIT_CRC_VALUE, 0xaaaa);
-					
-					ioctl(CRC, CRC_WRITE_32BIT_CRC_VALUE, 0x0fd1);
-					
-					ioctl(CRC, CRC_WRITE_32BIT_CRC_VALUE, 0x7af7d025);
-					
-					
-					
-					uw32Test = CalculateDataCRC();
-					// Compare
-					ioctl(CRC, CRC_WRITE_32BIT_CRC_VALUE, uw32Test);
-					
+					i16EEPROMCRCOK = checkEEPROMCRC();					
 					i8EEPROMOp = 0;
 					break;
 				}
