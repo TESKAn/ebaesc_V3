@@ -359,17 +359,6 @@ Int16 SystemInitState()
 							SYSTEM.PWMIN.fPWMOffset = (float)(SYSTEM.PWMIN.i16PWMoffThrottle);
 							SYSTEM.PWMIN.fPWMOffset = SYSTEM.PWMIN.fPWMOffset * SYSTEM.PWMIN.fPWMFactor;
 							SYSTEM.PWMIN.fPWMOffset = SYSTEM.PWMIN.fPWMOffset - (float)(COMMDataStruct.REGS.i16MinRPM);
-							
-							// Set startup speed
-							fTemp = (float)COMMDataStruct.REGS.i16MinRPM * 0.06826666666666666666666666666667f;
-							fTemp = fTemp * (float)SYSTEM.CALIBRATION.i16MotorPolePairs;
-							SYSTEM.SENSORLESS.f16StartSpeed = (Frac16)fTemp;
-							
-							// Check BEMF ON speed
-							if(SYSTEM.SENSORLESS.f16MinSpeed > SYSTEM.SENSORLESS.f16StartSpeed)
-							{
-								SYSTEM.SENSORLESS.f16MinSpeed = SYSTEM.SENSORLESS.f16StartSpeed / 2;
-							}
 
 							// Set right data
 							COMMDataStruct.REGS.i16PWMMin = SYSTEM.PWMIN.i16PWMinThrottle;
@@ -1410,6 +1399,7 @@ Int16 SystemMeasureLPHAState()
 
 Int16 SystemStateTransition()
 {
+	float fTemp = 0.0f;
 	// Check state transition	
 	switch(SYSTEM.i16StateTransition)
 	{
@@ -1450,6 +1440,14 @@ Int16 SystemStateTransition()
 		
 		case SYSTEM_RUN:
 		{	
+			// Set startup speed
+			fTemp = (float)COMMDataStruct.REGS.i16MinRPM * 0.06826666666666666666666666666667f;
+			fTemp = fTemp * (float)SYSTEM.CALIBRATION.i16MotorPolePairs;
+			SYSTEM.SENSORLESS.f16StartSpeed = (Frac16)fTemp;
+			
+			// Set BEMF ON speed
+			SYSTEM.SENSORLESS.f16MinSpeed = SYSTEM.SENSORLESS.f16StartSpeed / 2;
+
 			// Set PWM values
 			SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = FRAC16(0.5);
 			SYSTEM.PWMValues.pwmSub_1_Channel_23_Value = FRAC16(0.5);

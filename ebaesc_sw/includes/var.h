@@ -270,6 +270,8 @@ typedef struct tagSYSVARS
 		GMCLIB_3COOR_T_F16 m3IphUVW;	
 		// Raw phase currents
 		GMCLIB_3COOR_T_F16 m3IphUVWRaw;
+		UInt16 ui16SARValue;
+		Frac16 f16SAR;
 		// Offsets
 		Frac16 f16OffsetU;
 		Frac16 f16OffsetV;

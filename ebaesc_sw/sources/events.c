@@ -41,6 +41,14 @@ void ADC_1_EOS_ISR(void)
 	SYSTEM.ADC.m3IphUVWRaw.f16A = ioctl(ADC_1, ADC_READ_SAMPLE, 0);
 	SYSTEM.ADC.m3IphUVWRaw.f16B = ioctl(ADC_1, ADC_READ_SAMPLE, 8);
 	SYSTEM.ADC.m3IphUVWRaw.f16C = ioctl(ADC_1, ADC_READ_SAMPLE, 9);
+	
+	// Check SAR
+	/*
+	SYSTEM.ADC.ui16SARValue = ioctl(ADC16, ADC16_READ_RESULT, NULL);
+	SYSTEM.ADC.f16SAR = (Frac16)(SYSTEM.ADC.ui16SARValue << 3);
+	SYSTEM.ADC.f16SAR = SYSTEM.ADC.f16SAR - FRAC16(0.5);
+	*/
+	
 	// Zero currents?
 	if(SYS_ZERO_CURRENT)
 	{
