@@ -33,6 +33,12 @@ void ADC_1_EOS_ISR(void)
 		i16CurrentCalArrayIndex++;
 		f16CurrentCalArrayData = SYSTEM.CALIBRATION.f16CalibrationArray[i16CurrentCalArrayIndex];					
 	}	
+	/*
+	if(128 > i16CurrentSARArrayIndex)
+	{
+		uw16CurrentSARArrayData = uw16SARResult[i16CurrentSARArrayIndex];
+		i16CurrentSARArrayIndex++;
+	}*/
 	
 	//******************************************
 	// Read data
@@ -113,7 +119,6 @@ void ADC_1_EOS_ISR(void)
 	SYSTEM.ADC.f16DCLinkVoltage = ioctl(ADC_1, ADC_READ_SAMPLE, 2);
 	// Filter	
 	SYSTEM.ADC.f16DCLinkVoltageFiltered = GDFLIB_FilterMA_F16(SYSTEM.ADC.f16DCLinkVoltage, &SYSTEM.ADC.FilterMA32DCLink);
-	//SYSTEM.ADC.f16DCLinkVoltageFiltered = GDFLIB_FilterMA32(SYSTEM.ADC.f16DCLinkVoltage, &SYSTEM.ADC.FilterMA32DCLink);
 	
 	// Measure temperature
 	SYSTEM.ADC.f16Temperature = ioctl(ADC_1, ADC_READ_SAMPLE, 10);
@@ -272,15 +277,6 @@ void ADC_1_EOS_ISR(void)
 	
 	SYSTEM.INPUTCAPTURE.m3UphUVW.f16C = (Frac16)(SYSTEM.INPUTCAPTURE.Val2 * 5);
 	mac_r(SYSTEM.INPUTCAPTURE.m3UphUVW.f16C, SYSTEM.INPUTCAPTURE.Val2, FRAC16(0.24288));
-	*/
-	
-	/*
-	// Calculate clark park transform for voltages
-	// Clark transform to get Ua, Ub
-	MCLIB_ClarkTrf(&SYSTEM.INPUTCAPTURE.m2UAlphaBeta, &SYSTEM.INPUTCAPTURE.m3UphUVW);
-	// Calculate park transform to get Ud, Uq
-	// Out m2IDQ
-	MCLIB_ParkTrf(&SYSTEM.INPUTCAPTURE.m2UDQ, &SYSTEM.INPUTCAPTURE.m2UAlphaBeta, &SYSTEM.POSITION.mSinCosAngle);	
 	*/
 	
 	// Get measured angle
@@ -807,23 +803,7 @@ void ADC_1_EOS_ISR(void)
 	// Read timer counter
 	SYSTEM.i16ADInterruptCycleTime = ioctl(QTIMER_A1, QT_READ_COUNTER_REG, NULL);
 }
-/*
-#pragma interrupt saveall
-void PWM_A0_Reload_ISR(void)
-{
-	// Get phase voltage values
-	SYSTEM.INPUTCAPTURE.Val0 = ioctl(QTIMER_B0, QT_READ_COUNTER_REG, NULL);
-	SYSTEM.INPUTCAPTURE.Val1 = ioctl(QTIMER_B1, QT_READ_COUNTER_REG, NULL);
-	SYSTEM.INPUTCAPTURE.Val2 = ioctl(QTIMER_B2, QT_READ_COUNTER_REG, NULL);
-	// Reset timers
-	ioctl(QTIMER_B0, QT_WRITE_COUNTER_REG, 0);
-	ioctl(QTIMER_B1, QT_WRITE_COUNTER_REG, 0);
-	ioctl(QTIMER_B2, QT_WRITE_COUNTER_REG, 0);
-		
-	// Clear reload flag
-	ioctl(EFPWMA_SUB0, EFPWMS_CLEAR_SUBMODULE_FLAGS, EFPWM_RELOAD);
-}
-*/
+
 #pragma interrupt saveall
 void GPIO_F_ISR(void)
 {
@@ -888,6 +868,25 @@ void GPIO_F_ISR(void)
 	// Clear interrupt flag
 	ioctl(GPIO_F, GPIO_CLEAR_INT_PENDING, BIT_7);
 }
+
+#pragma interrupt saveall
+void QT_B0_ISR(void)
+{
+	// Clear input edge flag
+	ioctl(QTIMER_B0, QT_CLEAR_FLAG, QT_COMPARE_FLAG);
+	
+	SYSTEM.ADC.ui16SARValue = ioctl(ADC16, ADC16_READ_RESULT, NULL);
+	SYSTEM.ADC.f16SAR = (Frac16)(SYSTEM.ADC.ui16SARValue << 3);
+	SYSTEM.ADC.f16SAR = SYSTEM.ADC.f16SAR - FRAC16(0.5);
+	
+	if(STORE_ADC16_RESULT)
+	{
+		uw16SARResult[ui16SARCycle] = SYSTEM.ADC.ui16SARValue; 
+		ui16SARCycle++;
+		if(127 < ui16SARCycle) ui16SARCycle = 0;		
+	}	
+}
+
 
 #pragma interrupt saveall
 void QT_B3_ISR(void)
@@ -1058,7 +1057,10 @@ void HSCMP_A_ISR(void)
 #pragma interrupt called
 void ADC_0_ISR(void)
 {
-	SYSTEM.MEASUREPARAMS.uw16SAR = ioctl(ADC16, ADC16_READ_RESULT, NULL);
-	ioctl(ADC16, ADC16_WRITE_SC1_REG, 1);
+	SYSTEM.ADC.ui16SARValue = ioctl(ADC16, ADC16_READ_RESULT, NULL);
+	SYSTEM.ADC.f16SAR = (Frac16)(SYSTEM.ADC.ui16SARValue << 3);
+	SYSTEM.ADC.f16SAR = SYSTEM.ADC.f16SAR - FRAC16(0.5);
+	
+	ioctl(ADC16, ADC16_WRITE_SC1_REG, 12);
 }
 

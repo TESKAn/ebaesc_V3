@@ -217,6 +217,7 @@
 #define SEND_CAN_INFO				flag1.BIT11		// Enable CAN status messages
 #define AD_MEAS_LPHA				flag1.BIT12
 #define HSCMP_MEASURE				flag1.BIT13		// Measuring HSCMP for motor inductance
+#define STORE_ADC16_RESULT			flag1.BIT14
 
 
 // Driver HW interface defs

@@ -605,4 +605,10 @@ extern Int32 i32Var;
 
 extern UInt16 ui16CANTestCounter;
 
+// SAR ADC
+extern UWord16 uw16SARResult[128];
+extern UInt16 ui16SARCycle;
+extern Int16 i16CurrentSARArrayIndex;
+extern UWord16 uw16CurrentSARArrayData;
+
 #endif /* VAR_H_ */
