@@ -65,8 +65,3 @@ PARAMCONVERSION pConv;
 
 UInt16 ui16CANTestCounter = 0;
 
-// SAR ADC
-UWord16 uw16SARResult[128];
-UInt16 ui16SARCycle = 0;
-Int16 i16CurrentSARArrayIndex = 0;
-UWord16 uw16CurrentSARArrayData = 0;

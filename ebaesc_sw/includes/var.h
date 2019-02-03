@@ -297,6 +297,13 @@ typedef struct tagSYSVARS
 		Frac16 f16CurrentGainFactor;
 		// Count number of cycles for offset measurement
 		Int16 i16ADCOffsetMeasurements;
+		// Max current
+		Frac16 f16MaxCurrentLimit;
+		Int16 i16MaxOvercurrentsPhA;
+		Int16 i16MaxOvercurrentsPhB;
+		Int16 i16MaxOvercurrentsPhC;
+		Int16 i16MaxOvercurrentEvents;
+		Frac16 f16PhaseTest;
 	}ADC;
 	
 	// Input capture PWM values
@@ -604,11 +611,5 @@ extern COMMDATA COMMDataStruct;
 extern Int32 i32Var;
 
 extern UInt16 ui16CANTestCounter;
-
-// SAR ADC
-extern UWord16 uw16SARResult[128];
-extern UInt16 ui16SARCycle;
-extern Int16 i16CurrentSARArrayIndex;
-extern UWord16 uw16CurrentSARArrayData;
 
 #endif /* VAR_H_ */

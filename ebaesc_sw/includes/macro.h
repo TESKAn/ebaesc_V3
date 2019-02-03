@@ -117,6 +117,11 @@
 //#define MOSFET_RDSON		0.001f
 #define MOSFET_RDSON		0.0024f		// Mini
 
+// Max allowed phase current (0.15 = 50 A
+#define MAX_PHASE_CURRENT	FRAC16(0.15)
+// How many times do we allow overcurrent
+#define MAX_OVERCURRENT_EVENTS	6
+
 #define PI					6.2831853072f
 #define AD_SAMPLE_TIME		0.0000625f
 #define UMAX				42.6191489f
@@ -144,11 +149,11 @@
 
 #define SENSORLESS_MIN_SPEED		FRAC16(0.01)	// When to calculate BEMF observer
 #define SENSORLESS_MAX_ERROR		FRAC16(0.005)	// If error below this, we use observer result
-#define SENSORLESS_ALIGN_CURRENT	FRAC16(0.045)	// Rotor align current
-#define SENSORLESS_START_CURRENT	FRAC16(0.045)	// Rotor start current
+#define SENSORLESS_ALIGN_CURRENT	FRAC16(0.06)	// Rotor align current
+#define SENSORLESS_START_CURRENT	FRAC16(0.025)	// Rotor start current
 #define SENSORLESS_START_SPEED		FRAC16(0.1)
 #define SENSORLESS_START_TORQUE		FRAC16(0.005)
-#define SENSORLESS_ANGLE_MAN_ERROR	FRAC16(0.01)	
+#define SENSORLESS_ANGLE_MAN_ERROR	FRAC16(0.02)	
 #define OL_I_RAMP_UP                FRAC16(0.0001)	//FRAC16(0.000056818182)
 #define OL_I_RAMP_DOWN              FRAC16(0.0001)	//FRAC16(0.000056818182)
 #define OL_ALIGN_TIME				500			// Time in ms for aligning
@@ -254,6 +259,7 @@
 #define SYSTEM_SPINNINGROTOR				14
 #define SYSTEM_MEAS_RPHA					15
 #define SYSTEM_MEAS_LPHA					16
+#define SYSTEM_FAULT_OCEVENT				17
 
 // System restart states
 #define SYSTEM_RESTART_INIT					0

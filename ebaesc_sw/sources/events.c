@@ -33,12 +33,6 @@ void ADC_1_EOS_ISR(void)
 		i16CurrentCalArrayIndex++;
 		f16CurrentCalArrayData = SYSTEM.CALIBRATION.f16CalibrationArray[i16CurrentCalArrayIndex];					
 	}	
-	/*
-	if(128 > i16CurrentSARArrayIndex)
-	{
-		uw16CurrentSARArrayData = uw16SARResult[i16CurrentSARArrayIndex];
-		i16CurrentSARArrayIndex++;
-	}*/
 	
 	//******************************************
 	// Read data
@@ -47,7 +41,8 @@ void ADC_1_EOS_ISR(void)
 	SYSTEM.ADC.m3IphUVWRaw.f16A = ioctl(ADC_1, ADC_READ_SAMPLE, 0);
 	SYSTEM.ADC.m3IphUVWRaw.f16B = ioctl(ADC_1, ADC_READ_SAMPLE, 8);
 	SYSTEM.ADC.m3IphUVWRaw.f16C = ioctl(ADC_1, ADC_READ_SAMPLE, 9);
-	
+		
+	//SYSTEM.ADC.f16MaxCurrentLimit
 	// Check SAR
 	/*
 	SYSTEM.ADC.ui16SARValue = ioctl(ADC16, ADC16_READ_RESULT, NULL);
@@ -84,6 +79,8 @@ void ADC_1_EOS_ISR(void)
 	SYSTEM.ADC.m3IphUVW.f16A = SYSTEM.ADC.m3IphUVWRaw.f16A - SYSTEM.ADC.f16OffsetU;
 	SYSTEM.ADC.m3IphUVW.f16B = SYSTEM.ADC.m3IphUVWRaw.f16B - SYSTEM.ADC.f16OffsetV;
 	SYSTEM.ADC.m3IphUVW.f16C = SYSTEM.ADC.m3IphUVWRaw.f16C - SYSTEM.ADC.f16OffsetW;
+	
+	SYSTEM.ADC.f16PhaseTest = mult(SYSTEM.ADC.f16CurrentGainFactor, SYSTEM.ADC.m3IphUVW.f16C);
 	// Calculate third
 	//SYSTEM.ADC.m3IphUVW.f16B = -SYSTEM.ADC.m3IphUVW.f16A - SYSTEM.ADC.m3IphUVW.f16C;
 	SYSTEM.ADC.m3IphUVW.f16C = -SYSTEM.ADC.m3IphUVW.f16A - SYSTEM.ADC.m3IphUVW.f16B;
@@ -92,6 +89,77 @@ void ADC_1_EOS_ISR(void)
 	SYSTEM.ADC.m3IphUVW.f16A = mult(SYSTEM.ADC.f16CurrentGainFactor, SYSTEM.ADC.m3IphUVW.f16A);
 	SYSTEM.ADC.m3IphUVW.f16B = mult(SYSTEM.ADC.f16CurrentGainFactor, SYSTEM.ADC.m3IphUVW.f16B);
 	SYSTEM.ADC.m3IphUVW.f16C = mult(SYSTEM.ADC.f16CurrentGainFactor, SYSTEM.ADC.m3IphUVW.f16C);
+	
+	
+	// Check current limits
+	if(PWM_ENABLED)
+	{
+		// Ph A
+		f16Temp = abs_s(SYSTEM.ADC.m3IphUVW.f16A);
+		if(f16Temp > SYSTEM.ADC.f16MaxCurrentLimit)
+		{
+			SYSTEM.ADC.i16MaxOvercurrentsPhA++;
+			// Check overcurrent
+			if(SYSTEM.ADC.i16MaxOvercurrentEvents < SYSTEM.ADC.i16MaxOvercurrentsPhA)
+			{
+				SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = FRAC16(0.5);
+				SYSTEM.PWMValues.pwmSub_1_Channel_23_Value = FRAC16(0.5);
+				SYSTEM.PWMValues.pwmSub_2_Channel_23_Value = FRAC16(0.5);
+				// Load new PWM values	
+				ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);	
+				ioctl(EFPWMA, EFPWM_SET_OUTPUTS_DISABLE, EFPWM_SUB0_PWM_A|EFPWM_SUB0_PWM_B|EFPWM_SUB1_PWM_A|EFPWM_SUB1_PWM_B|EFPWM_SUB2_PWM_A|EFPWM_SUB2_PWM_B);
+				SYSTEM.i16StateTransition = SYSTEM_FAULT_OCEVENT;
+			}
+		}
+		else if(0 < SYSTEM.ADC.i16MaxOvercurrentsPhA)
+		{
+			SYSTEM.ADC.i16MaxOvercurrentsPhA--;
+		}
+		
+		// Ph B
+		f16Temp = abs_s(SYSTEM.ADC.m3IphUVW.f16B);
+		if(f16Temp > SYSTEM.ADC.f16MaxCurrentLimit)
+		{
+			SYSTEM.ADC.i16MaxOvercurrentsPhB++;
+			// Check overcurrent
+			if(SYSTEM.ADC.i16MaxOvercurrentEvents < SYSTEM.ADC.i16MaxOvercurrentsPhB)
+			{
+				SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = FRAC16(0.5);
+				SYSTEM.PWMValues.pwmSub_1_Channel_23_Value = FRAC16(0.5);
+				SYSTEM.PWMValues.pwmSub_2_Channel_23_Value = FRAC16(0.5);
+				// Load new PWM values	
+				ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);	
+				ioctl(EFPWMA, EFPWM_SET_OUTPUTS_DISABLE, EFPWM_SUB0_PWM_A|EFPWM_SUB0_PWM_B|EFPWM_SUB1_PWM_A|EFPWM_SUB1_PWM_B|EFPWM_SUB2_PWM_A|EFPWM_SUB2_PWM_B);
+				SYSTEM.i16StateTransition = SYSTEM_FAULT_OCEVENT;
+			}
+		}
+		else if(0 < SYSTEM.ADC.i16MaxOvercurrentsPhB)
+		{
+			SYSTEM.ADC.i16MaxOvercurrentsPhB--;
+		}
+		
+		// Ph C
+		f16Temp = abs_s(SYSTEM.ADC.m3IphUVW.f16C);
+		if(f16Temp > SYSTEM.ADC.f16MaxCurrentLimit)
+		{
+			SYSTEM.ADC.i16MaxOvercurrentsPhC++;
+			// Check overcurrent
+			if(SYSTEM.ADC.i16MaxOvercurrentEvents < SYSTEM.ADC.i16MaxOvercurrentsPhC)
+			{
+				SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = FRAC16(0.5);
+				SYSTEM.PWMValues.pwmSub_1_Channel_23_Value = FRAC16(0.5);
+				SYSTEM.PWMValues.pwmSub_2_Channel_23_Value = FRAC16(0.5);
+				// Load new PWM values	
+				ioctl(EFPWMA, EFPWM_CENTER_ALIGN_UPDATE_VALUE_REGS_COMPL_012, &SYSTEM.PWMValues);	
+				ioctl(EFPWMA, EFPWM_SET_OUTPUTS_DISABLE, EFPWM_SUB0_PWM_A|EFPWM_SUB0_PWM_B|EFPWM_SUB1_PWM_A|EFPWM_SUB1_PWM_B|EFPWM_SUB2_PWM_A|EFPWM_SUB2_PWM_B);
+				SYSTEM.i16StateTransition = SYSTEM_FAULT_OCEVENT;
+			}
+		}
+		else if(0 < SYSTEM.ADC.i16MaxOvercurrentsPhC)
+		{
+			SYSTEM.ADC.i16MaxOvercurrentsPhC--;
+		}
+	}
 	
 	// Check if we are measuring LPha
 	if(AD_MEAS_LPHA)
@@ -347,13 +415,14 @@ void ADC_1_EOS_ISR(void)
 	//******************************************
 	// BEMF observer calculation
 	//******************************************
+	AMCLIB_PMSMBemfObsrvDQ_F16(&SYSTEM.MCTRL.m2IDQ, &SYSTEM.MCTRL.m2UDQ_m, SYSTEM.POSITION.f16SpeedFiltered, &SYSTEM.POSITION.acBemfObsrvDQ);
 	// Absolute speed value
 	f16Temp = abs_s(SYSTEM.POSITION.f16SpeedFiltered);
 	// If speed over BEMF min speed
 	if(SYSTEM.SENSORLESS.f16MinSpeed < f16Temp)
 	{
 		// Calculate DQ observer
-		AMCLIB_PMSMBemfObsrvDQ_F16(&SYSTEM.MCTRL.m2IDQ, &SYSTEM.MCTRL.m2UDQ_m, SYSTEM.POSITION.f16SpeedFiltered, &SYSTEM.POSITION.acBemfObsrvDQ);
+		//AMCLIB_PMSMBemfObsrvDQ_F16(&SYSTEM.MCTRL.m2IDQ, &SYSTEM.MCTRL.m2UDQ_m, SYSTEM.POSITION.f16SpeedFiltered, &SYSTEM.POSITION.acBemfObsrvDQ);
 		// Check BEMF error
 		if(POSITION_SOURCE_MULTIPLE == SYSTEM.POSITION.i16PositionSource)
 		{
@@ -878,13 +947,6 @@ void QT_B0_ISR(void)
 	SYSTEM.ADC.ui16SARValue = ioctl(ADC16, ADC16_READ_RESULT, NULL);
 	SYSTEM.ADC.f16SAR = (Frac16)(SYSTEM.ADC.ui16SARValue << 3);
 	SYSTEM.ADC.f16SAR = SYSTEM.ADC.f16SAR - FRAC16(0.5);
-	
-	if(STORE_ADC16_RESULT)
-	{
-		uw16SARResult[ui16SARCycle] = SYSTEM.ADC.ui16SARValue; 
-		ui16SARCycle++;
-		if(127 < ui16SARCycle) ui16SARCycle = 0;		
-	}	
 }
 
 

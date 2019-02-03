@@ -125,6 +125,14 @@ Int16 checkSystemStates(void)
 			SystemMeasureLPHAState();
 			break;
 		}
+		case SYSTEM_FAULT_OCEVENT:
+		{
+			LED_G_OFF;
+			LED_R_ON;
+			LED_Y_OFF;
+			SystemFaultOCEventState();
+			break;
+		}
 		default:
 		{
 			LED_G_OFF;
@@ -1397,6 +1405,17 @@ Int16 SystemMeasureLPHAState()
 	return 0;
 }
 
+Int16 SystemFaultOCEventState()
+{
+	// Transit out of?
+	if(SYSTEM.i16StateTransition != SYSTEM.systemState)
+	{
+		StopMotor();
+		SystemStateTransition();
+	}
+	return 0;
+}
+
 Int16 SystemStateTransition()
 {
 	float fTemp = 0.0f;
@@ -1491,6 +1510,11 @@ Int16 SystemStateTransition()
 			else if(CONTROL_SPEED || CONTROL_TORQUE)
 			{
 				// Run sensorless only for speed or torque modes
+				// Check that minimum speed is set
+				if(COMMDataStruct.REGS.i16MinRPM > COMMDataStruct.REGS.i16SetRPM)
+				{
+					COMMDataStruct.REGS.i16SetRPM = COMMDataStruct.REGS.i16MinRPM;
+				}
 				// Start open loop mode
 				SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_SENSORLESS_ALIGN;
 				SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_SENSORLESS_ALIGN;
@@ -1681,6 +1705,16 @@ Int16 SystemStateTransition()
 		{
 			SYSTEM.i16MotorLPhaMeasureState = SYSTEM_MEAS_LPHA_INIT;
 			SYSTEM.systemState = SYSTEM_MEAS_LPHA;
+			break;
+		}
+		case SYSTEM_FAULT_OCEVENT:
+		{
+			SYSTEM.systemState = SYSTEM_FAULT_OCEVENT;
+			break;
+		}
+		default:
+		{
+			SYSTEM.systemState = SYSTEM_WAKEUP;
 			break;
 		}
 	}	

@@ -215,9 +215,13 @@ void InitSysVars(Int16 initial)
 		GDFLIB_FilterMAInit_F16(FRAC16(0.0), &SYSTEM.ADC.FilterMA32Temperature);
 		
 		SYSTEM.ADC.f16OffsetU = FRAC16(0.0);
+		SYSTEM.ADC.f16OffsetV = FRAC16(0.0);
 		SYSTEM.ADC.f16OffsetW = FRAC16(0.0);
 		
 		SYSTEM.ADC.f16CurrentGainFactor = DRV8301_GAIN_FACTOR;
+		
+		SYSTEM.ADC.f16MaxCurrentLimit = MAX_PHASE_CURRENT;
+		SYSTEM.ADC.i16MaxOvercurrentEvents = MAX_OVERCURRENT_EVENTS;
 
 	}
 
@@ -225,7 +229,9 @@ void InitSysVars(Int16 initial)
 	SYSTEM.ADC.m3IphUVW.f16A = FRAC16(0.0);
 	SYSTEM.ADC.m3IphUVW.f16B = FRAC16(0.0);
 	SYSTEM.ADC.m3IphUVW.f16C = FRAC16(0.0);
-	
+	SYSTEM.ADC.i16MaxOvercurrentsPhA = 0;	
+	SYSTEM.ADC.i16MaxOvercurrentsPhB = 0;
+	SYSTEM.ADC.i16MaxOvercurrentsPhC = 0;
 
 	//******************************************
 	// MCTRL
@@ -343,20 +349,18 @@ void InitSysVars(Int16 initial)
 		COMMDataStruct.REGS.ui16ModelNumber = 0x001c;
 		COMMDataStruct.REGS.ui8FirmwareVersion = 1;
 		COMMDataStruct.REGS.ui8BaudRate = 3;
-		COMMDataStruct.REGS.ui16Errors = 0;
+		
 		COMMDataStruct.REGS.ui16State = SYSTEM.systemState;
-		COMMDataStruct.REGS.ui8Armed = 0;
-		COMMDataStruct.REGS.ui8Park = 0;
 		COMMDataStruct.REGS.ui8ReturnDelayTime = 1;
 		// Park position
 		COMMDataStruct.REGS.i16ParkPosition = M_PARK_POSITION;
 		
 		COMMDataStruct.ui16RegsBytes = 64;
-		COMMDataStruct.errStatus = 0;
+		
 		COMMDataStruct.ui16RXCommTimeout = 100;
 		COMMDataStruct.ui16RXTimeoutCounter = 0;
 		COMMDataStruct.ui16TXCommTimeout = 100;
-		COMMDataStruct.ui16TXTimeoutCounter = 0;	
+		
 		COMMDataStruct.ui16ReadOnlyLow = 0;
 		COMMDataStruct.ui16ReadOnlyHigh = 2;
 		
@@ -364,16 +368,19 @@ void InitSysVars(Int16 initial)
 		COMMDataStruct.REGS.i16PWMMin = 1000;
 		
 		COMMDataStruct.REGS.i16MaxRPM = 18000;
-		COMMDataStruct.REGS.i16MinRPM = 2000;
+		COMMDataStruct.REGS.i16MinRPM = 4000;
 		
 		COMMDataStruct.REGS.i16CurrentPWM = 1000;
 		COMMDataStruct.REGS.i16ParkPosition = 2048;
 		
 		COMMDataStruct.REGS.i16ZeroSpeedPWM = 50;
-		
-		COMMDataStruct.REGS.i16SetRPM = 0;
 	}
-	
+	COMMDataStruct.REGS.ui8Armed = 0;
+	COMMDataStruct.REGS.ui8Park = 0;
+	COMMDataStruct.REGS.i16SetRPM = 0;
+	COMMDataStruct.REGS.ui16Errors = 0;
+	COMMDataStruct.ui16TXTimeoutCounter = 0;	
+	COMMDataStruct.errStatus = 0;
 }
 
 // Store vars to EEPROM

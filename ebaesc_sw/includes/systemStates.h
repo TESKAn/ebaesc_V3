@@ -20,6 +20,7 @@ Int16 SystemResetState();
 Int16 SystemFaultDRV83xxState();
 Int16 SystemMeasureRPHAState();
 Int16 SystemMeasureLPHAState();
+Int16 SystemFaultOCEventState();
 Int16 SystemStateTransition();
 
 #endif /* SYSTEMSTATES_H_ */
