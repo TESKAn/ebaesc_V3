@@ -93,7 +93,7 @@
 #define SPEED_RAMP_UP                   FRAC16(0.001)//FRAC16(0.000056818182)
 #define SPEED_RAMP_DOWN                 FRAC16(0.001)//FRAC16(0.000056818182)
 
-#define SPEED_LOOP_CNTR                 (16)	// 62.5 usec interval
+#define SPEED_LOOP_CNTR                 (19)	// 62.5 usec interval
 #define SPEED_LOOP_FREQ                 (1000)
 
 

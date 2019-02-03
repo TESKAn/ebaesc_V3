@@ -27,20 +27,21 @@ void ADC_1_EOS_ISR(void)
 
 	// Calibration data readout
 	// Go through calibration data?
+	/*
 	if(4096 > i16CurrentCalArrayIndex)
 	{
 		// First increase index, then store value
 		i16CurrentCalArrayIndex++;
 		f16CurrentCalArrayData = SYSTEM.CALIBRATION.f16CalibrationArray[i16CurrentCalArrayIndex];					
 	}	
-	
+	*/
 	//******************************************
 	// Read data
 	//******************************************
 	// Phase currents
 	SYSTEM.ADC.m3IphUVWRaw.f16A = ioctl(ADC_1, ADC_READ_SAMPLE, 0);
 	SYSTEM.ADC.m3IphUVWRaw.f16B = ioctl(ADC_1, ADC_READ_SAMPLE, 8);
-	SYSTEM.ADC.m3IphUVWRaw.f16C = ioctl(ADC_1, ADC_READ_SAMPLE, 9);
+	//SYSTEM.ADC.m3IphUVWRaw.f16C = ioctl(ADC_1, ADC_READ_SAMPLE, 9);
 		
 	//SYSTEM.ADC.f16MaxCurrentLimit
 	// Check SAR
@@ -78,11 +79,9 @@ void ADC_1_EOS_ISR(void)
 	// Remove offsets
 	SYSTEM.ADC.m3IphUVW.f16A = SYSTEM.ADC.m3IphUVWRaw.f16A - SYSTEM.ADC.f16OffsetU;
 	SYSTEM.ADC.m3IphUVW.f16B = SYSTEM.ADC.m3IphUVWRaw.f16B - SYSTEM.ADC.f16OffsetV;
-	SYSTEM.ADC.m3IphUVW.f16C = SYSTEM.ADC.m3IphUVWRaw.f16C - SYSTEM.ADC.f16OffsetW;
+	//SYSTEM.ADC.m3IphUVW.f16C = SYSTEM.ADC.m3IphUVWRaw.f16C - SYSTEM.ADC.f16OffsetW;
 	
-	SYSTEM.ADC.f16PhaseTest = mult(SYSTEM.ADC.f16CurrentGainFactor, SYSTEM.ADC.m3IphUVW.f16C);
 	// Calculate third
-	//SYSTEM.ADC.m3IphUVW.f16B = -SYSTEM.ADC.m3IphUVW.f16A - SYSTEM.ADC.m3IphUVW.f16C;
 	SYSTEM.ADC.m3IphUVW.f16C = -SYSTEM.ADC.m3IphUVW.f16A - SYSTEM.ADC.m3IphUVW.f16B;
 	
 	// Multiply with gain
