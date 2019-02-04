@@ -304,6 +304,8 @@ typedef struct tagSYSVARS
 		Int16 i16MaxOvercurrentsPhC;
 		Int16 i16MaxOvercurrentEvents;
 		Frac16 f16PhaseTest;
+		Frac16 f16UV[2];
+		Frac16 f16IV[2];
 	}ADC;
 	
 	// Input capture PWM values

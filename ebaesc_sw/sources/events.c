@@ -177,27 +177,48 @@ void ADC_1_EOS_ISR(void)
 	// U
 	SYSTEM.ADC.m3UphUVW.f16A = ioctl(ADC_1, ADC_READ_SAMPLE, 3);
 	// V
-	SYSTEM.ADC.m3UphUVW.f16B = ioctl(ADC_1, ADC_READ_SAMPLE, 11);
+	SYSTEM.ADC.m3UphUVW.f16B = ioctl(ADC_1, ADC_READ_SAMPLE, 4);
 	// W
-	SYSTEM.ADC.m3UphUVW.f16C = ioctl(ADC_1, ADC_READ_SAMPLE, 4);
+	SYSTEM.ADC.m3UphUVW.f16C = ioctl(ADC_1, ADC_READ_SAMPLE, 11);
 	
 	
 	// Measure DC link voltage
-	SYSTEM.ADC.f16DCLinkVoltage = ioctl(ADC_1, ADC_READ_SAMPLE, 2);
+	SYSTEM.ADC.f16DCLinkVoltage = ioctl(ADC_1, ADC_READ_SAMPLE, 1);
 	// Filter	
 	SYSTEM.ADC.f16DCLinkVoltageFiltered = GDFLIB_FilterMA_F16(SYSTEM.ADC.f16DCLinkVoltage, &SYSTEM.ADC.FilterMA32DCLink);
 	
 	// Measure temperature
-	SYSTEM.ADC.f16Temperature = ioctl(ADC_1, ADC_READ_SAMPLE, 10);
+	SYSTEM.ADC.f16Temperature = ioctl(ADC_1, ADC_READ_SAMPLE, 9);
 	// Filter	
 	SYSTEM.ADC.f16TemperatureFiltered = GDFLIB_FilterMA_F16(SYSTEM.ADC.f16Temperature, &SYSTEM.ADC.FilterMA32Temperature);	
 	
 	// Measure sensor value
-	SYSTEM.ADC.f16SensorValueA = ioctl(ADC_1, ADC_READ_SAMPLE, 1);
-	SYSTEM.ADC.f16SensorValueB = ioctl(ADC_1, ADC_READ_SAMPLE, 9);
+	SYSTEM.ADC.f16SensorValueA = ioctl(ADC_1, ADC_READ_SAMPLE, 2);
+	SYSTEM.ADC.f16SensorValueB = ioctl(ADC_1, ADC_READ_SAMPLE, 10);
 	// Filter
 	SYSTEM.ADC.f16SensorValueAFiltered = GDFLIB_FilterMA_F16(SYSTEM.ADC.f16SensorValueA, &SYSTEM.ADC.FilterMA32SensorA);
 	SYSTEM.ADC.f16SensorValueBFiltered = GDFLIB_FilterMA_F16(SYSTEM.ADC.f16SensorValueB, &SYSTEM.ADC.FilterMA32SensorB);
+	
+	if(STORE_V_MEAS)
+	{
+		// Measure consecutive V
+		SYSTEM.ADC.f16UV[0] = ioctl(ADC_1, ADC_READ_SAMPLE, 4);
+		SYSTEM.ADC.f16UV[1] = ioctl(ADC_1, ADC_READ_SAMPLE, 5);
+		
+		SYSTEM.ADC.f16IV[0] = ioctl(ADC_1, ADC_READ_SAMPLE, 12);
+		SYSTEM.ADC.f16IV[1] = ioctl(ADC_1, ADC_READ_SAMPLE, 13);				
+		
+		/*
+		// Remove offsets
+		SYSTEM.ADC.f16IV[0] = SYSTEM.ADC.f16IV[0] - SYSTEM.ADC.f16OffsetV;
+		SYSTEM.ADC.f16IV[1] = SYSTEM.ADC.f16IV[1] - SYSTEM.ADC.f16OffsetV;		
+		
+		// Multiply with gain
+		SYSTEM.ADC.f16IV[0] = mult(SYSTEM.ADC.f16CurrentGainFactor, SYSTEM.ADC.f16IV[0]);
+		SYSTEM.ADC.f16IV[1] = mult(SYSTEM.ADC.f16CurrentGainFactor, SYSTEM.ADC.f16IV[1]);
+		*/
+	}
+
 	
 	// Calculate values
 	COMMDataStruct.REGS.i16UIn = mult(SYSTEM.ADC.f16DCLinkVoltage, 6087);
