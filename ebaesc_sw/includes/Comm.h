@@ -99,9 +99,14 @@ typedef struct tagCOMMDATA
 			Int16 i16PIn;				// 14
 			Int16 i16RPM;				// 16
 			Int16 i16Position;			// 18
-			UInt8 ui8PresentTemperature;	//19
+			UInt8 ui8PresentTemperature;	//20
+			// Voltage cutoff
+			UInt16 ui16VoltageCutoff;	//21
+			// Undervoltage error
+			UInt8 ui8UVError;
+			
 			// Future expansion
-			UInt8 ui8Empty1[11];			// 32 bytes total
+			UInt8 ui8Empty1[9];			// 32 bytes total
 
 			// Motor control
 			// Arm
@@ -110,7 +115,8 @@ typedef struct tagCOMMDATA
 			UInt8 ui8Park;				// 33
 			// Reverse rotation
 			UInt8 ui8ReverseRotation;	// 34
-			UInt8 uiEmpty2;
+			// Reset from fault state
+			UInt8 ui8Reset;
 			// Park position
 			Int16 i16ParkPosition;		// 36
 

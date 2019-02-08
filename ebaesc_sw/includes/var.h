@@ -239,6 +239,10 @@ typedef struct tagSYSVARS
 		UInt8 ui8MaxBemfObserverErrorCount;
 		// Previous BEMF error
 		Frac16 f16PrevBEMFObserverError;
+		// Increase error when BEMF ON is not set and we are using BEMF position
+		UInt16 ui16BEMFONError;
+		UInt16 ui16MaxBEMFONErrors;
+		
 		// Merge
 	}SENSORLESS;
 	
@@ -299,6 +303,7 @@ typedef struct tagSYSVARS
 		Int16 i16ADCOffsetMeasurements;
 		// Max current
 		Frac16 f16MaxCurrentLimit;
+		Frac16 f16MaxHWCurrentLimit;
 		Int16 i16MaxOvercurrentsPhA;
 		Int16 i16MaxOvercurrentsPhB;
 		Int16 i16MaxOvercurrentsPhC;
@@ -306,6 +311,8 @@ typedef struct tagSYSVARS
 		Frac16 f16PhaseTest;
 		Frac16 f16UV[2];
 		Frac16 f16IV[2];
+		Int16 i16UnderVoltageEvents;
+		Int16 i16MaxUnderVoltageEvents;
 	}ADC;
 	
 	// Input capture PWM values

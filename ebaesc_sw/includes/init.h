@@ -24,6 +24,7 @@ UWord32 EEPROMReadi16(UWord32 uw32CurrIndex, Int16 *i16Data);
 UWord32 EEPROMReadsi16(UWord32 uw32CurrIndex, int16_t *i16Data);
 UWord32 EEPROMReadf16(UWord32 uw32CurrIndex, Frac16 *f16Data);
 UWord32 EEPROMReadui16(UWord32 uw32CurrIndex, UInt16 *ui16Data);
+UWord32 EEPROMReadsui16(UWord32 uw32CurrIndex, uint16_t *ui16Data);
 UWord32 EEPROMReadw16(UWord32 uw32CurrIndex, Word16 *w16Data);
 UWord32 EEPROMReadf(UWord32 uw32CurrIndex, float *fData);
 UWord32 EEPROMReadACC32(UWord32 uw32CurrIndex, acc32_t *a32Data);

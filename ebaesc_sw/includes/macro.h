@@ -112,6 +112,11 @@
 #define SI_WL_FACTOR		15.023651123046875f		// Factor divided by 32768
 #define SI_RPM_FACTOR		17142.8571f	//120.000/n pole pairs
 
+// Default voltage cutoff in mV
+#define SI_VOLTAGE_CUTOFF	12500
+// Undervoltage events
+#define MAX_UNDERVOLTAGE_EVENTS		500
+
 // Macros for calculating motor parameters
 //#define MOSFET_RDSON		0.0078f
 //#define MOSFET_RDSON		0.001f
@@ -119,6 +124,8 @@
 
 // Max allowed phase current (0.15 = 50 A
 #define MAX_PHASE_CURRENT	FRAC16(0.15)
+// Max HW allowed current ~100 A
+#define MAX_HW_PHASE_CURRENT	FRAC16(0.3)
 // How many times do we allow overcurrent
 #define MAX_OVERCURRENT_EVENTS	6
 
@@ -158,6 +165,7 @@
 #define OL_I_RAMP_DOWN              FRAC16(0.0001)	//FRAC16(0.000056818182)
 #define OL_ALIGN_TIME				500			// Time in ms for aligning
 #define MAX_BEMF_ERROR_COUNT		2			// Max. number of times BEMF is wrong before triggering restart
+#define MAX_BEMF_ON_ERROR_COUNT		2000	
 
 // Position sources states
 #define POSITION_SOURCE_NONE					0
@@ -256,10 +264,9 @@
 #define SYSTEM_PWM_IN_LOST					11
 #define SYSTEM_CALIBRATE					12
 #define SYSTEM_PARKROTOR					13
-#define SYSTEM_SPINNINGROTOR				14
-#define SYSTEM_MEAS_RPHA					15
-#define SYSTEM_MEAS_LPHA					16
-#define SYSTEM_FAULT_OCEVENT				17
+#define SYSTEM_MEAS_RPHA					14
+#define SYSTEM_MEAS_LPHA					15
+#define SYSTEM_FAULT_OCEVENT				16
 
 // System restart states
 #define SYSTEM_RESTART_INIT					0

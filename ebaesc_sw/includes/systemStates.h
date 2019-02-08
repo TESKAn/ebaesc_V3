@@ -21,6 +21,12 @@ Int16 SystemFaultDRV83xxState();
 Int16 SystemMeasureRPHAState();
 Int16 SystemMeasureLPHAState();
 Int16 SystemFaultOCEventState();
+Int16 SystemRestartingState();
+Int16 SystemFaultResetState();
+Int16 SystemBlockExecState();
+Int16 SystemFOCLostTimeoutState();
+Int16 SystemPWMInLostState();
+Int16 SystemResetDriver();
 Int16 SystemStateTransition();
 
 #endif /* SYSTEMSTATES_H_ */

@@ -99,7 +99,7 @@ void ADC_1_EOS_ISR(void)
 		{
 			SYSTEM.ADC.i16MaxOvercurrentsPhA++;
 			// Check overcurrent
-			if(SYSTEM.ADC.i16MaxOvercurrentEvents < SYSTEM.ADC.i16MaxOvercurrentsPhA)
+			if((SYSTEM.ADC.i16MaxOvercurrentEvents < SYSTEM.ADC.i16MaxOvercurrentsPhA)||(f16Temp > SYSTEM.ADC.f16MaxHWCurrentLimit))
 			{
 				SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = FRAC16(0.5);
 				SYSTEM.PWMValues.pwmSub_1_Channel_23_Value = FRAC16(0.5);
@@ -121,7 +121,7 @@ void ADC_1_EOS_ISR(void)
 		{
 			SYSTEM.ADC.i16MaxOvercurrentsPhB++;
 			// Check overcurrent
-			if(SYSTEM.ADC.i16MaxOvercurrentEvents < SYSTEM.ADC.i16MaxOvercurrentsPhB)
+			if((SYSTEM.ADC.i16MaxOvercurrentEvents < SYSTEM.ADC.i16MaxOvercurrentsPhB)||(f16Temp > SYSTEM.ADC.f16MaxHWCurrentLimit))
 			{
 				SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = FRAC16(0.5);
 				SYSTEM.PWMValues.pwmSub_1_Channel_23_Value = FRAC16(0.5);
@@ -143,7 +143,7 @@ void ADC_1_EOS_ISR(void)
 		{
 			SYSTEM.ADC.i16MaxOvercurrentsPhC++;
 			// Check overcurrent
-			if(SYSTEM.ADC.i16MaxOvercurrentEvents < SYSTEM.ADC.i16MaxOvercurrentsPhC)
+			if((SYSTEM.ADC.i16MaxOvercurrentEvents < SYSTEM.ADC.i16MaxOvercurrentsPhC)||(f16Temp > SYSTEM.ADC.f16MaxHWCurrentLimit))
 			{
 				SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = FRAC16(0.5);
 				SYSTEM.PWMValues.pwmSub_1_Channel_23_Value = FRAC16(0.5);
@@ -385,17 +385,25 @@ void ADC_1_EOS_ISR(void)
      *
      */	
 	SYSTEM.POSITION.i16SensorIndex = SYSTEM.POSITION.i16SensorIndex & 4095;
-	// Check if sensor readings are OK
-	if((POS_SENS_LOW > SYSTEM.POSITION.i16SensorIndexFiltered)||(POS_SENS_HIGH < SYSTEM.POSITION.i16SensorIndexFiltered))
-	{
-		// Sensor fault
-		SYSTEM_RUN_SENSORED = 0;
+	// If calibrated
+	if(SYSTEM_CALIBRATED)
+	{	
+		// Check if sensor readings are OK
+		if((POS_SENS_LOW > SYSTEM.POSITION.i16SensorIndexFiltered)||(POS_SENS_HIGH < SYSTEM.POSITION.i16SensorIndexFiltered))
+		{
+			// Sensor fault
+			SYSTEM_RUN_SENSORED = 0;
+		}
+		else
+		{
+			// Sensor is OK
+			SYSTEM_RUN_SENSORED = 1;
+		}	
 	}
 	else
 	{
-		// Sensor is OK
-		SYSTEM_RUN_SENSORED = 1;
-	}	
+		SYSTEM_RUN_SENSORED = 0;
+	}
 	// Get measured angle from previous iteration
 	SYSTEM.POSITION.f16MeasuredRotorAngle = SYSTEM.CALIBRATION.f16CalibrationArray[SYSTEM.POSITION.i16SensorIndex];
 	// Add position offset from sensor delay
@@ -441,8 +449,8 @@ void ADC_1_EOS_ISR(void)
 	// If speed over BEMF min speed
 	if(SYSTEM.SENSORLESS.f16MinSpeed < f16Temp)
 	{
-		// Calculate DQ observer
-		//AMCLIB_PMSMBemfObsrvDQ_F16(&SYSTEM.MCTRL.m2IDQ, &SYSTEM.MCTRL.m2UDQ_m, SYSTEM.POSITION.f16SpeedFiltered, &SYSTEM.POSITION.acBemfObsrvDQ);
+		// Reset ON error
+		SYSTEM.SENSORLESS.ui16BEMFONError = 0;
 		// Check BEMF error
 		if(POSITION_SOURCE_MULTIPLE == SYSTEM.POSITION.i16PositionSource)
 		{
@@ -496,9 +504,22 @@ void ADC_1_EOS_ISR(void)
 	// Else if observer was ON
 	else if(SENSORLESS_BEMF_ON)
 	{
-		SENSORLESS_BEMF_ON = 0;
-		// Add hysteresis
-		SYSTEM.SENSORLESS.f16MinSpeed += SYSTEM.SENSORLESS.f16MinSpeedHysteresis;
+		if(SYSTEM_CALIBRATED && SYSTEM_RUN_SENSORED)
+		{
+			// If we have sensor, we can turn BEMF OFF
+			SENSORLESS_BEMF_ON = 0;
+			// Add hysteresis
+			SYSTEM.SENSORLESS.f16MinSpeed += SYSTEM.SENSORLESS.f16MinSpeedHysteresis;	
+		}
+		else
+		{
+			// System is using BEMF, do not turn BEMF OFF unless error
+			// Check only after alingment is done
+			if(POSITION_SOURCE_SENSORLESS_ALIGN < SYSTEM.POSITION.i16PositionSource)
+			{
+				SYSTEM.SENSORLESS.ui16BEMFONError++;
+			}		
+		}
 	}
 	
 	
@@ -690,6 +711,7 @@ void ADC_1_EOS_ISR(void)
 			// Store & filter speed
 			SYSTEM.POSITION.f16Speed = extract_h(SYSTEM.POSITION.acToPos.f32Speed);
 			SYSTEM.POSITION.f16SpeedFiltered = GDFLIB_FilterMA_F16(SYSTEM.POSITION.f16Speed, &SYSTEM.POSITION.FilterMA32Speed);	
+			
 			break;
 		}
 		case POSITION_SOURCE_STANDSTILL:
