@@ -116,6 +116,7 @@ void InitSysVars(Int16 initial)
 		SYSTEM.POSITION.i16SensorIndexOffset = 0;
 		// Phase delay from speed
 		SYSTEM.POSITION.i16SensorIndexPhaseDelay = 0;	
+		SYSTEM.POSITION.FilterMA32DQError.u16Sh = 10;
 		// Speed MA filter
 		SYSTEM.POSITION.FilterMA32Speed.u16Sh = 2;		
 		SYSTEM.POSITION.f16ManualAngleIncrease = MANUAL_ANGLE_INCREASE;			
@@ -123,6 +124,7 @@ void InitSysVars(Int16 initial)
 		SYSTEM.POSITION.fOffsetCalcFactor = AOFFSET_FACTOR;
 	}
 	
+	GDFLIB_FilterMAInit_F16(FRAC16(0.0), &SYSTEM.POSITION.FilterMA32DQError);
 	GDFLIB_FilterMAInit_F16(FRAC16(0.0), &SYSTEM.POSITION.FilterMA32Speed);
 	
 	SYSTEM.POSITION.acToPos.f32Theta = FRAC32(0.0);
@@ -334,6 +336,7 @@ void InitSysVars(Int16 initial)
 		SYSTEM.i16StateTransition = SYSTEM_WAKEUP;
 
 		SYSTEM.systemState = SYSTEM_WAKEUP;
+		SYSTEM.ui16StateTransitionTimeout = 0;
 		
 		// Set driver restart state
 		SYSTEM.i16DriverRestartState = SYSTEM_RESTART_INIT;

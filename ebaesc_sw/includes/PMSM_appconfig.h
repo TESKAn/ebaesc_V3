@@ -142,15 +142,19 @@
 #define E_SCALE ACC32(0.735680504467)  
 #define WI_SCALE ACC32(0.07263798043) 
 
+/*
 #define BEMF_DQ_KP_GAIN FRAC16(0.516137807798)  
 #define BEMF_DQ_KP_SHIFT (0)  
 #define BEMF_DQ_KI_GAIN FRAC16(0.670005144485)  
 #define BEMF_DQ_KI_SHIFT (-8) 
-
+*/
+/*
 #define BEMF_DQ_KP						ACC32(0.515)
 #define BEMF_DQ_KI						ACC32(0.0026)
-
-
+*/
+// EMAX
+#define BEMF_DQ_KP						ACC32(0.1)
+#define BEMF_DQ_KI						ACC32(0.001)
 
 //Bemf DQ Observer   
 /*

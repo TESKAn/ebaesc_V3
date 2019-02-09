@@ -191,7 +191,14 @@ Int16 SystemWakeupState()
 	// Transit out of?
 	if(SYSTEM.i16StateTransition != SYSTEM.systemState)
 	{
-		SystemStateTransition();
+		if(0 == SYSTEM.ui16StateTransitionTimeout)
+		{
+			SystemStateTransition();
+		}
+		else
+		{
+			SYSTEM.ui16StateTransitionTimeout--;
+		}		
 	}
 	else
 	{
@@ -218,9 +225,16 @@ Int16 SystemInitState()
 	// Transit out of?
 	if(SYSTEM.i16StateTransition != SYSTEM.systemState)
 	{
-		// Reset diode PWM timer
-		i16LEDToggles = LED_TOGGLE_COUNT;
-		SystemStateTransition();
+		if(0 == SYSTEM.ui16StateTransitionTimeout)
+		{
+			// Reset diode PWM timer
+			i16LEDToggles = LED_TOGGLE_COUNT;
+			SystemStateTransition();
+		}
+		else
+		{
+			SYSTEM.ui16StateTransitionTimeout--;
+		}	
 	}
 	else
 	{
@@ -342,7 +356,14 @@ Int16 SystemIdleState()
 	// Transit out of?
 	if(SYSTEM.i16StateTransition != SYSTEM.systemState)
 	{
-		SystemStateTransition();
+		if(0 == SYSTEM.ui16StateTransitionTimeout)
+		{
+			SystemStateTransition();
+		}
+		else
+		{
+			SYSTEM.ui16StateTransitionTimeout--;
+		}	
 	}
 	else
 	{
@@ -376,43 +397,50 @@ Int16 SystemRunState()
 	// Transit out of?
 	if(SYSTEM.i16StateTransition != SYSTEM.systemState)
 	{
-		// Stop if spinning
-		if((FRAC16(0.01) < SYSTEM.POSITION.f16SpeedFiltered)||(FRAC16(-0.01) > SYSTEM.POSITION.f16SpeedFiltered))
+		if(0 == SYSTEM.ui16StateTransitionTimeout)
 		{
-			SYSTEM.RAMPS.f16SpeedRampDesiredValue = FRAC16(0.0);
-			SYSTEM.RAMPS.f16TorqueRampDesiredValue = FRAC16(0.0);			
-			if(SYSTEM_FAULT_DRV8301 == SYSTEM.i16StateTransition)
+			// Stop if spinning
+			if((FRAC16(0.01) < SYSTEM.POSITION.f16SpeedFiltered)||(FRAC16(-0.01) > SYSTEM.POSITION.f16SpeedFiltered))
 			{
-				StopMotor();
-				SystemStateTransition();
-			}		
-			else if(2 == COMMDataStruct.REGS.ui8Armed)
-			{
-				COMMDataStruct.REGS.ui8Armed = 0;
-				StopMotor();
-				SystemStateTransition();
+				SYSTEM.RAMPS.f16SpeedRampDesiredValue = FRAC16(0.0);
+				SYSTEM.RAMPS.f16TorqueRampDesiredValue = FRAC16(0.0);			
+				if(SYSTEM_FAULT_DRV8301 == SYSTEM.i16StateTransition)
+				{
+					StopMotor();
+					SystemStateTransition();
+				}		
+				else if(2 == COMMDataStruct.REGS.ui8Armed)
+				{
+					COMMDataStruct.REGS.ui8Armed = 0;
+					StopMotor();
+					SystemStateTransition();
+				}
+				else if(3 == COMMDataStruct.REGS.ui8Armed)
+				{
+					// BEMF error - go to restart
+					COMMDataStruct.REGS.ui8Armed = 1;
+					SYSTEM.SENSORLESS.ui8BemfObserverErrorCount = 0;
+					
+					StopMotor();
+					SystemStateTransition();
+				}
+				else if(!SYSTEM_CALIBRATED && !SYSTEM_RUN_SENSORED)
+				{
+					// Sensorless running - go out of transition
+					StopMotor();
+					SystemStateTransition();
+				}
 			}
-			else if(3 == COMMDataStruct.REGS.ui8Armed)
+			else
 			{
-				// BEMF error - go to restart
-				COMMDataStruct.REGS.ui8Armed = 1;
-				SYSTEM.SENSORLESS.ui8BemfObserverErrorCount = 0;
-				
-				StopMotor();
-				SystemStateTransition();
-			}
-			else if(!SYSTEM_CALIBRATED && !SYSTEM_RUN_SENSORED)
-			{
-				// Sensorless running - go out of transition
 				StopMotor();
 				SystemStateTransition();
 			}
 		}
 		else
 		{
-			StopMotor();
-			SystemStateTransition();
-		}
+			SYSTEM.ui16StateTransitionTimeout--;
+		}	
 	}
 	else
 	{
@@ -510,25 +538,35 @@ Int16 SystemRunState()
 		if(SYSTEM.SENSORLESS.ui8MaxBemfObserverErrorCount < SYSTEM.SENSORLESS.ui8BemfObserverErrorCount)
 		{
 			// Go out of run mode
-			SYSTEM.i16StateTransition = SYSTEM_RESET;
+			SYSTEM.i16StateTransition = SYSTEM_FAULT;
 			SYSTEM.RAMPS.f16SpeedRampDesiredValue = FRAC16(0.0);
 			COMMDataStruct.REGS.ui8Armed = 3;
 			COMMDataStruct.REGS.i16SetRPM = COMMDataStruct.REGS.i16MinRPM; 
+			// Timeout 250 ms
+			SYSTEM.ui16StateTransitionTimeout = 250;
 		}
 		// BEMF ON error, restart?
 		if(SYSTEM.SENSORLESS.ui16MaxBEMFONErrors < SYSTEM.SENSORLESS.ui16BEMFONError)
 		{
-			//SENSORLESS_BEMF_ON = 0;
-			// Add hysteresis
-			//SYSTEM.SENSORLESS.f16MinSpeed += SYSTEM.SENSORLESS.f16MinSpeedHysteresis;	
-			
 			// Go out of run mode
-			SYSTEM.i16StateTransition = SYSTEM_RESET;
+			SYSTEM.i16StateTransition = SYSTEM_FAULT;
 			SYSTEM.RAMPS.f16SpeedRampDesiredValue = FRAC16(0.0);
 			COMMDataStruct.REGS.ui8Armed = 3;
-			COMMDataStruct.REGS.i16SetRPM = COMMDataStruct.REGS.i16MinRPM; 
-			
+			COMMDataStruct.REGS.i16SetRPM = COMMDataStruct.REGS.i16MinRPM; 		
+			// Timeout 250 ms
+			SYSTEM.ui16StateTransitionTimeout = 250;
 		}	
+		// DQ merge error, restart?
+		if(ERROR_DQ_MERGE)
+		{
+			// Go out of run mode
+			SYSTEM.i16StateTransition = SYSTEM_FAULT;
+			SYSTEM.RAMPS.f16SpeedRampDesiredValue = FRAC16(0.0);
+			COMMDataStruct.REGS.ui8Armed = 3;
+			COMMDataStruct.REGS.i16SetRPM = COMMDataStruct.REGS.i16MinRPM; 		
+			// Timeout 250 ms
+			SYSTEM.ui16StateTransitionTimeout = 250;
+		}
 		
 		// When in run mode, check driver status for errors
 		if(0 != DRV8301.StatReg1.FAULT)
@@ -579,11 +617,19 @@ Int16 SystemRunState()
 Int16 SystemFaultState()
 {
 	ioctl(EFPWMA, EFPWM_SET_OUTPUTS_DISABLE, EFPWM_SUB0_PWM_A|EFPWM_SUB0_PWM_B|EFPWM_SUB1_PWM_A|EFPWM_SUB1_PWM_B|EFPWM_SUB2_PWM_A|EFPWM_SUB2_PWM_B);
-	// Transit out of?
+
 	if(SYSTEM.i16StateTransition != SYSTEM.systemState)
 	{
-		StopMotor();
-		SystemStateTransition();
+		// Transit out of?
+		if(0 == SYSTEM.ui16StateTransitionTimeout)
+		{
+			StopMotor();
+			SystemStateTransition();
+		}
+		else
+		{
+			SYSTEM.ui16StateTransitionTimeout--;
+		}			
 	}
 	else
 	{
@@ -603,8 +649,16 @@ Int16 SystemResetState()
 	// Transit out of?
 	if(SYSTEM.i16StateTransition != SYSTEM.systemState)
 	{
-		StopMotor();
-		SystemStateTransition();
+		// Transit out of?
+		if(0 == SYSTEM.ui16StateTransitionTimeout)
+		{
+			StopMotor();
+			SystemStateTransition();
+		}
+		else
+		{
+			SYSTEM.ui16StateTransitionTimeout--;
+		}	
 	}
 	else
 	{
@@ -618,8 +672,16 @@ Int16 SystemRestartingState()
 	// Transit out of?
 	if(SYSTEM.i16StateTransition != SYSTEM.systemState)
 	{
-		StopMotor();
-		SystemStateTransition();
+		// Transit out of?
+		if(0 == SYSTEM.ui16StateTransitionTimeout)
+		{
+			StopMotor();
+			SystemStateTransition();
+		}
+		else
+		{
+			SYSTEM.ui16StateTransitionTimeout--;
+		}	
 	}
 	else
 	{
@@ -634,13 +696,21 @@ Int16 SystemFaultDRV83xxState()
 	// Transit out of?
 	if(SYSTEM.i16StateTransition != SYSTEM.systemState)
 	{
-		// Try restarting driver
-		i16Temp = SystemResetDriver();
-		if(0 == i16Temp)
+		// Transit out of?
+		if(0 == SYSTEM.ui16StateTransitionTimeout)
 		{
-			// Change state
-			SYSTEM.systemState = SYSTEM_WAKEUP;
+			// Try restarting driver
+			i16Temp = SystemResetDriver();
+			if(0 == i16Temp)
+			{
+				// Change state
+				SystemStateTransition();
+			}	
 		}
+		else
+		{
+			SYSTEM.ui16StateTransitionTimeout--;
+		}	
 	}
 	else
 	{
@@ -659,8 +729,16 @@ Int16 SystemFaultResetState()
 	// Transit out of?
 	if(SYSTEM.i16StateTransition != SYSTEM.systemState)
 	{
-		StopMotor();
-		SystemStateTransition();
+		// Transit out of?
+		if(0 == SYSTEM.ui16StateTransitionTimeout)
+		{
+			StopMotor();
+			SystemStateTransition();
+		}
+		else
+		{
+			SYSTEM.ui16StateTransitionTimeout--;
+		}	
 	}
 	else
 	{
@@ -674,8 +752,15 @@ Int16 SystemBlockExecState()
 	// Transit out of?
 	if(SYSTEM.i16StateTransition != SYSTEM.systemState)
 	{
-		StopMotor();
-		SystemStateTransition();
+		if(0 == SYSTEM.ui16StateTransitionTimeout)
+		{
+			StopMotor();
+			SystemStateTransition();
+		}
+		else
+		{
+			SYSTEM.ui16StateTransitionTimeout--;
+		}	
 	}
 	else
 	{
@@ -689,8 +774,15 @@ Int16 SystemFOCLostTimeoutState()
 	// Transit out of?
 	if(SYSTEM.i16StateTransition != SYSTEM.systemState)
 	{
-		StopMotor();
-		SystemStateTransition();
+		if(0 == SYSTEM.ui16StateTransitionTimeout)
+		{
+			StopMotor();
+			SystemStateTransition();
+		}
+		else
+		{
+			SYSTEM.ui16StateTransitionTimeout--;
+		}	
 	}
 	else
 	{
@@ -704,8 +796,15 @@ Int16 SystemPWMInLostState()
 	// Transit out of?
 	if(SYSTEM.i16StateTransition != SYSTEM.systemState)
 	{
-		StopMotor();
-		SystemStateTransition();
+		if(0 == SYSTEM.ui16StateTransitionTimeout)
+		{
+			StopMotor();
+			SystemStateTransition();
+		}
+		else
+		{
+			SYSTEM.ui16StateTransitionTimeout--;
+		}	
 	}
 	else
 	{
@@ -726,8 +825,15 @@ Int16 SystemCalibrateState()
 	// Transit out of?
 	if(SYSTEM.i16StateTransition != SYSTEM.systemState)
 	{
-		StopMotor();
-		SystemStateTransition();
+		if(0 == SYSTEM.ui16StateTransitionTimeout)
+		{
+			StopMotor();
+			SystemStateTransition();
+		}
+		else
+		{
+			SYSTEM.ui16StateTransitionTimeout--;
+		}	
 	}
 	else
 	{
@@ -1032,8 +1138,15 @@ Int16 SystemParkRotorState()
 	// Transit out of?
 	if(SYSTEM.i16StateTransition != SYSTEM.systemState)
 	{
-		StopMotor();
-		SystemStateTransition();
+		if(0 == SYSTEM.ui16StateTransitionTimeout)
+		{
+			StopMotor();
+			SystemStateTransition();
+		}
+		else
+		{
+			SYSTEM.ui16StateTransitionTimeout--;
+		}	
 	}
 	else
 	{
@@ -1080,8 +1193,15 @@ Int16 SystemMeasureRPHAState()
 	// Transit out of?
 	if(SYSTEM.i16StateTransition != SYSTEM.systemState)
 	{
-		StopMotor();
-		SystemStateTransition();
+		if(0 == SYSTEM.ui16StateTransitionTimeout)
+		{
+			StopMotor();
+			SystemStateTransition();
+		}
+		else
+		{
+			SYSTEM.ui16StateTransitionTimeout--;
+		}	
 	}
 	else
 	{
@@ -1187,8 +1307,15 @@ Int16 SystemMeasureLPHAState()
 	// Transit out of?
 	if(SYSTEM.i16StateTransition != SYSTEM.systemState)
 	{
-		StopMotor();
-		SystemStateTransition();
+		if(0 == SYSTEM.ui16StateTransitionTimeout)
+		{
+			StopMotor();
+			SystemStateTransition();
+		}
+		else
+		{
+			SYSTEM.ui16StateTransitionTimeout--;
+		}	
 	}
 	else
 	{
@@ -1335,8 +1462,15 @@ Int16 SystemFaultOCEventState()
 	// Transit out of?
 	if(SYSTEM.i16StateTransition != SYSTEM.systemState)
 	{
-		StopMotor();
-		SystemStateTransition();
+		if(0 == SYSTEM.ui16StateTransitionTimeout)
+		{
+			StopMotor();
+			SystemStateTransition();
+		}
+		else
+		{
+			SYSTEM.ui16StateTransitionTimeout--;
+		}	
 	}
 	else
 	{
@@ -1550,6 +1684,7 @@ Int16 SystemStateTransition()
 				COMMDataStruct.REGS.ui16Errors = 0;
 				COMMDataStruct.REGS.ui8UVError = 0;
 				COMMDataStruct.errStatus = 0;
+				ERROR_DQ_MERGE = 0;
 				
 				// Set startup speed
 				fTemp = (float)COMMDataStruct.REGS.i16MinRPM * 0.06826666666666666666666666666667f;
@@ -1558,6 +1693,9 @@ Int16 SystemStateTransition()
 				
 				// Set BEMF ON speed
 				SYSTEM.SENSORLESS.f16MinSpeed = SYSTEM.SENSORLESS.f16StartSpeed / 2;
+				
+				// Set BEMF ON hysteresis
+				SYSTEM.SENSORLESS.f16MinSpeedHysteresis = SYSTEM.SENSORLESS.f16MinSpeed / 2;
 	
 				// Set PWM values
 				SYSTEM.PWMValues.pwmSub_0_Channel_23_Value = FRAC16(0.5);

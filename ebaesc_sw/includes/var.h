@@ -156,6 +156,9 @@ typedef struct tagSYSVARS
 		AMCLIB_BEMF_OBSRV_DQ_T_A32 acBemfObsrvDQ;
 		// Angle tracking observer
 		AMCLIB_TRACK_OBSRV_T_F32 acToPos;	
+		// MA filter for DQ observer error
+		GDFLIB_FILTER_MA_T_A32 FilterMA32DQError;
+		Frac16 f16DQErrorFiltered;
 		// Fractional value of speed
 		Frac16 f16Speed;
 		// Filtered speed fractional value
@@ -543,6 +546,9 @@ typedef struct tagSYSVARS
 	// System state machine
 	Int16 systemState;
 	Int16 i16StateTransition;
+	
+	// State transition wait time
+	UInt16 ui16StateTransitionTimeout;
 	
 	// Driver restart after fault
 	Int16 i16DriverRestartState;

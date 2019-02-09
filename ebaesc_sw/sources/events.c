@@ -199,27 +199,6 @@ void ADC_1_EOS_ISR(void)
 	SYSTEM.ADC.f16SensorValueAFiltered = GDFLIB_FilterMA_F16(SYSTEM.ADC.f16SensorValueA, &SYSTEM.ADC.FilterMA32SensorA);
 	SYSTEM.ADC.f16SensorValueBFiltered = GDFLIB_FilterMA_F16(SYSTEM.ADC.f16SensorValueB, &SYSTEM.ADC.FilterMA32SensorB);
 	
-	if(STORE_V_MEAS)
-	{
-		// Measure consecutive V
-		SYSTEM.ADC.f16UV[0] = ioctl(ADC_1, ADC_READ_SAMPLE, 4);
-		SYSTEM.ADC.f16UV[1] = ioctl(ADC_1, ADC_READ_SAMPLE, 5);
-		
-		SYSTEM.ADC.f16IV[0] = ioctl(ADC_1, ADC_READ_SAMPLE, 12);
-		SYSTEM.ADC.f16IV[1] = ioctl(ADC_1, ADC_READ_SAMPLE, 13);				
-		
-		/*
-		// Remove offsets
-		SYSTEM.ADC.f16IV[0] = SYSTEM.ADC.f16IV[0] - SYSTEM.ADC.f16OffsetV;
-		SYSTEM.ADC.f16IV[1] = SYSTEM.ADC.f16IV[1] - SYSTEM.ADC.f16OffsetV;		
-		
-		// Multiply with gain
-		SYSTEM.ADC.f16IV[0] = mult(SYSTEM.ADC.f16CurrentGainFactor, SYSTEM.ADC.f16IV[0]);
-		SYSTEM.ADC.f16IV[1] = mult(SYSTEM.ADC.f16CurrentGainFactor, SYSTEM.ADC.f16IV[1]);
-		*/
-	}
-
-	
 	// Calculate values
 	COMMDataStruct.REGS.i16UIn = mult(SYSTEM.ADC.f16DCLinkVoltage, 6087);
 	
@@ -444,6 +423,8 @@ void ADC_1_EOS_ISR(void)
 	// BEMF observer calculation
 	//******************************************
 	AMCLIB_PMSMBemfObsrvDQ_F16(&SYSTEM.MCTRL.m2IDQ, &SYSTEM.MCTRL.m2UDQ_m, SYSTEM.POSITION.f16SpeedFiltered, &SYSTEM.POSITION.acBemfObsrvDQ);
+	// Filter DQ error
+	SYSTEM.POSITION.f16DQErrorFiltered = GDFLIB_FilterMA_F16(SYSTEM.POSITION.acBemfObsrvDQ.f16Error, &SYSTEM.POSITION.FilterMA32DQError);
 	// Absolute speed value
 	f16Temp = abs_s(SYSTEM.POSITION.f16SpeedFiltered);
 	// If speed over BEMF min speed
@@ -623,37 +604,45 @@ void ADC_1_EOS_ISR(void)
 					else
 					{
 						SYSTEM.SENSORLESS.f16BEMFErrorPart += 20;
-					}
-					
+					}					
 				}
 				else
 				{
-					// Angles merged, switch
-					SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_MULTIPLE;
-					// Set current source to speed or torque
-					if(CONTROL_SPEED)
+					// Check if BEMF error is OK
+					if(FRAC16(0.0) < SYSTEM.POSITION.f16DQErrorFiltered)
 					{
-						SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_CONTROL_SPEED;
-						// Set default values
-						// Set current
-						SYSTEM.REGULATORS.mudtControllerParamW.f32IAccK_1 = (frac32_t)SYSTEM.REGULATORS.m2IDQReq.f16Q;
-						SYSTEM.REGULATORS.ui16SpeedRegCounter = 0;
-						SYSTEM.RAMPS.f16SpeedRampDesiredValue = SYSTEM.SENSORLESS.f16StartSpeed;
-						SYSTEM.RAMPS.f16SpeedRampActualValue = SYSTEM.POSITION.f16Speed;
-						GFLIB_RampInit_F16(SYSTEM.POSITION.f16Speed, &SYSTEM.RAMPS.Ramp16_Speed);
-					}
-					else if(CONTROL_TORQUE)
-					{
-						SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_CONTROL_TORQUE;
-						// Set default values
-						SYSTEM.RAMPS.f16TorqueRampActualValue = SYSTEM.REGULATORS.m2IDQReq.f16Q /  SYSTEM.MCTRL.f16TorqueFactor;
-						SYSTEM.RAMPS.f16TorqueRampDesiredValue = SYSTEM.SENSORLESS.f16StartTorque;
+						// Angles merged, switch
+						SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_MULTIPLE;
+						// Set current source to speed or torque
+						if(CONTROL_SPEED)
+						{
+							SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_CONTROL_SPEED;
+							// Set default values
+							// Set current
+							SYSTEM.REGULATORS.mudtControllerParamW.f32IAccK_1 = (frac32_t)SYSTEM.REGULATORS.m2IDQReq.f16Q;
+							SYSTEM.REGULATORS.ui16SpeedRegCounter = 0;
+							SYSTEM.RAMPS.f16SpeedRampDesiredValue = SYSTEM.SENSORLESS.f16StartSpeed;
+							SYSTEM.RAMPS.f16SpeedRampActualValue = SYSTEM.POSITION.f16Speed;
+							GFLIB_RampInit_F16(SYSTEM.POSITION.f16Speed, &SYSTEM.RAMPS.Ramp16_Speed);
+						}
+						else if(CONTROL_TORQUE)
+						{
+							SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_CONTROL_TORQUE;
+							// Set default values
+							SYSTEM.RAMPS.f16TorqueRampActualValue = SYSTEM.REGULATORS.m2IDQReq.f16Q /  SYSTEM.MCTRL.f16TorqueFactor;
+							SYSTEM.RAMPS.f16TorqueRampDesiredValue = SYSTEM.SENSORLESS.f16StartTorque;
+						}
+						else
+						{
+							// No source, abort
+							SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_NONE;
+							SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_NONE;
+						}
 					}
 					else
 					{
-						// No source, abort
-						SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_NONE;
-						SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_NONE;
+						// Observer error
+						ERROR_DQ_MERGE = 1;
 					}
 				}
 				SYSTEM.POSITION.f16RotorAngle = AMCLIB_TrackObsrv_F16(f16Temp, &SYSTEM.POSITION.acToPos);

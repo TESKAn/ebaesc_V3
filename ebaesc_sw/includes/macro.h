@@ -164,8 +164,8 @@
 #define OL_I_RAMP_UP                FRAC16(0.0001)	//FRAC16(0.000056818182)
 #define OL_I_RAMP_DOWN              FRAC16(0.0001)	//FRAC16(0.000056818182)
 #define OL_ALIGN_TIME				500			// Time in ms for aligning
-#define MAX_BEMF_ERROR_COUNT		2			// Max. number of times BEMF is wrong before triggering restart
-#define MAX_BEMF_ON_ERROR_COUNT		2000	
+#define MAX_BEMF_ERROR_COUNT		10			// Max. number of times BEMF is wrong before triggering restart
+#define MAX_BEMF_ON_ERROR_COUNT		100	
 
 // Position sources states
 #define POSITION_SOURCE_NONE					0
@@ -230,7 +230,7 @@
 #define SEND_CAN_INFO				flag1.BIT11		// Enable CAN status messages
 #define AD_MEAS_LPHA				flag1.BIT12
 #define HSCMP_MEASURE				flag1.BIT13		// Measuring HSCMP for motor inductance
-#define STORE_V_MEAS				flag1.BIT14
+#define ERROR_DQ_MERGE				flag1.BIT14		// Error while merging
 
 
 // Driver HW interface defs
