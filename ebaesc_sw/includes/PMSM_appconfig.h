@@ -63,15 +63,17 @@
 #define D_KP_SHIFT                      (1)
 #define D_KI_GAIN                       FRAC16(0.999969482421875)
 #define D_KI_SHIFT                      (-2)
-#define D_KP_ACC32						ACC32(1.25)
-#define D_KI_ACC32						ACC32(0.25)
+
+#define D_KP_ACC32						ACC32(1.0)
+#define D_KI_ACC32						ACC32(0.5)
 //Q-axis Controller - Parallel type     
 #define Q_KP_GAIN                       FRAC16(0.625)
 #define Q_KP_SHIFT                      (1)
 #define Q_KI_GAIN                       FRAC16(0.999969482421875)
 #define Q_KI_SHIFT                      (-2)
-#define Q_KP_ACC32						ACC32(1.25)
-#define Q_KI_ACC32						ACC32(0.25)
+
+#define Q_KP_ACC32						ACC32(1.0)
+#define Q_KI_ACC32						ACC32(0.5)
 
 //Speed Loop Control                    
 //----------------------------------------------------------------------
@@ -82,10 +84,12 @@
 //Speed Controller - Parallel type      
 #define SPEED_PI_PROP_GAIN              FRAC16(0.625)
 #define SPEED_PI_PROP_SHIFT             (3)
-#define SPEED_PI_PROP_ACC32				ACC32(5.0)
+#define SPEED_PI_PROP_ACC32				ACC32(2.0)
+
 #define SPEED_PI_INTEG_GAIN             FRAC16(0.639984)
 #define SPEED_PI_INTEG_SHIFT            (-6)
-#define SPEED_PI_INTEG_ACC32			ACC32(0.01)
+#define SPEED_PI_INTEG_ACC32			ACC32(0.015)
+
 #define SPEED_LOOP_HIGH_LIMIT           FRAC16(0.09)
 #define SPEED_LOOP_LOW_LIMIT            FRAC16(-0.09)
 

@@ -594,7 +594,14 @@ void ADC_1_EOS_ISR(void)
 			
 			if(SENSORLESS_BEMF_ON)
 			{
+				// Manual error part
+				f16Temp = FRAC16(1.0) - SYSTEM.SENSORLESS.f16BEMFErrorPart;
+				f16Temp1 = mult(f16Temp, SYSTEM.SENSORLESS.f16AngleManualError);
+				// BEMF error part
 				f16Temp = mult(SYSTEM.SENSORLESS.f16BEMFErrorPart, SYSTEM.POSITION.acBemfObsrvDQ.f16Error);
+				// Sum
+				f16Temp = f16Temp + f16Temp1;
+				
 				if(FRAC16(1.0) > SYSTEM.SENSORLESS.f16BEMFErrorPart)
 				{
 					if(FRAC16(0.95) < SYSTEM.SENSORLESS.f16BEMFErrorPart)
@@ -645,11 +652,13 @@ void ADC_1_EOS_ISR(void)
 						ERROR_DQ_MERGE = 1;
 					}
 				}
+				SYSTEM.POSITION.f16AnglePhaseError = f16Temp;
 				SYSTEM.POSITION.f16RotorAngle = AMCLIB_TrackObsrv_F16(f16Temp, &SYSTEM.POSITION.acToPos);
 				
 			}
 			else
 			{
+				SYSTEM.POSITION.f16AnglePhaseError = SYSTEM.SENSORLESS.f16AngleManualError;
 				SYSTEM.POSITION.f16RotorAngle = AMCLIB_TrackObsrv_F16(SYSTEM.SENSORLESS.f16AngleManualError, &SYSTEM.POSITION.acToPos);
 			}
 			
