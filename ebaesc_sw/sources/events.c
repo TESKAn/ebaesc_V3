@@ -1045,8 +1045,8 @@ void PIT_0_ISR(void)
 	checkSystemStates();
 	// Recalculate SI values
 	CalculateSIValues();
-	// Call 1 ms event
-	OneMsEvent();
+	// Call 1 ms event - for DRV readout
+	//OneMsEvent();
 	// Calculate output temperature
 	COMMDataStruct.REGS.ui8PresentTemperature = (UInt8)CalculateTemperature(SYSTEM.ADC.f16TemperatureFiltered);
 	// Decrease counters
@@ -1106,6 +1106,10 @@ void FCAN_MB_ISR(void)
 			else if(11 == i)
 			{
 				CAN_RXENABLE(MB);
+			}
+			else if(12 == i)
+			{
+				CAN_RXRESET(MB);
 			}
 			// Mark empty
 			ioctl(MB, FCANMB_SET_CODE, FCAN_MB_CODE_RXEMPTY);

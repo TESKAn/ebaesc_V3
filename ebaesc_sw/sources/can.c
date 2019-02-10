@@ -75,6 +75,13 @@ Int16 CAN_Init()
 		ioctl(MB, FCANMB_SET_ID, uw32IDValue | FCAN_ID_EXT);	
 		ioctl(MB, FCANMB_SET_CODE, FCAN_MB_CODE_RXEMPTY);
 		
+		// Set mailbox 12 to receive reset signal
+		uw32IDValue = CAN_MID_RESET_ESC; 
+		uw32IDValue = uw32IDValue << 8;
+		MB = ioctl(FCAN, FCAN_GET_MB_MODULE, 12);			
+		ioctl(MB, FCANMB_SET_ID, uw32IDValue | FCAN_ID_EXT);	
+		ioctl(MB, FCANMB_SET_CODE, FCAN_MB_CODE_RXEMPTY);
+		
 		ioctl(FCAN, FCAN_UNLOCK_ALL_MB, null);
 		
 	}
@@ -155,6 +162,7 @@ Int16 CAN_TXStatus()
 	t32BitVars t32bit;
 	t32BitVars t32bit1;
 	
+	
 	UInt16 ui16fUIn = 0;
 	UInt16 ui16fIIn = 0;
 	UInt16 ui16fTemp = 0;
@@ -184,8 +192,73 @@ Int16 CAN_TXStatus()
 				t32bit1.bytes.ui8[3] = t32bit.bytes.ui8[0];
 				// Store
 				MB->data[0] = t32bit1.uw32;
+				// 2 bits health
+				// 3 bits mode
+				// 3 bits submode
+				switch(SYSTEM.systemState)
+				{
+					case SYSTEM_WAKEUP:
+					case SYSTEM_INIT:
+					{
+						t32bit.bytes.ui8[3] = 8;	// MODE = initialization
+						break;
+					}
+					case SYSTEM_IDLE:
+					case SYSTEM_RUN:
+					{
+						t32bit.bytes.ui8[3] = 0;
+						break;
+					}
+					case SYSTEM_FAULT:
+					{
+						t32bit.bytes.ui8[3] = 0xc0;
+						break;
+					}
+					case SYSTEM_RESET:
+					case SYSTEM_RESTARTING:
+					{
+						t32bit.bytes.ui8[3] = 0x40;
+						break;
+					}
+					case SYSTEM_FAULT_DRV8301:
+					case SYSTEM_FAULT_RESET:
+					case SYSTEM_BLOCKEXEC:
+					case SYSTEM_FOC_LOST_TIMEOUT:
+					{
+						t32bit.bytes.ui8[3] = 0xc0;
+						break;
+					}
+					case SYSTEM_PWM_IN_LOST:
+					{
+						t32bit.bytes.ui8[3] = 0x40;
+						break;
+					}
+					case SYSTEM_CALIBRATE:
+					case SYSTEM_PARKROTOR:
+					case SYSTEM_MEAS_RPHA:
+					case SYSTEM_MEAS_LPHA:
+					{
+						t32bit.bytes.ui8[3] = 0;
+						break;
+					}
+					case SYSTEM_FAULT_OCEVENT:
+					{
+						t32bit.bytes.ui8[3] = 0xc0;
+						break;
+					}
+					default:
+					{
+						t32bit.bytes.ui8[3] = 0xc0;
+						break;
+					}
+				}
+				// 16 bits specific status code
+				// Send system state
+				t32bit1.words.i16[0] = SYSTEM.systemState;
 				
-				t32bit.i32 = 0;
+				t32bit.bytes.ui8[2] = t32bit1.bytes.ui8[0];
+				t32bit.bytes.ui8[1] = t32bit1.bytes.ui8[1];
+
 				t32bit.bytes.ui8[0] = 0xc0;
 				MB->data[1] = t32bit.uw32;
 				
@@ -374,6 +447,23 @@ Int16 CAN_RXENABLE(FCAN_MB *MB)
 		{
 			COMMDataStruct.REGS.ui8Armed = 0;
 		}
+	}
+	
+	return 0;
+}
+
+Int16 CAN_RXRESET(FCAN_MB *MB)
+{
+	t32BitVars t32bit;
+	
+	// Flip bytes
+	ioctl(MB, FCANMB_REORDER_BYTES, NULL);
+	
+	// Check ID
+	t32bit.uw32 = MB->data[0];    
+	if((CAN_MOTOR_ALL_ID == t32bit.bytes.ui8[1])||(COMMDataStruct.REGS.ui8ID == t32bit.bytes.ui8[1]))
+	{
+		COMMDataStruct.REGS.ui8Reset = 1;
 	}
 	
 	return 0;

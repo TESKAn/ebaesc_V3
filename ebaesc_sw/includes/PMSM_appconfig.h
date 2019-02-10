@@ -64,16 +64,16 @@
 #define D_KI_GAIN                       FRAC16(0.999969482421875)
 #define D_KI_SHIFT                      (-2)
 
-#define D_KP_ACC32						ACC32(1.0)
-#define D_KI_ACC32						ACC32(0.5)
+#define D_KP_ACC32						ACC32(1.250)
+#define D_KI_ACC32						ACC32(0.25)
 //Q-axis Controller - Parallel type     
 #define Q_KP_GAIN                       FRAC16(0.625)
 #define Q_KP_SHIFT                      (1)
 #define Q_KI_GAIN                       FRAC16(0.999969482421875)
 #define Q_KI_SHIFT                      (-2)
 
-#define Q_KP_ACC32						ACC32(1.0)
-#define Q_KI_ACC32						ACC32(0.5)
+#define Q_KP_ACC32						ACC32(1.250)
+#define Q_KI_ACC32						ACC32(0.25)
 
 //Speed Loop Control                    
 //----------------------------------------------------------------------
