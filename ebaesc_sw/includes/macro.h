@@ -31,8 +31,8 @@
 #define M_POLEARRAY_6		0
 #define M_POLEARRAY_7		0
 // This unit ID
-#define COMM_ID				0x14	// FR
-//#define COMM_ID				0x15	// FL
+//#define COMM_ID				0x14	// FR
+#define COMM_ID				0x15	// FL
 //#define COMM_ID				0x16	// RR
 //#define COMM_ID				0x17	// RL
 // Unit park position
@@ -231,7 +231,6 @@
 #define AD_MEAS_LPHA				flag1.BIT12
 #define HSCMP_MEASURE				flag1.BIT13		// Measuring HSCMP for motor inductance
 #define ERROR_DQ_MERGE				flag1.BIT14		// Error while merging
-
 
 // Driver HW interface defs
 #define EN_GATE_ON					ioctl(GPIO_E, GPIO_SET_PIN, BIT_7)

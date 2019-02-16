@@ -575,12 +575,9 @@ void ADC_1_EOS_ISR(void)
 			if(0 == SYSTEM.SENSORLESS.i16Counter)
 			{
 				// Go to rotate
-				SYSTEM.REGULATORS.m2IDQReq.f16Q = SYSTEM.REGULATORS.m2IDQReq.f16D;
-				SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.0);		
-				
 				SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_SENSORLESS_ROTATE;
 				SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_SENSORLESS_ROTATE;
-				GFLIB_RampInit_F16(SYSTEM.REGULATORS.m2IDQReq.f16Q, &SYSTEM.RAMPS.Ramp16_AlignCurrent);
+				GFLIB_RampInit_F16(SYSTEM.SENSORLESS.f16AlignCurrent, &SYSTEM.RAMPS.Ramp16_AlignCurrent);
 				
 				// Reset bemf observer error part
 				SYSTEM.SENSORLESS.f16BEMFErrorPart = FRAC16(0.0);
@@ -593,7 +590,7 @@ void ADC_1_EOS_ISR(void)
 			i16RecorderTrigger = 1;
 			
 			if(SENSORLESS_BEMF_ON)
-			{
+			{	
 				// Manual error part
 				f16Temp = FRAC16(1.0) - SYSTEM.SENSORLESS.f16BEMFErrorPart;
 				f16Temp1 = mult(f16Temp, SYSTEM.SENSORLESS.f16AngleManualError);
@@ -620,12 +617,14 @@ void ADC_1_EOS_ISR(void)
 					{
 						// Angles merged, switch
 						SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_MULTIPLE;
+						// Set current
+						SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.0);
+						SYSTEM.REGULATORS.m2IDQReq.f16Q = SYSTEM.SENSORLESS.f16StartCurrent;
 						// Set current source to speed or torque
 						if(CONTROL_SPEED)
 						{
 							SYSTEM.REGULATORS.i16CurrentSource = CURRENT_SOURCE_CONTROL_SPEED;
 							// Set default values
-							// Set current
 							SYSTEM.REGULATORS.mudtControllerParamW.f32IAccK_1 = (frac32_t)SYSTEM.REGULATORS.m2IDQReq.f16Q;
 							SYSTEM.REGULATORS.ui16SpeedRegCounter = 0;
 							SYSTEM.RAMPS.f16SpeedRampDesiredValue = SYSTEM.SENSORLESS.f16StartSpeed;
@@ -830,23 +829,22 @@ void ADC_1_EOS_ISR(void)
 			break;
 		}
 		case CURRENT_SOURCE_SENSORLESS_ALIGN:
-		{
-			// Set Id to align current
-			if(SYSTEM.REGULATORS.m2IDQReq.f16D != SYSTEM.SENSORLESS.f16AlignCurrent)
+		{			
+			if(SYSTEM.REGULATORS.m2IDQReq.f16Q != SYSTEM.SENSORLESS.f16AlignCurrent)
 			{
-				SYSTEM.REGULATORS.m2IDQReq.f16D = GFLIB_Ramp_F16(SYSTEM.SENSORLESS.f16AlignCurrent, &SYSTEM.RAMPS.Ramp16_AlignCurrent);						
+				SYSTEM.REGULATORS.m2IDQReq.f16Q = GFLIB_Ramp_F16(SYSTEM.SENSORLESS.f16AlignCurrent, &SYSTEM.RAMPS.Ramp16_AlignCurrent);						
 			}
-			SYSTEM.REGULATORS.m2IDQReq.f16Q = FRAC16(0.0);
+			SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.0);
 			break;
 		}
 		case CURRENT_SOURCE_SENSORLESS_ROTATE:
 		{
-			// Set Id to 0, Iq to start current
-			SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.0);		
+			// Ramp to start current
 			if(SYSTEM.REGULATORS.m2IDQReq.f16Q != SYSTEM.SENSORLESS.f16StartCurrent)
 			{
 				SYSTEM.REGULATORS.m2IDQReq.f16Q = GFLIB_Ramp_F16(SYSTEM.SENSORLESS.f16StartCurrent, &SYSTEM.RAMPS.Ramp16_AlignCurrent);						
 			}
+			SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.0);
 			break;
 		}
 		case CURRENT_SOURCE_MEASURE_RPHA:
