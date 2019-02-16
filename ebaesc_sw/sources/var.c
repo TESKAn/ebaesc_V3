@@ -65,3 +65,5 @@ PARAMCONVERSION pConv;
 
 UInt16 ui16CANTestCounter = 0;
 
+unsigned int uiCRCVar1 = 0;
+

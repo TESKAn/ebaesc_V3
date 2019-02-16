@@ -56,7 +56,7 @@ MEMORY
     .x_onchip_peripherals   (RW)  : ORIGIN = 0xC000, LENGTH = 0x3000
   	.x_onchip_far 			(RW)  : ORIGIN = 0x018000, LENGTH = 0x4798	# 18328 words 
     .x_EOnCE                (R)   : ORIGIN = 0xFFFF00, LENGTH = 0x0100
-    
+    #.xCodeCRC				(RWX) : ORIGIN = 0x0F3FB, LENGTH = 2
     .xBootCfg 				(RWX) : ORIGIN = 0x0F3FD, LENGTH = 3
 }
 
@@ -66,6 +66,13 @@ KEEP_SECTION{ interrupt_vectors.text }
 
 SECTIONS 
 {
+/*
+    .ApplicationCRC:
+	{
+		# CRC
+		WRITEH(0x5a5a); # write 2 bytes
+	} > .xCodeCRC
+	*/
     .ApplicationConfiguration:
 	{
 		# Store the application entry point

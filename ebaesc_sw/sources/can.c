@@ -39,29 +39,8 @@ Int16 CAN_Init()
 		ioctl(MB, FCANMB_SET_CODE, FCAN_MB_CODE_RXEMPTY);
 		
 		// Set mailbox 10 to receive RPM setting limits
-		switch(COMMDataStruct.REGS.ui8ID)
-		{
-			case CAN_MOTOR_FR_ID:
-			{
-				uw32IDValue = CAN_MID_SETRPM_FR; 
-				break;
-			}
-			case CAN_MOTOR_FL_ID:
-			{
-				uw32IDValue = CAN_MID_SETRPM_FL; 
-				break;
-			}
-			case CAN_MOTOR_RR_ID:
-			{
-				uw32IDValue = CAN_MID_SETRPM_RR; 
-				break;
-			}
-			case CAN_MOTOR_RL_ID:
-			{
-				uw32IDValue = CAN_MID_SETRPM_RL; 
-				break;
-			}
-		}
+		
+		uw32IDValue = CAN_MID_SETRPM_BASE + COMM_ID;
 		
 		uw32IDValue = uw32IDValue << 8;
 		MB = ioctl(FCAN, FCAN_GET_MB_MODULE, 10);			
@@ -69,14 +48,14 @@ Int16 CAN_Init()
 		ioctl(MB, FCANMB_SET_CODE, FCAN_MB_CODE_RXEMPTY);
 		
 		// Set mailbox 11 to receive enable signal
-		uw32IDValue = CAN_MID_ENABLE; 
+		uw32IDValue = CAN_MID_ENABLE_BASE + COMM_ID; 
 		uw32IDValue = uw32IDValue << 8;
 		MB = ioctl(FCAN, FCAN_GET_MB_MODULE, 11);			
 		ioctl(MB, FCANMB_SET_ID, uw32IDValue | FCAN_ID_EXT);	
 		ioctl(MB, FCANMB_SET_CODE, FCAN_MB_CODE_RXEMPTY);
 		
-		// Set mailbox 12 to receive reset signal
-		uw32IDValue = CAN_MID_RESET_ESC; 
+		// Set mailbox 12 to receive set reg signal
+		uw32IDValue = CAN_MID_SET_REG_BASE + COMM_ID; 
 		uw32IDValue = uw32IDValue << 8;
 		MB = ioctl(FCAN, FCAN_GET_MB_MODULE, 12);			
 		ioctl(MB, FCANMB_SET_ID, uw32IDValue | FCAN_ID_EXT);	
@@ -437,33 +416,82 @@ Int16 CAN_RXENABLE(FCAN_MB *MB)
 	ioctl(MB, FCANMB_REORDER_BYTES, NULL);
 	
 	t32bit.uw32 = MB->data[0];    
-	if((CAN_MOTOR_ALL_ID == t32bit.bytes.ui8[1])||(COMMDataStruct.REGS.ui8ID == t32bit.bytes.ui8[1]))
-	{
-		if((COMMDataStruct.REGS.i16MinRPM <= COMMDataStruct.REGS.i16SetRPM)&&(1 == t32bit.bytes.ui8[0]))
-		{
-			COMMDataStruct.REGS.ui8Armed = 1;
-		}
-		else
-		{
-			COMMDataStruct.REGS.ui8Armed = 0;
-		}
-	}
 	
+	COMMDataStruct.REGS.ui8Armed = t32bit.bytes.ui8[0];
 	return 0;
 }
 
-Int16 CAN_RXRESET(FCAN_MB *MB)
+Int16 CAN_SetReg(FCAN_MB *MB)
 {
 	t32BitVars t32bit;
+	t32BitVars t32bit1;
 	
 	// Flip bytes
 	ioctl(MB, FCANMB_REORDER_BYTES, NULL);
 	
-	// Check ID
-	t32bit.uw32 = MB->data[0];    
-	if((CAN_MOTOR_ALL_ID == t32bit.bytes.ui8[1])||(COMMDataStruct.REGS.ui8ID == t32bit.bytes.ui8[1]))
+	t32bit1.uw32 = MB->data[0];
+	
+	// Check reg to set
+	t32bit.bytes.ui8[0] = t32bit1.bytes.ui8[1];
+	t32bit.bytes.ui8[1] = t32bit1.bytes.ui8[0];
+	
+	
+	switch(t32bit.uwords.uw16[0])
 	{
-		COMMDataStruct.REGS.ui8Reset = 1;
+		case CAN_WRITE_TOFLASH:
+		{
+			StoreEEPROM();
+			break;
+		}
+		case CAN_WRITE_REG_RESET:
+		{       
+			COMMDataStruct.REGS.ui8Reset = t32bit1.bytes.ui8[1];
+			break;
+		}
+		case CAN_WRITE_REG_BATLOW:
+		{
+			t32bit.bytes.ui8[2] = t32bit1.bytes.ui8[3];
+			t32bit.bytes.ui8[3] = t32bit1.bytes.ui8[2];
+			
+			t32bit1.uw32 = MB->data[1];
+			                 
+			t32bit.bytes.ui8[0] = t32bit1.bytes.ui8[1];
+			t32bit.bytes.ui8[1] = t32bit1.bytes.ui8[0];
+			
+			COMMDataStruct.REGS.ui16VoltageCutoff = t32bit.uwords.uw16[0];
+			
+			break;
+		}
+		case CAN_WRITE_REG_MINRPM:
+		{
+			t32bit.bytes.ui8[2] = t32bit1.bytes.ui8[3];
+			t32bit.bytes.ui8[3] = t32bit1.bytes.ui8[2];
+			
+			t32bit1.uw32 = MB->data[1];
+			                 
+			t32bit.bytes.ui8[0] = t32bit1.bytes.ui8[1];
+			t32bit.bytes.ui8[1] = t32bit1.bytes.ui8[0];
+			
+			COMMDataStruct.REGS.i16MinRPM = t32bit.words.i16[0];
+			break;
+		}
+		case CAN_WRITE_REG_MAXRPM:
+		{
+			t32bit.bytes.ui8[2] = t32bit1.bytes.ui8[3];
+			t32bit.bytes.ui8[3] = t32bit1.bytes.ui8[2];
+			
+			t32bit1.uw32 = MB->data[1];
+			                 
+			t32bit.bytes.ui8[0] = t32bit1.bytes.ui8[1];
+			t32bit.bytes.ui8[1] = t32bit1.bytes.ui8[0];
+			
+			COMMDataStruct.REGS.i16MaxRPM = t32bit.words.i16[0];
+			break;
+		}
+		default:
+		{
+			break;
+		}
 	}
 	
 	return 0;

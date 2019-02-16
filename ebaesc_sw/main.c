@@ -15,6 +15,13 @@
 
 /* local prototypes */
 
+inline unsigned int pmem_read(register UWord16 *addr)
+{
+   register unsigned int data;
+
+   asm(move.w  p:(addr)+,data);
+   return data;
+}
 
 /*
  * The main function is invoked from the startup code after 
@@ -37,6 +44,9 @@ void main (void)
 	FCAN_MB *MB;
 	int i = 0;
 	int code = 0;
+	unsigned int uiI = 0;
+	
+	uiCRCVar1 = pmem_read((UWord16 *)0x0F3FB) & 0xFFFF;
 	
 	/* initialise SYS module */
     ioctl(SYS, SYS_INIT, NULL);

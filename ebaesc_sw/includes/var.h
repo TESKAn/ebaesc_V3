@@ -627,4 +627,6 @@ extern Int32 i32Var;
 
 extern UInt16 ui16CANTestCounter;
 
+extern unsigned int uiCRCVar1;
+
 #endif /* VAR_H_ */

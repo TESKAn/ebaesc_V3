@@ -209,7 +209,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactExtension="elf" artifactName="56F84763_Build" buildProperties="" buildReferences="true" buildReferencingConfigurations="false" cleanCommand="&quot;${system:ECLIPSE_HOME}/../gnu/bin/rm&quot; -f" description="" errorParsers="org.eclipse.cdt.core.GLDErrorParser;org.eclipse.cdt.core.GASErrorParser;com.freescale.core.ide.cdt.errorParsers.LnkErrorParser;com.freescale.core.ide.cdt.errorParsers.AsmErrorParser;com.freescale.core.ide.cdt.errorParsers.CobjErrorParser;com.freescale.core.ide.cdt.errorParsers.IcodeErrorParser;com.freescale.core.ide.cdt.errorParsers.LltErrorParser;com.freescale.core.ide.cdt.errorParsers.MwfeErrorParser;com.freescale.core.ide.cdt.errorParsers.MwErrorParser;com.freescale.core.ide.cdt.errorParsers.MPWErrorParser;org.eclipse.cdt.core.GmakeErrorParser;" id="com.freescale.dsc.cdt.toolchain.config.debug.998836409" isPrebuildInvalidatingBuild="false" isVersionInfoProjSpecific="false" name="FLASH_LDM" parent="com.freescale.dsc.cdt.toolchain.config.debug" produceBuildErrorsWithMissingReferences="true">
+				<configuration artifactExtension="elf" artifactName="56F84763_Build" buildProperties="" buildReferences="true" buildReferencingConfigurations="false" cleanCommand="&quot;${system:ECLIPSE_HOME}/../gnu/bin/rm&quot; -f" description="" errorParsers="org.eclipse.cdt.core.GLDErrorParser;org.eclipse.cdt.core.GASErrorParser;com.freescale.core.ide.cdt.errorParsers.LnkErrorParser;com.freescale.core.ide.cdt.errorParsers.AsmErrorParser;com.freescale.core.ide.cdt.errorParsers.CobjErrorParser;com.freescale.core.ide.cdt.errorParsers.IcodeErrorParser;com.freescale.core.ide.cdt.errorParsers.LltErrorParser;com.freescale.core.ide.cdt.errorParsers.MwfeErrorParser;com.freescale.core.ide.cdt.errorParsers.MwErrorParser;com.freescale.core.ide.cdt.errorParsers.MPWErrorParser;org.eclipse.cdt.core.GmakeErrorParser;" id="com.freescale.dsc.cdt.toolchain.config.debug.998836409" isPrebuildInvalidatingBuild="false" isVersionInfoProjSpecific="false" name="FLASH_LDM" parent="com.freescale.dsc.cdt.toolchain.config.debug" postannouncebuildStep="" postbuildStep="" produceBuildErrorsWithMissingReferences="true">
 					<folderInfo id="com.freescale.dsc.cdt.toolchain.config.debug.998836409." name="/" resourcePath="">
 						<toolChain errorParsers="" id="com.freescale.dsc.cdt.toolchain.debug.1796632619" name="DSC Toolchain" superClass="com.freescale.dsc.cdt.toolchain.debug">
 							<targetPlatform id="com.freescale.dsc.cdt.toolchain.targetPlatform.697402866" isAbstract="false" name="DSC Target Platform" superClass="com.freescale.dsc.cdt.toolchain.targetPlatform"/>
@@ -234,6 +234,65 @@
 								</option>
 								<option id="com.freescale.dsc.cdt.toolchain.linker.general.dataModel.2143316349" name="Large Data Memory Model" superClass="com.freescale.dsc.cdt.toolchain.linker.general.dataModel" value="true" valueType="boolean"/>
 								<option id="com.freescale.dsc.cdt.toolchain.linker.output.generateSRecord.145204607" name="Generate S-Record File" superClass="com.freescale.dsc.cdt.toolchain.linker.output.generateSRecord" value="true" valueType="boolean"/>
+								<option id="com.freescale.dsc.cdt.toolchain.linker.input.linkorder.288344649" name="Link Order" superClass="com.freescale.dsc.cdt.toolchain.linker.input.linkorder" valueType="stringList">
+									<listOptionValue builtIn="false" value="EepromDrv/EepromDrv.c"/>
+									<listOptionValue builtIn="false" value="FLASH_LDM/56F84763_Build.elf.S"/>
+									<listOptionValue builtIn="false" value="FLASH_LDM/56F84763_Build.elf.p.S"/>
+									<listOptionValue builtIn="false" value="FLASH_LDM/56F84763_Build.elf.x.S"/>
+									<listOptionValue builtIn="false" value="SystemConfig/appconfig.c"/>
+									<listOptionValue builtIn="false" value="SystemConfig/startup.c"/>
+									<listOptionValue builtIn="false" value="SystemConfig/vectors.c"/>
+									<listOptionValue builtIn="false" value="main.c"/>
+									<listOptionValue builtIn="false" value="sources/Comm.c"/>
+									<listOptionValue builtIn="false" value="sources/can.c"/>
+									<listOptionValue builtIn="false" value="sources/drv8301.c"/>
+									<listOptionValue builtIn="false" value="sources/events.c"/>
+									<listOptionValue builtIn="false" value="sources/functions.c"/>
+									<listOptionValue builtIn="false" value="sources/init.c"/>
+									<listOptionValue builtIn="false" value="sources/systemStates.c"/>
+									<listOptionValue builtIn="false" value="sources/var.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/adc12.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/adc16.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/aoi.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/cop.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/crc.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/dac.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/dma.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/fcan.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/fmc.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/ftfl.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/gpio.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/hscmp.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/iic.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/intc.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/mcm.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/occs.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/pdb.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/pit.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/pmc.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/pwm.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/qtimer.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/sci.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/scibf.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/scibl.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/spi.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/spibl.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/sys.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/peripherals/xbar.c"/>
+									<listOptionValue builtIn="false" value="src/MC56F84763/system/arch.c"/>
+									<listOptionValue builtIn="false" value="src/support/freemaster/freemaster_56F8xxx.c"/>
+									<listOptionValue builtIn="false" value="src/support/freemaster/freemaster_appcmd.c"/>
+									<listOptionValue builtIn="false" value="src/support/freemaster/freemaster_can.c"/>
+									<listOptionValue builtIn="false" value="src/support/freemaster/freemaster_fastrec.c"/>
+									<listOptionValue builtIn="false" value="src/support/freemaster/freemaster_protocol.c"/>
+									<listOptionValue builtIn="false" value="src/support/freemaster/freemaster_rec.c"/>
+									<listOptionValue builtIn="false" value="src/support/freemaster/freemaster_scope.c"/>
+									<listOptionValue builtIn="false" value="src/support/freemaster/freemaster_serial.c"/>
+									<listOptionValue builtIn="false" value="src/support/freemaster/freemaster_sfio.c"/>
+									<listOptionValue builtIn="false" value="src/support/freemaster/freemaster_tsa.c"/>
+								</option>
+								<option id="com.freescale.dsc.cdt.toolchain.linker.output.maxRecordLength.1145671233" name="Max S-Record Length" superClass="com.freescale.dsc.cdt.toolchain.linker.output.maxRecordLength" value="245" valueType="string"/>
+								<option id="com.freescale.dsc.cdt.toolchain.linker.output.sortbyAddr.475482639" name="Sort by Address" superClass="com.freescale.dsc.cdt.toolchain.linker.output.sortbyAddr" value="true" valueType="boolean"/>
 								<inputType id="com.freescale.dsc.cdt.toolchain.linker.inputType.40117711" name="DSC Linker Input" superClass="com.freescale.dsc.cdt.toolchain.linker.inputType">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
@@ -314,10 +373,28 @@
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.pathentry"/>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
+	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName="FLASH_LDM">
+			<resource resourceType="PROJECT" workspacePath="/ebaesc_sw"/>
+		</configuration>
+		<configuration configurationName="FLASH_SDM">
+			<resource resourceType="PROJECT" workspacePath="/ebaesc_sw"/>
+		</configuration>
+	</storageModule>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		<scannerConfigBuildInfo instanceId="com.freescale.dsc.cdt.toolchain.config.debug.998836409;com.freescale.dsc.cdt.toolchain.config.debug.998836409.;com.freescale.dsc.cdt.toolchain.compiler.687344291;com.freescale.dsc.cdt.toolchain.compiler.inputType.cpp.619659901">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="com.freescale.dsc.cdt.c.symbols.toolchain.discoveryProfile"/>
+			<profile id="com.freescale.dsc.cdt.c.symbols.toolchain.discoveryProfile">
+				<buildOutputProvider>
+					<openAction enabled="true" filePath=""/>
+					<parser enabled="false"/>
+				</buildOutputProvider>
+				<scannerInfoProvider id="specsFile">
+					<runAction arguments="" command="" useDefault="true"/>
+					<parser enabled="true"/>
+				</scannerInfoProvider>
+			</profile>
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="com.freescale.dsc.cdt.toolchain.config.debug.1782738274;com.freescale.dsc.cdt.toolchain.config.debug.1782738274.;com.freescale.dsc.cdt.toolchain.compiler.782424964;com.freescale.dsc.cdt.toolchain.compiler.inputType.c.2132155677">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="com.freescale.dsc.cdt.c.symbols.toolchain.discoveryProfile"/>
@@ -328,13 +405,5 @@
 		<scannerConfigBuildInfo instanceId="com.freescale.dsc.cdt.toolchain.config.debug.1782738274;com.freescale.dsc.cdt.toolchain.config.debug.1782738274.;com.freescale.dsc.cdt.toolchain.compiler.782424964;com.freescale.dsc.cdt.toolchain.compiler.inputType.cpp.1631753859">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="com.freescale.dsc.cdt.c.symbols.toolchain.discoveryProfile"/>
 		</scannerConfigBuildInfo>
-	</storageModule>
-	<storageModule moduleId="refreshScope" versionNumber="2">
-		<configuration configurationName="FLASH_LDM">
-			<resource resourceType="PROJECT" workspacePath="/ebaesc_sw"/>
-		</configuration>
-		<configuration configurationName="FLASH_SDM">
-			<resource resourceType="PROJECT" workspacePath="/ebaesc_sw"/>
-		</configuration>
 	</storageModule>
 </cproject>

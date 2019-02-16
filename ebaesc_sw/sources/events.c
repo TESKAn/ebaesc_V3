@@ -1109,7 +1109,7 @@ void FCAN_MB_ISR(void)
 			}
 			else if(12 == i)
 			{
-				CAN_RXRESET(MB);
+				CAN_SetReg(MB);
 			}
 			// Mark empty
 			ioctl(MB, FCANMB_SET_CODE, FCAN_MB_CODE_RXEMPTY);
