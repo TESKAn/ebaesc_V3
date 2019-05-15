@@ -165,7 +165,7 @@ void main (void)
     	asm(nop);
     }    
     
-    /*
+    
     // Initialise MOSFET driver
 	if(0 != InitDRV8301(0,31,1))
 	{
@@ -179,8 +179,6 @@ void main (void)
 		DRV8301_CONFIGURED = 1;
 	}
 	
-	ioctl(ADC16, ADC16_WRITE_SC1_REG, 1);
-	*/
     
     // Calculate values
     

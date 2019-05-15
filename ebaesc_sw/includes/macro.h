@@ -233,8 +233,9 @@
 #define ERROR_DQ_MERGE				flag1.BIT14		// Error while merging
 
 // Driver HW interface defs
-#define EN_GATE_ON					ioctl(GPIO_E, GPIO_SET_PIN, BIT_7)
-#define EN_GATE_OFF					ioctl(GPIO_E, GPIO_CLEAR_PIN, BIT_7)
+#define EN_GATE_ON					ioctl(GPIO_C, GPIO_SET_PIN, BIT_13)
+#define EN_GATE_OFF					ioctl(GPIO_C, GPIO_CLEAR_PIN, BIT_13)
+
 
 #define LED_Y_ON					ioctl(GPIO_B, GPIO_SET_PIN, BIT_6)
 #define LED_Y_OFF					ioctl(GPIO_B, GPIO_CLEAR_PIN, BIT_6)
@@ -242,9 +243,9 @@
 #define LED_R_ON					ioctl(GPIO_B, GPIO_SET_PIN, BIT_7)
 #define LED_R_OFF					ioctl(GPIO_B, GPIO_CLEAR_PIN, BIT_7)
 #define LED_R_TOGGLE				ioctl(GPIO_B, GPIO_TOGGLE_PIN, BIT_7)
-#define LED_G_ON					ioctl(GPIO_C, GPIO_SET_PIN, BIT_5)
-#define LED_G_OFF					ioctl(GPIO_C, GPIO_CLEAR_PIN, BIT_5)
-#define LED_G_TOGGLE				ioctl(GPIO_C, GPIO_TOGGLE_PIN, BIT_5)
+#define LED_G_ON					ioctl(GPIO_B, GPIO_SET_PIN, BIT_5)
+#define LED_G_OFF					ioctl(GPIO_B, GPIO_CLEAR_PIN, BIT_5)
+#define LED_G_TOGGLE				ioctl(GPIO_B, GPIO_TOGGLE_PIN, BIT_5)
 
 #define LED_TOGGLE_COUNT			500
 

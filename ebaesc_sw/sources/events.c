@@ -40,17 +40,9 @@ void ADC_1_EOS_ISR(void)
 	//******************************************
 	// Phase currents
 	SYSTEM.ADC.m3IphUVWRaw.f16A = ioctl(ADC_1, ADC_READ_SAMPLE, 0);
-	SYSTEM.ADC.m3IphUVWRaw.f16B = ioctl(ADC_1, ADC_READ_SAMPLE, 8);
-	//SYSTEM.ADC.m3IphUVWRaw.f16C = ioctl(ADC_1, ADC_READ_SAMPLE, 9);
+	//SYSTEM.ADC.m3IphUVWRaw.f16B = ioctl(ADC_1, ADC_READ_SAMPLE, 8);
+	SYSTEM.ADC.m3IphUVWRaw.f16C = ioctl(ADC_1, ADC_READ_SAMPLE, 8);
 		
-	//SYSTEM.ADC.f16MaxCurrentLimit
-	// Check SAR
-	/*
-	SYSTEM.ADC.ui16SARValue = ioctl(ADC16, ADC16_READ_RESULT, NULL);
-	SYSTEM.ADC.f16SAR = (Frac16)(SYSTEM.ADC.ui16SARValue << 3);
-	SYSTEM.ADC.f16SAR = SYSTEM.ADC.f16SAR - FRAC16(0.5);
-	*/
-	
 	// Zero currents?
 	if(SYS_ZERO_CURRENT)
 	{
@@ -78,11 +70,11 @@ void ADC_1_EOS_ISR(void)
 	
 	// Remove offsets
 	SYSTEM.ADC.m3IphUVW.f16A = SYSTEM.ADC.m3IphUVWRaw.f16A - SYSTEM.ADC.f16OffsetU;
-	SYSTEM.ADC.m3IphUVW.f16B = SYSTEM.ADC.m3IphUVWRaw.f16B - SYSTEM.ADC.f16OffsetV;
-	//SYSTEM.ADC.m3IphUVW.f16C = SYSTEM.ADC.m3IphUVWRaw.f16C - SYSTEM.ADC.f16OffsetW;
+	//SYSTEM.ADC.m3IphUVW.f16B = SYSTEM.ADC.m3IphUVWRaw.f16B - SYSTEM.ADC.f16OffsetV;
+	SYSTEM.ADC.m3IphUVW.f16C = SYSTEM.ADC.m3IphUVWRaw.f16C - SYSTEM.ADC.f16OffsetW;
 	
 	// Calculate third
-	SYSTEM.ADC.m3IphUVW.f16C = -SYSTEM.ADC.m3IphUVW.f16A - SYSTEM.ADC.m3IphUVW.f16B;
+	SYSTEM.ADC.m3IphUVW.f16B = -SYSTEM.ADC.m3IphUVW.f16A - SYSTEM.ADC.m3IphUVW.f16C;
 	
 	// Multiply with gain
 	SYSTEM.ADC.m3IphUVW.f16A = mult(SYSTEM.ADC.f16CurrentGainFactor, SYSTEM.ADC.m3IphUVW.f16A);
@@ -177,9 +169,9 @@ void ADC_1_EOS_ISR(void)
 	// U
 	SYSTEM.ADC.m3UphUVW.f16A = ioctl(ADC_1, ADC_READ_SAMPLE, 3);
 	// V
-	SYSTEM.ADC.m3UphUVW.f16B = ioctl(ADC_1, ADC_READ_SAMPLE, 4);
+	SYSTEM.ADC.m3UphUVW.f16B = ioctl(ADC_1, ADC_READ_SAMPLE, 11);
 	// W
-	SYSTEM.ADC.m3UphUVW.f16C = ioctl(ADC_1, ADC_READ_SAMPLE, 11);
+	SYSTEM.ADC.m3UphUVW.f16C = ioctl(ADC_1, ADC_READ_SAMPLE, 4);
 	
 	
 	// Measure DC link voltage
@@ -204,7 +196,7 @@ void ADC_1_EOS_ISR(void)
 	
 	COMMDataStruct.REGS.i16RPM = mult(SYSTEM.POSITION.f16SpeedFiltered, 17142);
 	
-	/*
+	
 	// Change phase current amplification if necessary
 	if(DRV8301_CONFIGURED)
 	{
@@ -329,7 +321,7 @@ void ADC_1_EOS_ISR(void)
 			}
 		}
 	}
-		*/
+		
 	// Call freemaster recorder
 	FMSTR_Recorder();
 	
