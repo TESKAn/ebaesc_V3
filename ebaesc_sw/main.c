@@ -87,7 +87,6 @@ void main (void)
     ioctl(QTIMER_B3, QT_INIT, NULL);		// For input PWM
     //ioctl(HSCMP_A, HSCMP_INIT, NULL);
     ioctl(FCAN, FCAN_INIT, NULL);
-    //ioctl(ADC16, ADC16_INIT, NULL);
     ioctl(CRC, CRC_INIT, NULL);
     
     FMSTR_Init();    
