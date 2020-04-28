@@ -97,7 +97,7 @@
 #define SPEED_RAMP_UP                   FRAC16(0.001)//FRAC16(0.000056818182)
 #define SPEED_RAMP_DOWN                 FRAC16(0.001)//FRAC16(0.000056818182)
 
-#define SPEED_LOOP_CNTR                 (19)	// 62.5 usec interval
+#define SPEED_LOOP_CNTR                 (19)	// 50 usec interval
 #define SPEED_LOOP_FREQ                 (1000)
 
 
@@ -126,12 +126,12 @@
 
 // TMC
 
-/*
+
 #define I_SCALE ACC32(0.879120879121)  
 #define U_SCALE ACC32(0.101471647285)  
 #define E_SCALE ACC32(0.101471647285)  
 #define WI_SCALE ACC32(0.443045117814)  
-*/
+
 /*
 #define BEMF_DQ_KP_GAIN FRAC16(0.713989175715)  
 #define BEMF_DQ_KP_SHIFT (0)  
@@ -141,11 +141,12 @@
 
 
 // EMAX 32
+/*
 #define I_SCALE ACC32(0.554913294798)  
 #define U_SCALE ACC32(0.735680504467)  
 #define E_SCALE ACC32(0.735680504467)  
 #define WI_SCALE ACC32(0.07263798043) 
-
+*/
 /*
 #define BEMF_DQ_KP_GAIN FRAC16(0.516137807798)  
 #define BEMF_DQ_KP_SHIFT (0)  

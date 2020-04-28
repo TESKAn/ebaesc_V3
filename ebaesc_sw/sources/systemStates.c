@@ -9,15 +9,10 @@
 
 Int16 checkSystemStates(void)
 {
-	i16LEDToggleCount++;
-	if(i16LEDToggles < i16LEDToggleCount) i16LEDToggleCount = 0;
 	switch(SYSTEM.systemState)
 	{
 		case SYSTEM_WAKEUP:
 		{
-			LED_G_OFF;
-			LED_R_OFF;
-			LED_Y_ON;
 			SystemWakeupState();	
 			break;
 		}
@@ -27,157 +22,102 @@ Int16 checkSystemStates(void)
 			{			
 				case PWM_MEAS_INIT:
 				{
-					i16LEDToggles = LED_TOGGLE_COUNT / 8;
 					break;
 				}
 				case PWM_MEAS_DECIDE:
 				{
-					i16LEDToggles = LED_TOGGLE_COUNT / 4;
 					break;
 				}
 				case PWM_MEAS_HIGH:
 				{
-					i16LEDToggles = LED_TOGGLE_COUNT / 2;
 					break;
 				}
 				case PWM_MEAS_LOW:
 				{
-					i16LEDToggles = LED_TOGGLE_COUNT;
 					break;
 				}		
 			}
 			
-			if(0 == i16LEDToggleCount) LED_G_TOGGLE;			
-			LED_R_OFF;
-			LED_Y_ON;
 			SystemInitState();
 			break;
 		}
 		case SYSTEM_IDLE:
 		{
-			LED_G_ON;
-			LED_R_OFF;
-			if(0 == i16LEDToggleCount) LED_Y_TOGGLE;
 			SystemIdleState();
 			break;
 		}
 		case SYSTEM_RUN:
 		{
-			LED_G_ON;
-			LED_R_OFF;
-			LED_Y_OFF;
 			SystemRunState();
 			break;
 		}		
 		case SYSTEM_FAULT:
 		{
-			LED_G_OFF;
-			LED_R_ON;
-			LED_Y_OFF;
 			SystemFaultState();
 			break;
 		}		
 		case SYSTEM_RESET:
 		{
-			LED_G_OFF;
-			LED_R_OFF;
-			if(0 == i16LEDToggleCount) LED_Y_TOGGLE;
 			SystemResetState();
 			break;
 		}		
 		case SYSTEM_RESTARTING:
 		{
-			LED_G_OFF;
-			LED_R_OFF;
-			if(0 == i16LEDToggleCount) LED_Y_TOGGLE;
 			SystemRestartingState();
 			break;
 		}		
 		case SYSTEM_FAULT_DRV8301:
 		{
-			LED_G_OFF;
-			LED_R_ON;
-			LED_Y_OFF;
 			SystemFaultDRV83xxState();
 			break;
 		}		
 		case SYSTEM_FAULT_RESET:
 		{
-			LED_G_OFF;
-			LED_R_ON;
-			LED_Y_OFF;
 			SystemFaultResetState();
 			break;
 		}		
 		case SYSTEM_BLOCKEXEC:
 		{
-			LED_G_OFF;
-			LED_R_ON;
-			LED_Y_OFF;
 			SystemBlockExecState();
 			break;
 		}	
 		case SYSTEM_FOC_LOST_TIMEOUT:
 		{
-			LED_G_OFF;
-			LED_R_ON;
-			LED_Y_OFF;
 			SystemFOCLostTimeoutState();
 			break;
 		}	
 		case SYSTEM_PWM_IN_LOST:
 		{
-			LED_G_OFF;
-			LED_R_ON;
-			LED_Y_OFF;
 			SystemPWMInLostState();
 			break;
 		}		
 		case SYSTEM_CALIBRATE:
 		{
-			if(0 == i16LEDToggleCount) LED_G_TOGGLE;
-			LED_R_OFF;
-			LED_Y_ON;
 			SystemCalibrateState();
 			break;
 		}
 		case SYSTEM_PARKROTOR:
 		{
-			if(0 == i16LEDToggleCount) LED_G_TOGGLE;
-			LED_R_OFF;
-			LED_Y_OFF;
 			SystemParkRotorState();
 			break;
 		}
 		case SYSTEM_MEAS_RPHA:
 		{
-			if(0 == i16LEDToggleCount) LED_G_TOGGLE;
-			LED_R_OFF;
-			LED_Y_ON;
 			SystemMeasureRPHAState();
 			break;
 		}
 		case SYSTEM_MEAS_LPHA:
 		{
-			if(0 == i16LEDToggleCount) LED_G_TOGGLE;
-			LED_R_OFF;
-			LED_Y_ON;
 			SystemMeasureLPHAState();
 			break;
 		}
 		case SYSTEM_FAULT_OCEVENT:
 		{
-			LED_G_OFF;
-			LED_R_ON;
-			LED_Y_OFF;
 			SystemFaultOCEventState();
 			break;
 		}
 		default:
 		{
-			LED_G_OFF;
-			LED_R_OFF;
-			LED_Y_OFF;
 			SYSTEM.systemState = SYSTEM_WAKEUP;
 			break;
 		}
@@ -227,8 +167,6 @@ Int16 SystemInitState()
 	{
 		if(0 == SYSTEM.ui16StateTransitionTimeout)
 		{
-			// Reset diode PWM timer
-			i16LEDToggles = LED_TOGGLE_COUNT;
 			SystemStateTransition();
 		}
 		else

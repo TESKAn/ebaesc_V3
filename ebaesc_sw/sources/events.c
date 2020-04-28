@@ -40,49 +40,32 @@ void ADC_1_EOS_ISR(void)
 	//******************************************
 	// Phase currents
 	SYSTEM.ADC.m3IphUVWRaw.f16A = ioctl(ADC_1, ADC_READ_SAMPLE, 0);
-	SYSTEM.ADC.m3IphUVWRaw.f16B = ioctl(ADC_1, ADC_READ_SAMPLE, 8);
-	//SYSTEM.ADC.m3IphUVWRaw.f16C = ioctl(ADC_1, ADC_READ_SAMPLE, 9);
+	//SYSTEM.ADC.m3IphUVWRaw.f16B = ioctl(ADC_1, ADC_READ_SAMPLE, 8);
+	SYSTEM.ADC.m3IphUVWRaw.f16C = ioctl(ADC_1, ADC_READ_SAMPLE, 8);
 		
-	//SYSTEM.ADC.f16MaxCurrentLimit
-	// Check SAR
-	/*
-	SYSTEM.ADC.ui16SARValue = ioctl(ADC16, ADC16_READ_RESULT, NULL);
-	SYSTEM.ADC.f16SAR = (Frac16)(SYSTEM.ADC.ui16SARValue << 3);
-	SYSTEM.ADC.f16SAR = SYSTEM.ADC.f16SAR - FRAC16(0.5);
-	*/
 	
-	// Zero currents?
-	if(SYS_ZERO_CURRENT)
+	i16Temp = ioctl(EFPWMA, EFPWM_READ_OUTPUT_ENABLE_REG, null);
+	if(0 == i16Temp)
 	{
-		if(0 < SYSTEM.ADC.i16ADCOffsetMeasurements)
+		// PWM outputs are disabled, zero currents
+		if((0 == SYSTEM.ADC.f16OffsetU)&&(0 == SYSTEM.ADC.f16OffsetW))
 		{
-			SYSTEM.ADC.i16ADCOffsetMeasurements--;
-			if((0 == SYSTEM.ADC.f16OffsetU)&&(0 == SYSTEM.ADC.f16OffsetU)&&(0 == SYSTEM.ADC.f16OffsetU))
-			{
-				SYSTEM.ADC.f16OffsetU = SYSTEM.ADC.m3IphUVWRaw.f16A;
-				SYSTEM.ADC.f16OffsetV = SYSTEM.ADC.m3IphUVWRaw.f16B;
-				SYSTEM.ADC.f16OffsetW = SYSTEM.ADC.m3IphUVWRaw.f16C;				
-			}
-			SYSTEM.ADC.f16OffsetU += SYSTEM.ADC.m3IphUVWRaw.f16A;
-			SYSTEM.ADC.f16OffsetV += SYSTEM.ADC.m3IphUVWRaw.f16B;
-			SYSTEM.ADC.f16OffsetW += SYSTEM.ADC.m3IphUVWRaw.f16C;
-			SYSTEM.ADC.f16OffsetU = SYSTEM.ADC.f16OffsetU / 2;
-			SYSTEM.ADC.f16OffsetV = SYSTEM.ADC.f16OffsetV / 2;
-			SYSTEM.ADC.f16OffsetW = SYSTEM.ADC.f16OffsetW / 2;
+			SYSTEM.ADC.f16OffsetU = SYSTEM.ADC.m3IphUVWRaw.f16A;
+			SYSTEM.ADC.f16OffsetW = SYSTEM.ADC.m3IphUVWRaw.f16C;				
 		}
-		else
-		{
-			SYS_ZERO_CURRENT = 0;
-		}
+		SYSTEM.ADC.f16OffsetU += SYSTEM.ADC.m3IphUVWRaw.f16A;
+		SYSTEM.ADC.f16OffsetW += SYSTEM.ADC.m3IphUVWRaw.f16C;
+		SYSTEM.ADC.f16OffsetU = SYSTEM.ADC.f16OffsetU / 2;
+		SYSTEM.ADC.f16OffsetW = SYSTEM.ADC.f16OffsetW / 2;		
 	}
 	
 	// Remove offsets
 	SYSTEM.ADC.m3IphUVW.f16A = SYSTEM.ADC.m3IphUVWRaw.f16A - SYSTEM.ADC.f16OffsetU;
-	SYSTEM.ADC.m3IphUVW.f16B = SYSTEM.ADC.m3IphUVWRaw.f16B - SYSTEM.ADC.f16OffsetV;
-	//SYSTEM.ADC.m3IphUVW.f16C = SYSTEM.ADC.m3IphUVWRaw.f16C - SYSTEM.ADC.f16OffsetW;
+	//SYSTEM.ADC.m3IphUVW.f16B = SYSTEM.ADC.m3IphUVWRaw.f16B - SYSTEM.ADC.f16OffsetV;
+	SYSTEM.ADC.m3IphUVW.f16C = SYSTEM.ADC.m3IphUVWRaw.f16C - SYSTEM.ADC.f16OffsetW;
 	
 	// Calculate third
-	SYSTEM.ADC.m3IphUVW.f16C = -SYSTEM.ADC.m3IphUVW.f16A - SYSTEM.ADC.m3IphUVW.f16B;
+	SYSTEM.ADC.m3IphUVW.f16B = -SYSTEM.ADC.m3IphUVW.f16A - SYSTEM.ADC.m3IphUVW.f16C;
 	
 	// Multiply with gain
 	SYSTEM.ADC.m3IphUVW.f16A = mult(SYSTEM.ADC.f16CurrentGainFactor, SYSTEM.ADC.m3IphUVW.f16A);
@@ -177,11 +160,11 @@ void ADC_1_EOS_ISR(void)
 	// U
 	SYSTEM.ADC.m3UphUVW.f16A = ioctl(ADC_1, ADC_READ_SAMPLE, 3);
 	// V
-	SYSTEM.ADC.m3UphUVW.f16B = ioctl(ADC_1, ADC_READ_SAMPLE, 4);
+	SYSTEM.ADC.m3UphUVW.f16B = ioctl(ADC_1, ADC_READ_SAMPLE, 11);
 	// W
-	SYSTEM.ADC.m3UphUVW.f16C = ioctl(ADC_1, ADC_READ_SAMPLE, 11);
+	SYSTEM.ADC.m3UphUVW.f16C = ioctl(ADC_1, ADC_READ_SAMPLE, 4);
 	
-	
+
 	// Measure DC link voltage
 	SYSTEM.ADC.f16DCLinkVoltage = ioctl(ADC_1, ADC_READ_SAMPLE, 1);
 	// Filter	
@@ -333,82 +316,8 @@ void ADC_1_EOS_ISR(void)
 	// Call freemaster recorder
 	FMSTR_Recorder();
 	
-	// Recalculate input capture values
-	// Values are read from timer modules in PWM reload interrupt
-	/*
-	SYSTEM.INPUTCAPTURE.m3UphUVW.f16A = (Frac16)(SYSTEM.INPUTCAPTURE.Val0 * 5);
-	mac_r(SYSTEM.INPUTCAPTURE.m3UphUVW.f16A, SYSTEM.INPUTCAPTURE.Val0, FRAC16(0.24288));
+	SYSTEM_RUN_SENSORED = 0;
 	
-	SYSTEM.INPUTCAPTURE.m3UphUVW.f16B = (Frac16)(SYSTEM.INPUTCAPTURE.Val1 * 5);
-	mac_r(SYSTEM.INPUTCAPTURE.m3UphUVW.f16B, SYSTEM.INPUTCAPTURE.Val1, FRAC16(0.24288));
-	
-	SYSTEM.INPUTCAPTURE.m3UphUVW.f16C = (Frac16)(SYSTEM.INPUTCAPTURE.Val2 * 5);
-	mac_r(SYSTEM.INPUTCAPTURE.m3UphUVW.f16C, SYSTEM.INPUTCAPTURE.Val2, FRAC16(0.24288));
-	*/
-	
-	// Get measured angle
-	// Get current position index
-	SYSTEM.POSITION.i16SensorIndex = (Int16)(SYSTEM.ADC.f16SensorValueB >> 3);
-	// Get filtered current position
-	SYSTEM.POSITION.i16SensorIndexFiltered = (Int16)(SYSTEM.ADC.f16SensorValueBFiltered >> 3);
-	// Store position
-	COMMDataStruct.REGS.i16Position = SYSTEM.POSITION.i16SensorIndexFiltered;
-	// Add offset to index
-	//SYSTEM.POSITION.i16SensorIndex += SYSTEM.POSITION.i16SensorIndexOffset;
-	// Add phase delay
-	//i16Temp = mult(SYSTEM.POSITION.i16SensorIndexPhaseDelay, SYSTEM.POSITION.f16SpeedFiltered);
-	//SYSTEM.POSITION.i16SensorIndex = i16Temp + SYSTEM.POSITION.i16SensorIndex;
-	// Wrap
-    /*
-     * TODO: Check wrap for negative speeds 
-     *
-     */	
-	SYSTEM.POSITION.i16SensorIndex = SYSTEM.POSITION.i16SensorIndex & 4095;
-	// If calibrated
-	if(SYSTEM_CALIBRATED)
-	{	
-		// Check if sensor readings are OK
-		if((POS_SENS_LOW > SYSTEM.POSITION.i16SensorIndexFiltered)||(POS_SENS_HIGH < SYSTEM.POSITION.i16SensorIndexFiltered))
-		{
-			// Sensor fault
-			SYSTEM_RUN_SENSORED = 0;
-		}
-		else
-		{
-			// Sensor is OK
-			SYSTEM_RUN_SENSORED = 1;
-		}	
-	}
-	else
-	{
-		SYSTEM_RUN_SENSORED = 0;
-	}
-	// Get measured angle from previous iteration
-	SYSTEM.POSITION.f16MeasuredRotorAngle = SYSTEM.CALIBRATION.f16CalibrationArray[SYSTEM.POSITION.i16SensorIndex];
-	// Add position offset from sensor delay
-	SYSTEM.POSITION.f16MeasuredRotorAngle += SYSTEM.POSITION.f16AngleOffset;
-	// Add fixed position offset
-	SYSTEM.POSITION.f16MeasuredRotorAngle += SYSTEM.POSITION.f16AddedAngleOffset;
-	// Calculate phase error
-	// SYSTEM.POSITION.f16RotorAngle = calculated angle from previous iteration
-	// SYSTEM.POSITION.f16MeasuredRotorAngle = current measured angle
-	SYSTEM.POSITION.f16MeasuredAngleError = SYSTEM.POSITION.f16MeasuredRotorAngle - SYSTEM.POSITION.f16RotorAngle;
-	// Check zero - cross
-	
-	SYSTEM.MEASUREWEL.f16AngleDiff = mult(SYSTEM.POSITION.f16RotorAngle_m,SYSTEM.POSITION.f16RotorAngle);
-	if(FRAC16(-0.5) > SYSTEM.MEASUREWEL.f16AngleDiff)
-	{
-		SYSTEM.MEASUREWEL.i16ADCycles = SYSTEM.MEASUREWEL.i16ADCycleCounter;
-		SYSTEM.MEASUREWEL.i16ADCycleCounter = 0;
-	}
-	else
-	{
-		SYSTEM.MEASUREWEL.i16ADCycleCounter++;
-	}
-	
-	
-	// Store to previous angle
-	SYSTEM.POSITION.f16RotorAngle_m = SYSTEM.POSITION.f16RotorAngle;
 	
 	//******************************************
 	// Transform currents to rotating frame
@@ -680,27 +589,17 @@ void ADC_1_EOS_ISR(void)
 			// Merge(?) errors from measured and observed angle
 			// i16Temp counts error sources
 			i16Temp = 0;
-			mf16ErrorK = FRAC16(0.0);
-			if(SYSTEM_CALIBRATED && SYSTEM_RUN_SENSORED)
-			{
-				// Sensor calibrated and use sensor
-				i16Temp ++;
-				// SYSTEM.POSITION.f16AnglePhaseError holds sensor error
-				mf16ErrorK += SYSTEM.POSITION.f16MeasuredAngleError;
-			}
+
 			if(SENSORLESS_BEMF_ON)
 			{
 				// We have good BEMF signal, use it
-				i16Temp ++;
-				mf16ErrorK += SYSTEM.POSITION.acBemfObsrvDQ.f16Error;
+				SYSTEM.POSITION.f16AnglePhaseError = SYSTEM.POSITION.acBemfObsrvDQ.f16Error;
 			}
-			// Divide by 2?
-			if(1 < i16Temp)
+			else
 			{
-				mf16ErrorK = mult(mf16ErrorK, FRAC16(0.5));
+				SYSTEM.POSITION.f16AnglePhaseError = 0;
 			}
-			
-			SYSTEM.POSITION.f16AnglePhaseError = mf16ErrorK;
+
 			
 			// Calculate angle tracking observer or use forced angle
 			SYSTEM.POSITION.f16RotorAngle = AMCLIB_TrackObsrv_F16(SYSTEM.POSITION.f16AnglePhaseError, &SYSTEM.POSITION.acToPos);
@@ -981,10 +880,6 @@ void QT_B0_ISR(void)
 {
 	// Clear input edge flag
 	ioctl(QTIMER_B0, QT_CLEAR_FLAG, QT_COMPARE_FLAG);
-	
-	SYSTEM.ADC.ui16SARValue = ioctl(ADC16, ADC16_READ_RESULT, NULL);
-	SYSTEM.ADC.f16SAR = (Frac16)(SYSTEM.ADC.ui16SARValue << 3);
-	SYSTEM.ADC.f16SAR = SYSTEM.ADC.f16SAR - FRAC16(0.5);
 }
 
 
@@ -1157,14 +1052,3 @@ void HSCMP_A_ISR(void)
 	
 	ioctl(HSCMP_A, HSCMP_CLEAR_INT_FLAGS, HSCMP_FLAG_RISING_EDGE);
 }
-
-#pragma interrupt called
-void ADC_0_ISR(void)
-{
-	SYSTEM.ADC.ui16SARValue = ioctl(ADC16, ADC16_READ_RESULT, NULL);
-	SYSTEM.ADC.f16SAR = (Frac16)(SYSTEM.ADC.ui16SARValue << 3);
-	SYSTEM.ADC.f16SAR = SYSTEM.ADC.f16SAR - FRAC16(0.5);
-	
-	ioctl(ADC16, ADC16_WRITE_SC1_REG, 12);
-}
-

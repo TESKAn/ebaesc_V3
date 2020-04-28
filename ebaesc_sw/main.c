@@ -98,6 +98,7 @@ void main (void)
 	// Initialise system variables to default values
 	InitSysVars(1);    
 	
+	/*
     // Check EEPROM
     UW32FlashResult = GetEepromInfo();
     UW32FlashResult = UW32FlashResult & 0x0000ffff;
@@ -110,7 +111,7 @@ void main (void)
     else
     {
     	UW32FlashResult = SetEEEEnable();
-    }    
+    }    */
 
     /* initialise interrupt controller and enable interrupts */
     ioctl(INTC, INTC_INIT, NULL);
@@ -158,15 +159,6 @@ void main (void)
     // Gain = 20 (x20 DRV)
     SYSTEM.ADC.f16CurrentGainFactor = FRAC16(0.5);
     
-    // Set current offsets
-    SYSTEM.ADC.i16ADCOffsetMeasurements = 200;
-    SYS_ZERO_CURRENT = 1;
-    while(SYS_ZERO_CURRENT)
-    {
-    	asm(nop);
-    }    
-    
-    /*
     // Initialise MOSFET driver
 	if(0 != InitDRV8301(0,31,1))
 	{
@@ -179,9 +171,6 @@ void main (void)
 		// After everything is initialised, DRV8301_CONFIGURED = 1 moves system state from boot to init.
 		DRV8301_CONFIGURED = 1;
 	}
-	
-	ioctl(ADC16, ADC16_WRITE_SC1_REG, 1);
-	*/
     
     // Calculate values
     
@@ -194,56 +183,7 @@ void main (void)
     {
     	// Check freemaster
     	FMSTR_Poll();
-
-		switch(i8LEDTest)
-		{
-			case 0:
-			{
-				break;
-			}
-			case 1:
-			{
-				LED_Y_ON;
-				i8LEDTest = 0;
-				break;
-			}			
-			case 2:
-			{
-				LED_Y_OFF;
-				i8LEDTest = 0;
-				break;
-			}	
-			case 3:
-			{
-				LED_R_ON;
-				i8LEDTest = 0;
-				break;
-			}			
-			case 4:
-			{
-				LED_R_OFF;
-				i8LEDTest = 0;
-				break;
-			}
-			case 5:
-			{
-				LED_G_ON;
-				i8LEDTest = 0;
-				break;
-			}			
-			case 6:
-			{
-				LED_G_OFF;
-				i8LEDTest = 0;
-				break;
-			}
-			default:
-			{
-				i8LEDTest = 0;
-				break;
-			}
-		}
-				
+    	
     	switch(i8ParamTest)
     	{
 			case 0:

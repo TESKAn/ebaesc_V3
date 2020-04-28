@@ -585,10 +585,6 @@ extern Int8 i8CANTest;
 // Parameters test 
 extern Int8 i8ParamTest;
 
-// LED test
-extern Int8 i8LEDTest;
-extern Int16 i16LEDToggleCount;
-extern Int16 i16LEDToggles;
 
 // Some flags
 extern FLAGBITS flag0;
