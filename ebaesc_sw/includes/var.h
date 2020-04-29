@@ -224,6 +224,8 @@ typedef struct tagSYSVARS
 		Frac16 f16AlignCurrent;
 		// Start current
 		Frac16 f16StartCurrent;
+		// Merge current
+		Frac16 f16StartMergeCurrent;
 		// Time counter
 		Int16 i16Counter;
 		// Align time

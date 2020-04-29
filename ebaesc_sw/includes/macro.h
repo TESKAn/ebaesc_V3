@@ -158,6 +158,7 @@
 #define SENSORLESS_MAX_ERROR		FRAC16(0.005)	// If error below this, we use observer result
 #define SENSORLESS_ALIGN_CURRENT	FRAC16(0.06)	// Rotor align current
 #define SENSORLESS_START_CURRENT	FRAC16(0.025)	// Rotor start current
+#define SENSORLESS_MERGE_CURRENT	FRAC16(0.02)	// Rotor start current
 #define SENSORLESS_START_SPEED		FRAC16(0.1)
 #define SENSORLESS_START_TORQUE		FRAC16(0.005)
 #define SENSORLESS_ANGLE_MAN_ERROR	FRAC16(0.0015)	

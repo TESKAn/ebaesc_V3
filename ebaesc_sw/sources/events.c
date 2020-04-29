@@ -740,25 +740,11 @@ void ADC_1_EOS_ISR(void)
 		{
 			if(SENSORLESS_BEMF_ON)
 			{	
-				// If BEMF is ON, regulate current
-				SYSTEM.REGULATORS.ui16SpeedRegCounter++;
-				if(SYSTEM.REGULATORS.ui16SpeedRegInterval < SYSTEM.REGULATORS.ui16SpeedRegCounter)
+				// Ramp to start merge current
+				if(SYSTEM.REGULATORS.m2IDQReq.f16Q != SYSTEM.SENSORLESS.f16StartMergeCurrent)
 				{
-					SYSTEM.REGULATORS.ui16SpeedRegCounter = 0;
-					
-					// Do we have to do ramp?
-					if(SYSTEM.RAMPS.f16SpeedRampActualValue != SYSTEM.RAMPS.f16SpeedRampDesiredValue)
-					{
-						SYSTEM.RAMPS.f16SpeedRampActualValue = GFLIB_Ramp_F16(SYSTEM.RAMPS.f16SpeedRampDesiredValue, &SYSTEM.RAMPS.Ramp16_Speed);						
-					}
-					
-					f16SpeedErrorK = SYSTEM.RAMPS.f16SpeedRampActualValue - SYSTEM.POSITION.f16SpeedFiltered;
-
-					SYSTEM.REGULATORS.m2IDQReq.f16Q = GFLIB_CtrlPIpAW_F16(f16SpeedErrorK, &SYSTEM.REGULATORS.mudtControllerParamIq.bLimFlag, &SYSTEM.REGULATORS.mudtControllerParamW);
-					
-					// Set D value to 0
-					//SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.0);
-				}		
+					SYSTEM.REGULATORS.m2IDQReq.f16Q = GFLIB_Ramp_F16(SYSTEM.SENSORLESS.f16StartMergeCurrent, &SYSTEM.RAMPS.Ramp16_AlignCurrent);						
+				}
 			}
 			else
 			{			
@@ -767,13 +753,6 @@ void ADC_1_EOS_ISR(void)
 				{
 					SYSTEM.REGULATORS.m2IDQReq.f16Q = GFLIB_Ramp_F16(SYSTEM.SENSORLESS.f16StartCurrent, &SYSTEM.RAMPS.Ramp16_AlignCurrent);						
 				}
-
-				SYSTEM.REGULATORS.mudtControllerParamW.f32IAccK_1 = (frac32_t)SYSTEM.REGULATORS.m2IDQReq.f16Q;
-				SYSTEM.REGULATORS.ui16SpeedRegCounter = 0;
-				SYSTEM.RAMPS.f16SpeedRampDesiredValue = SYSTEM.SENSORLESS.f16StartSpeed;
-				SYSTEM.RAMPS.f16SpeedRampActualValue = SYSTEM.POSITION.f16Speed;
-				GFLIB_RampInit_F16(SYSTEM.POSITION.f16Speed, &SYSTEM.RAMPS.Ramp16_Speed);
-
 			}
 			SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.0);
 			break;
