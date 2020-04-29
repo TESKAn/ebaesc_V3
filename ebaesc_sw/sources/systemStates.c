@@ -466,6 +466,10 @@ Int16 SystemRunState()
 				}
 			}
 		}
+		else if(CONTROL_MANUAL)
+		{
+			
+		}
 		else
 		{
 			// Go out of run mode

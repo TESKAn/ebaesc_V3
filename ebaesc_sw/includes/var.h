@@ -236,6 +236,8 @@ typedef struct tagSYSVARS
 		Frac16 f16AngleManualError;
 		// How much BEMF error to use?
 		Frac16 f16BEMFErrorPart;		
+		// Add this during error merge
+		Frac16 f16BEMFErrorPartIncrease;
 		// Detection count - observer error error
 		UInt8 ui8BemfObserverErrorCount;
 		// Max observer error count before restart

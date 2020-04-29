@@ -157,7 +157,7 @@ void main (void)
     CAN_Init();
     
     // Gain = 20 (x20 DRV)
-    SYSTEM.ADC.f16CurrentGainFactor = FRAC16(0.5);
+    //SYSTEM.ADC.f16CurrentGainFactor = FRAC16(0.5);
     
     // Initialise MOSFET driver
 	if(0 != InitDRV8301(0,31,1))

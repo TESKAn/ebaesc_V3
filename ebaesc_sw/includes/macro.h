@@ -21,7 +21,7 @@
 #ifdef M_NONE
 #define M_MAXSENSORINDEX	0
 #define M_MINSENSORINDEX	0
-#define M_POLEPAIRS			7
+#define M_POLEPAIRS			2
 #define M_POLEARRAY_0		0
 #define M_POLEARRAY_1		0
 #define M_POLEARRAY_2		0
@@ -113,14 +113,14 @@
 #define SI_RPM_FACTOR		17142.8571f	//120.000/n pole pairs
 
 // Default voltage cutoff in mV
-#define SI_VOLTAGE_CUTOFF	12500
+#define SI_VOLTAGE_CUTOFF	8000
 // Undervoltage events
 #define MAX_UNDERVOLTAGE_EVENTS		500
 
 // Macros for calculating motor parameters
 //#define MOSFET_RDSON		0.0078f
-//#define MOSFET_RDSON		0.001f
-#define MOSFET_RDSON		0.0024f		// Mini
+#define MOSFET_RDSON		0.001f
+//#define MOSFET_RDSON		0.0024f		// Mini
 
 // Max allowed phase current (0.15 = 50 A
 #define MAX_PHASE_CURRENT	FRAC16(0.15)
@@ -160,7 +160,7 @@
 #define SENSORLESS_START_CURRENT	FRAC16(0.025)	// Rotor start current
 #define SENSORLESS_START_SPEED		FRAC16(0.1)
 #define SENSORLESS_START_TORQUE		FRAC16(0.005)
-#define SENSORLESS_ANGLE_MAN_ERROR	FRAC16(0.02)	
+#define SENSORLESS_ANGLE_MAN_ERROR	FRAC16(0.0015)	
 #define OL_I_RAMP_UP                FRAC16(0.0001)	//FRAC16(0.000056818182)
 #define OL_I_RAMP_DOWN              FRAC16(0.0001)	//FRAC16(0.000056818182)
 #define OL_ALIGN_TIME				500			// Time in ms for aligning

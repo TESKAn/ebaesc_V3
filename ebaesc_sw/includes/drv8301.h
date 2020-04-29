@@ -104,8 +104,8 @@ typedef struct tagDRV8301
 #define DRV8301_GAIN_40 2// CS amplifier gain = 40 *.25, 41,2A max
 #define DRV8301_GAIN_80 3// CS amplifier gain = 80 *.125, 20,6A max
 
-#define DRV8301_GAIN_AMP		DRV8301_GAIN_80
-#define DRV8301_GAIN_FACTOR		FRAC16(0.125)
+#define DRV8301_GAIN_AMP		DRV8301_GAIN_40
+#define DRV8301_GAIN_FACTOR		FRAC16(0.25)
 
 
 #endif /* DRV8301_H_ */

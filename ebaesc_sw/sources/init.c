@@ -163,6 +163,7 @@ void InitSysVars(Int16 initial)
 		SYSTEM.SENSORLESS.ui16MaxBEMFONErrors = MAX_BEMF_ON_ERROR_COUNT;
 		SYSTEM.SENSORLESS.ui8BemfObserverErrorCount = 0;
 		SYSTEM.SENSORLESS.ui16BEMFONError = 0;
+		SYSTEM.SENSORLESS.f16BEMFErrorPartIncrease = 20;
 	}
 	SYSTEM.SENSORLESS.f16BEMFErrorPart = FRAC16(0.0);
 	SYSTEM.SENSORLESS.f16MinSpeedHysteresis = mult(SYSTEM.SENSORLESS.f16MinSpeed, FRAC16(0.1));
@@ -378,8 +379,8 @@ void InitSysVars(Int16 initial)
 		COMMDataStruct.REGS.i16PWMMax = 2000;
 		COMMDataStruct.REGS.i16PWMMin = 1000;
 		
-		COMMDataStruct.REGS.i16MaxRPM = 18000;
-		COMMDataStruct.REGS.i16MinRPM = 4000;
+		COMMDataStruct.REGS.i16MaxRPM = 5000;
+		COMMDataStruct.REGS.i16MinRPM = 1000;
 		
 		COMMDataStruct.REGS.i16CurrentPWM = 1000;
 		COMMDataStruct.REGS.i16ParkPosition = 2048;
