@@ -528,7 +528,7 @@ void ADC_1_EOS_ISR(void)
 						SYSTEM.POSITION.i16PositionSource = POSITION_SOURCE_MULTIPLE;
 						// Set current
 						SYSTEM.REGULATORS.m2IDQReq.f16D = FRAC16(0.0);
-						SYSTEM.REGULATORS.m2IDQReq.f16Q = SYSTEM.SENSORLESS.f16StartCurrent;
+						SYSTEM.REGULATORS.m2IDQReq.f16Q = SYSTEM.SENSORLESS.f16StartMergeCurrent;
 						// Set current source to speed or torque
 						if(CONTROL_SPEED)
 						{
@@ -561,13 +561,13 @@ void ADC_1_EOS_ISR(void)
 					}
 				}
 				SYSTEM.POSITION.f16AnglePhaseError = f16Temp;
-				SYSTEM.POSITION.f16RotorAngle = AMCLIB_TrackObsrv_F16(f16Temp, &SYSTEM.POSITION.acToPos);
+				SYSTEM.POSITION.f16RotorAngle = AMCLIB_TrackObsrv_F16(SYSTEM.POSITION.f16AnglePhaseError, &SYSTEM.POSITION.acToPos);
 				
 			}
 			else
 			{
 				SYSTEM.POSITION.f16AnglePhaseError = SYSTEM.SENSORLESS.f16AngleManualError;
-				SYSTEM.POSITION.f16RotorAngle = AMCLIB_TrackObsrv_F16(SYSTEM.SENSORLESS.f16AngleManualError, &SYSTEM.POSITION.acToPos);
+				SYSTEM.POSITION.f16RotorAngle = AMCLIB_TrackObsrv_F16(SYSTEM.POSITION.f16AnglePhaseError, &SYSTEM.POSITION.acToPos);
 			}
 			
 			// Store & filter speed
@@ -1001,17 +1001,9 @@ void FCAN_MB_ISR(void)
 			
 			if(9 == i)
 			{
-				CAN_RXRPMLimits(MB);
+				CAN_RXRPM(MB);
 			}	
 			else if(10 == i)
-			{
-				CAN_RXRPM(MB);
-			}
-			else if(11 == i)
-			{
-				CAN_RXENABLE(MB);
-			}
-			else if(12 == i)
 			{
 				CAN_SetReg(MB);
 			}

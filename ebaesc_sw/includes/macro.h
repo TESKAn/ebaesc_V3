@@ -113,7 +113,7 @@
 #define SI_RPM_FACTOR		17142.8571f	//120.000/n pole pairs
 
 // Default voltage cutoff in mV
-#define SI_VOLTAGE_CUTOFF	8000
+#define SI_VOLTAGE_CUTOFF	4000
 // Undervoltage events
 #define MAX_UNDERVOLTAGE_EVENTS		500
 
@@ -156,15 +156,15 @@
 
 #define SENSORLESS_MIN_SPEED		FRAC16(0.01)	// When to calculate BEMF observer
 #define SENSORLESS_MAX_ERROR		FRAC16(0.005)	// If error below this, we use observer result
-#define SENSORLESS_ALIGN_CURRENT	FRAC16(0.06)	// Rotor align current
-#define SENSORLESS_START_CURRENT	FRAC16(0.025)	// Rotor start current
-#define SENSORLESS_MERGE_CURRENT	FRAC16(0.02)	// Rotor start current
+#define SENSORLESS_ALIGN_CURRENT	FRAC16(0.025)	// Rotor align current
+#define SENSORLESS_START_CURRENT	FRAC16(0.02)	// Rotor start current
+#define SENSORLESS_MERGE_CURRENT	FRAC16(0.0055)	// Rotor start current
 #define SENSORLESS_START_SPEED		FRAC16(0.1)
 #define SENSORLESS_START_TORQUE		FRAC16(0.005)
-#define SENSORLESS_ANGLE_MAN_ERROR	FRAC16(0.0015)	
+#define SENSORLESS_ANGLE_MAN_ERROR	FRAC16(0.01)	
 #define OL_I_RAMP_UP                FRAC16(0.0001)	//FRAC16(0.000056818182)
 #define OL_I_RAMP_DOWN              FRAC16(0.0001)	//FRAC16(0.000056818182)
-#define OL_ALIGN_TIME				500			// Time in ms for aligning
+#define OL_ALIGN_TIME				125			// Time in ms for aligning
 #define MAX_BEMF_ERROR_COUNT		10			// Max. number of times BEMF is wrong before triggering restart
 #define MAX_BEMF_ON_ERROR_COUNT		100	
 
@@ -320,13 +320,14 @@
 // From main controller
 // CAN message IDs
 #define CAN_MID_STATUS					341
-#define CAN_MID_ORIENTATION				20001
-#define CAN_MID_SETRPMLIMIT				20002
-#define CAN_MID_ORIENTATION_PID			20009
 
-#define CAN_MID_SETRPM_BASE				20200		// Base ID for set RPM
-#define CAN_MID_ENABLE_BASE				20300		// Base ID for ENABLE
-#define CAN_MID_SET_REG_BASE			20400		// Set register MID
+#define CAN_RXMID_SETRPM				20200		// Base ID for set RPM
+#define CAN_RXMID_SET_REG				20201		// Set register MID
+
+// Reg write macros
+#define CAN_RXSETREG_ARMED				1
+#define CAN_RXSETREG_MINRPM				2
+#define CAN_RXSETREG_MAXRPM				3
 
 
 
@@ -347,18 +348,14 @@
 
 // From ESC
 // CAN message IDs
-#define CAN_MID_UIN						20101
-#define CAN_MID_RPMINFO					20102
+#define CAN_TXMID_UIN					20101
+#define CAN_TXMID_RPMINFO				20102
+#define CAN_TXMID_STATUS				20103
 // CAN message priorities
 #define CAN_PRIO_UIN					0x15
 #define CAN_PRIO_RPMINFO				0x15
 
-// Reg write macros
-#define CAN_WRITE_TOFLASH				0
-#define CAN_WRITE_REG_RESET				1
-#define CAN_WRITE_REG_BATLOW			2
-#define CAN_WRITE_REG_MINRPM			3
-#define CAN_WRITE_REG_MAXRPM			4
+
 
 
 #endif /* MACRO_H_ */
