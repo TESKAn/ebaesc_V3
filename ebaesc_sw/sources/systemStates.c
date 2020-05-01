@@ -144,7 +144,7 @@ Int16 SystemWakeupState()
 	{
 		// Reset driver and wait for sequence to end
 		SYSTEM.i16DriverRestartState = SYSTEM_RESTART_INIT;		
-		i16DriverState = SystemResetDriver();
+		//i16DriverState = SystemResetDriver();
 		if(0 == i16DriverState)
 		{
 			if(0 == SYSTEM.DRIVERSTATE.i8DriverFaultCount)

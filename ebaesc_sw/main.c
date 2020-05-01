@@ -192,13 +192,13 @@ void main (void)
 			}
 			case 1:
 			{
-				calculateFloats();
+				InitSysVars(1); 
 				i8ParamTest = 0;
 				break;
 			}			
 			case 2:
 			{
-				MCAT_Load();
+				InitSysVars(0); 
 				i8ParamTest = 0;
 				break;
 			}	
