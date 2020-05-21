@@ -966,16 +966,15 @@ void PIT_0_ISR(void)
 		SYSTEM.CAN.ui16CANStatusTimer++;
 		if(SYSTEM.CAN.ui16CANInfoInterval < SYSTEM.CAN.ui16CANInfoTimer)
 		{
-			CAN_TXVoltage();
-			CAN_TXRPMInfo();
+			//CAN_TXVoltage();
+			//CAN_TXRPMInfo();
 			SYSTEM.CAN.ui16CANInfoTimer = 0;
 		}
 		if(SYSTEM.CAN.ui16CANStatusInterval < SYSTEM.CAN.ui16CANStatusTimer)
 		{
 			CAN_TXStatus();
 			SYSTEM.CAN.ui16CANStatusTimer = 0;
-		}
-		
+		}		
 	}
 }
 #pragma interrupt saveall
@@ -999,15 +998,20 @@ void FCAN_MB_ISR(void)
 			// Get data
 			uw32CANDataPtr = ioctl(MB, FCANMB_GET_DATAPTR32, null);
 			
-			if(9 == i)
+			if(8 == i)
 			{
 				CAN_RXRPM(MB);
 			}	
-			else if(10 == i)
+			else if(9 == i)
 			{
 				CAN_SetReg(MB);
 			}
 			// Mark empty
+			ioctl(MB, FCANMB_SET_CODE, FCAN_MB_CODE_RXEMPTY);
+		}
+		if(0b110 == code)
+		{
+			i16CANBufOverflowCount++;
 			ioctl(MB, FCANMB_SET_CODE, FCAN_MB_CODE_RXEMPTY);
 		}
 	}

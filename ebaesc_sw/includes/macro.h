@@ -328,23 +328,14 @@
 #define CAN_RXSETREG_ARMED				1
 #define CAN_RXSETREG_MINRPM				2
 #define CAN_RXSETREG_MAXRPM				3
-
+#define CAN_RXSETREG_RESET				4
 
 
 
 // CAN message priorities
-#define CAN_PRIO_STATUS					0x15
-#define CAN_PRIO_ORIENTATION			0x15
-#define CAN_PRIO_SETRPMLIMIT			0x15
-#define CAN_PRIO_SETRPM					0x14
-#define CAN_PRIO_ENABLE					0x14
-#define CAN_PRIO_SETRPM_FR				0x01
-#define CAN_PRIO_SETRPM_FL				0x01
-#define CAN_PRIO_SETRPM_RR				0x01
-#define CAN_PRIO_SETRPM_RL				0x01
-#define CAN_PRIO_ORIENTATION_PID		0x15
-#define CAN_PRIO_RESET_ESC				0x15
-#define CAN_PRIO_WRITE_REG				0x15
+#define CAN_PRIO_SETRPM					0x15
+#define CAN_PRIO_SET_REG				0x15
+
 
 // From ESC
 // CAN message IDs
@@ -354,6 +345,7 @@
 // CAN message priorities
 #define CAN_PRIO_UIN					0x15
 #define CAN_PRIO_RPMINFO				0x15
+#define CAN_PRIO_STATUS					0x15
 
 
 

@@ -585,6 +585,7 @@ extern Int16 i16EEPROMCRCOK;
 
 // CAN test
 extern Int8 i8CANTest;
+extern Int16 i16CANBufOverflowCount;
 
 // Parameters test 
 extern Int8 i8ParamTest;

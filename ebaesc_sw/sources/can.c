@@ -31,17 +31,17 @@ Int16 CAN_Init()
 			ioctl(MB, FCANMB_SET_ID, 0x00015500 | FCAN_ID_EXT);	
 			ioctl(MB, FCANMB_SET_CODE, FCAN_MB_CODE_RXEMPTY);
 		}
-		// Set mailbox 9 to receive RPM set signal
-		uw32IDValue = CAN_RXMID_SETRPM + COMM_ID;; 
+		// Set mailbox 8 to receive RPM set signal
+		uw32IDValue = CAN_RXMID_SETRPM;; 
 		uw32IDValue = uw32IDValue << 8;
-		MB = ioctl(FCAN, FCAN_GET_MB_MODULE, 9);			
+		MB = ioctl(FCAN, FCAN_GET_MB_MODULE, 8);			
 		ioctl(MB, FCANMB_SET_ID, uw32IDValue | FCAN_ID_EXT);	
 		ioctl(MB, FCANMB_SET_CODE, FCAN_MB_CODE_RXEMPTY);
 		
-		// Set mailbox 10 to receive set reg signal
-		uw32IDValue = CAN_RXMID_SET_REG + COMM_ID; 
+		// Set mailbox 9 to receive set reg signal
+		uw32IDValue = CAN_RXMID_SET_REG; 
 		uw32IDValue = uw32IDValue << 8;
-		MB = ioctl(FCAN, FCAN_GET_MB_MODULE, 12);			
+		MB = ioctl(FCAN, FCAN_GET_MB_MODULE, 9);			
 		ioctl(MB, FCANMB_SET_ID, uw32IDValue | FCAN_ID_EXT);	
 		ioctl(MB, FCANMB_SET_CODE, FCAN_MB_CODE_RXEMPTY);
 		
@@ -125,112 +125,95 @@ Int16 CAN_TXStatus()
 	t32BitVars t32bit;
 	t32BitVars t32bit1;
 	
+	t32bit.bytes.ui8[0] = 0;
+	t32bit.bytes.ui8[1] = 0;
+	t32bit.bytes.ui8[2] = 0;
 	
-	UInt16 ui16fUIn = 0;
-	UInt16 ui16fIIn = 0;
-	UInt16 ui16fTemp = 0;
-	ui16fUIn = Float32ToFloat16(SYSTEM.SIVALUES.fUIn);
-	ui16fIIn = Float32ToFloat16(-53.10f);
-	ui16fTemp = Float32ToFloat16(SYSTEM.SIVALUES.fTempPCB);
-	
-	if(ioctl(FCAN, FCAN_TEST_READY, null))
-	{	
-		// Get free MB
-		for(i=0;i<8;i++)
+	switch(SYSTEM.systemState)
+	{
+		case SYSTEM_WAKEUP:
+		case SYSTEM_INIT:
 		{
-			MB = ioctl(FCAN, FCAN_GET_MB_MODULE, i);
-			// Get code
-			code = ioctl(MB, FCANMB_GET_CODE, null);
-			if(code == 0b1000)
-			{
-				// Generate message ID				
-				uw32MessageID = CAN_GenerateID(CAN_PRIO_STATUS, CAN_MID_STATUS);
-				
-				// Calculate time in seconds
-				t32bit.uw32 = SYSTEM.ui32SystemTime / 1000;
-				// Flip bytes
-				t32bit1.bytes.ui8[0] = t32bit.bytes.ui8[3];
-				t32bit1.bytes.ui8[1] = t32bit.bytes.ui8[2];
-				t32bit1.bytes.ui8[2] = t32bit.bytes.ui8[1];
-				t32bit1.bytes.ui8[3] = t32bit.bytes.ui8[0];
-				// Store
-				MB->data[0] = t32bit1.uw32;
-				// 2 bits health
-				// 3 bits mode
-				// 3 bits submode
-				switch(SYSTEM.systemState)
-				{
-					case SYSTEM_WAKEUP:
-					case SYSTEM_INIT:
-					{
-						t32bit.bytes.ui8[3] = 8;	// MODE = initialization
-						break;
-					}
-					case SYSTEM_IDLE:
-					case SYSTEM_RUN:
-					{
-						t32bit.bytes.ui8[3] = 0;
-						break;
-					}
-					case SYSTEM_FAULT:
-					{
-						t32bit.bytes.ui8[3] = 0xc0;
-						break;
-					}
-					case SYSTEM_RESET:
-					case SYSTEM_RESTARTING:
-					{
-						t32bit.bytes.ui8[3] = 0x40;
-						break;
-					}
-					case SYSTEM_FAULT_DRV8301:
-					case SYSTEM_FAULT_RESET:
-					case SYSTEM_BLOCKEXEC:
-					case SYSTEM_FOC_LOST_TIMEOUT:
-					{
-						t32bit.bytes.ui8[3] = 0xc0;
-						break;
-					}
-					case SYSTEM_PWM_IN_LOST:
-					{
-						t32bit.bytes.ui8[3] = 0x40;
-						break;
-					}
-					case SYSTEM_CALIBRATE:
-					case SYSTEM_PARKROTOR:
-					case SYSTEM_MEAS_RPHA:
-					case SYSTEM_MEAS_LPHA:
-					{
-						t32bit.bytes.ui8[3] = 0;
-						break;
-					}
-					case SYSTEM_FAULT_OCEVENT:
-					{
-						t32bit.bytes.ui8[3] = 0xc0;
-						break;
-					}
-					default:
-					{
-						t32bit.bytes.ui8[3] = 0xc0;
-						break;
-					}
-				}
-				// 16 bits specific status code
-				// Send system state
-				t32bit1.words.i16[0] = SYSTEM.systemState;
-				
-				t32bit.bytes.ui8[2] = t32bit1.bytes.ui8[0];
-				t32bit.bytes.ui8[1] = t32bit1.bytes.ui8[1];
+			t32bit.bytes.ui8[3] = 1;	// MODE = initialization
+			break;
+		}
+		case SYSTEM_IDLE:
+		{
+			t32bit.bytes.ui8[3] = 2;	// MODE = initialization
+			break;
+		}
+		case SYSTEM_RUN:
+		{
+			t32bit.bytes.ui8[3] = 3;
+			break;
+		}
+		case SYSTEM_FAULT:
+		{
+			t32bit.bytes.ui8[3] = 4;
+			break;
+		}
+		case SYSTEM_RESET:
+		case SYSTEM_RESTARTING:
+		{
+			t32bit.bytes.ui8[3] = 5;
+			break;
+		}
+		case SYSTEM_FAULT_DRV8301:
+		case SYSTEM_FAULT_RESET:
+		case SYSTEM_BLOCKEXEC:
+		case SYSTEM_FOC_LOST_TIMEOUT:
+		{
+			t32bit.bytes.ui8[3] = 6;
+			break;
+		}
+		case SYSTEM_PWM_IN_LOST:
+		{
+			t32bit.bytes.ui8[3] = 7;
+			break;
+		}
+		case SYSTEM_CALIBRATE:
+		case SYSTEM_PARKROTOR:
+		case SYSTEM_MEAS_RPHA:
+		case SYSTEM_MEAS_LPHA:
+		{
+			t32bit.bytes.ui8[3] = 8;
+			break;
+		}
+		case SYSTEM_FAULT_OCEVENT:
+		{
+			t32bit.bytes.ui8[3] = 9;
+			break;
+		}
+		default:
+		{
+			t32bit.bytes.ui8[3] = 10;
+			break;
+		}
+	}
+	
+	// Generate message ID
+	uw32MessageID = CAN_GenerateID(CAN_PRIO_STATUS, CAN_MID_STATUS);	
+	// Get free MB
+	for(i=0;i<8;i++)
+	{
+		MB = ioctl(FCAN, FCAN_GET_MB_MODULE, i);
+		// Get code
+		code = ioctl(MB, FCANMB_GET_CODE, null);
+		if(code == 0b1000)
+		{
+			MB->data[0] = t32bit.uw32;				
 
-				t32bit.bytes.ui8[0] = 0xc0;
-				MB->data[1] = t32bit.uw32;
-				
-				ioctl(MB, FCANMB_SET_ID, uw32MessageID | FCAN_ID_EXT);
-				ioctl(MB, FCANMB_SET_LEN, 8);
-				ioctl(MB, FCANMB_SET_CODE, FCAN_MB_CODE_TXONCE);		
-				i = 15;
-			}
-		}			
+			t32bit.uw32 = 0;
+			t32bit.bytes.ui8[0] = 0xc0;
+			MB->data[1] = t32bit.uw32;
+			
+			ioctl(MB, FCANMB_REORDER_BYTES, NULL);
+			
+			ioctl(MB, FCANMB_SET_ID, uw32MessageID | FCAN_ID_EXT);
+			ioctl(MB, FCANMB_SET_LEN, 5);
+			ioctl(MB, FCANMB_SET_CODE, FCAN_MB_CODE_TXONCE);		
+			i = 15;
+		}
 	}		
 	return 0;
 }
@@ -252,9 +235,9 @@ Int16 CAN_TXVoltage()
 	ui16fTemp = Float32ToFloat16(SYSTEM.SIVALUES.fTempPCB);
 	
 	if(ioctl(FCAN, FCAN_TEST_READY, null))
-	{/*
+	{
 		// Generate message ID
-		uw32MessageID = CAN_GenerateID(CAN_PRIO_UIN, CAN_MID_UIN);		
+		uw32MessageID = CAN_GenerateID(CAN_PRIO_UIN, CAN_TXMID_UIN);		
 		// Get free MB
 		for(i=0;i<8;i++)
 		{
@@ -266,7 +249,7 @@ Int16 CAN_TXVoltage()
 				// Write ID
 				//MB->id = 0xff4e2123;
 				// Write message
-				t32bit.words.i16[1] = ui16fUIn;
+				t32bit.words.i16[1] = COMMDataStruct.REGS.i16UIn;
 				t32bit.words.i16[0] = ui16fIIn;
 				MB->data[0] = t32bit.uw32;
 				t32bit.words.i16[1] = ui16fTemp;
@@ -278,7 +261,7 @@ Int16 CAN_TXVoltage()
 				ioctl(MB, FCANMB_SET_CODE, FCAN_MB_CODE_TXONCE);		
 				i = 15;
 			}
-		}		*/	
+		}		
 	}		
 	return 0;
 }
@@ -294,9 +277,9 @@ Int16 CAN_TXRPMInfo()
 	
 	
 	if(ioctl(FCAN, FCAN_TEST_READY, null))
-	{/*
+	{
 		// Generate message ID
-		uw32MessageID = CAN_GenerateID(CAN_PRIO_RPMINFO, CAN_MID_RPMINFO);		
+		uw32MessageID = CAN_GenerateID(CAN_PRIO_RPMINFO, CAN_TXMID_RPMINFO);		
 		// Get free MB
 		for(i=0;i<8;i++)
 		{
@@ -320,10 +303,13 @@ Int16 CAN_TXRPMInfo()
 				ioctl(MB, FCANMB_SET_CODE, FCAN_MB_CODE_TXONCE);		
 				i = 15;
 			}
-		}	*/		
+		}			
 	}		
 	return 0;
 }
+
+
+
 
 
 Int16 CAN_RXRPM(FCAN_MB *MB)
@@ -398,6 +384,11 @@ Int16 CAN_SetReg(FCAN_MB *MB)
 			t32bit.bytes.ui8[1] = t32bit1.bytes.ui8[0];
 			
 			COMMDataStruct.REGS.i16MaxRPM = t32bit.words.i16[0];
+			break;
+		}
+		case CAN_RXSETREG_RESET:
+		{
+			SYSTEM.i16StateTransition = SYSTEM_RESET;
 			break;
 		}
 		default:

@@ -18,6 +18,7 @@ Int16 i16EEPROMCRCOK = 0;
 
 // CAN test
 Int8 i8CANTest = 0;
+Int16 i16CANBufOverflowCount = 0;
 
 // Parameters test 
 Int8 i8ParamTest = 0;
