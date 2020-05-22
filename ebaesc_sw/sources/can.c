@@ -192,7 +192,7 @@ Int16 CAN_TXStatus()
 	}
 	
 	// Generate message ID
-	uw32MessageID = CAN_GenerateID(CAN_PRIO_STATUS, CAN_MID_STATUS);	
+	uw32MessageID = CAN_GenerateID(CAN_PRIO_STATUS, CAN_TXMID_STATUS);	
 	// Get free MB
 	for(i=0;i<8;i++)
 	{
