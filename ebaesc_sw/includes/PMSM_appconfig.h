@@ -91,7 +91,8 @@
 #define SPEED_PI_INTEG_ACC32			ACC32(0.01)
 
 #define SPEED_LOOP_HIGH_LIMIT           FRAC16(0.09)
-#define SPEED_LOOP_LOW_LIMIT            FRAC16(-0.09)
+//#define SPEED_LOOP_LOW_LIMIT            FRAC16(-0.09)
+#define SPEED_LOOP_LOW_LIMIT            FRAC16(0.0)		/* for TMC pump - no feedback on line */
 
 
 #define SPEED_RAMP_UP                   FRAC16(0.02)//FRAC16(0.000056818182)

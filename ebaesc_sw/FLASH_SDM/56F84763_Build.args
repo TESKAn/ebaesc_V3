@@ -1,3 +1,5 @@
+"./.metadata/.plugins/org.eclipse.cdt.make.core/specs_cpp.obj"
+"./.metadata/.plugins/org.eclipse.cdt.make.core/specs_c.obj"
 "./EepromDrv/EepromDrv_c.obj"
 "./SystemConfig/vectors_c.obj"
 "./SystemConfig/startup_c.obj"
@@ -68,4 +70,5 @@
 -l${VALUE}"$(ProjDirPath)/FSLESL_LDM/GFLIB/GFLIB_LDM.lib"
 -l${VALUE}"$(ProjDirPath)/FSLESL_LDM/GMCLIB/GMCLIB_LDM.lib"
 -l${VALUE}"$(ProjDirPath)/FSLESL_LDM/MLIB/MLIB_LDM.lib"
+-l${VALUE}"$(ProjDirPath)/FSLESL_LDM/PCLIB/PCLIB_LDM.lib"
 -l${VALUE}"$(ProjDirPath)/FSLESL_LDM/PCLIB/PCLIB_LDM.lib"

@@ -90,4 +90,5 @@ sources \
 . \
 SystemConfig \
 EepromDrv \
+.metadata/.plugins/org.eclipse.cdt.make.core \
 
